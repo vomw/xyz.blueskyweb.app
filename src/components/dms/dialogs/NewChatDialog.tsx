@@ -7,6 +7,7 @@ import {useGetConvoForMembers} from '#/state/queries/messages/get-convo-for-memb
 import {FAB} from '#/view/com/util/fab/FAB'
 import {useTheme} from '#/alf'
 import * as Dialog from '#/components/Dialog'
+import {InitiateChatDialog} from '#/components/dialogs/InitiateChatDialog'
 import {SearchablePeopleList} from '#/components/dialogs/SearchablePeopleList'
 import {InitiateChatFlow} from '#/components/dms/InitiateChatFlow'
 import {PlusLarge_Stroke2_Corner0_Rounded as Plus} from '#/components/icons/Plus'
