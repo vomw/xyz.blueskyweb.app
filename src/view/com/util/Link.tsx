@@ -54,6 +54,7 @@ interface Props extends React.ComponentProps<typeof TouchableOpacity> {
   onPointerEnter?: () => void
   onPointerLeave?: () => void
   onBeforePress?: () => void
+  ref?: React.Ref<View>
 }
 
 /**
@@ -74,6 +75,7 @@ export const Link = memo(function Link({
   accessibilityActions,
   onAccessibilityAction,
   dataSet: dataSetProp,
+  ref,
   ...props
 }: Props) {
   const t = useTheme()
@@ -112,6 +114,7 @@ export const Link = memo(function Link({
     return (
       <WebAuxClickWrapper>
         <Pressable
+          ref={ref}
           testID={testID}
           onPress={onPress}
           accessible={accessible}
@@ -143,6 +146,7 @@ export const Link = memo(function Link({
   const Com = props.hoverStyle ? PressableWithHover : Pressable
   return (
     <Com
+      ref={ref}
       testID={testID}
       style={style}
       onPress={onPress}
@@ -373,7 +377,7 @@ function onPressInner(
   navigation: DebouncedNavigationProp,
   href: string,
   navigationAction: 'push' | 'replace' | 'navigate' = 'push',
-  openLink: (href: string) => void,
+  openLink: (href: string) => void | Promise<void>,
   e?: Event,
 ) {
   let shouldHandle = false
@@ -407,7 +411,7 @@ function onPressInner(
       href.startsWith('mailto') ||
       EXEMPT_PATHS.some(path => href.startsWith(path))
     ) {
-      openLink(href)
+      void openLink(href)
     } else {
       closeModal() // close any active modals
 

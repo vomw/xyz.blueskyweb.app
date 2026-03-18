@@ -141,18 +141,18 @@ export function useLink({
         })
       } else {
         if (isExternal) {
-          openLink(href, overridePresentation, shouldProxy)
+          void openLink(href, overridePresentation, shouldProxy)
         } else {
           const shouldOpenInNewTab = shouldClickOpenNewTab(e)
 
           if (isBskyDownloadUrl(href)) {
-            shareUrl(BSKY_DOWNLOAD_URL)
+            void shareUrl(BSKY_DOWNLOAD_URL)
           } else if (
             shouldOpenInNewTab ||
             href.startsWith('http') ||
             href.startsWith('mailto')
           ) {
-            openLink(href)
+            void openLink(href)
           } else {
             closeModal() // close any active modals
 
@@ -232,7 +232,7 @@ export function useLink({
         share: true,
       })
     } else {
-      shareUrl(href)
+      void shareUrl(href)
     }
   }, [
     disableMismatchWarning,
@@ -262,6 +262,7 @@ export function useLink({
 export type LinkProps = Omit<BaseLinkProps, 'disableMismatchWarning'> &
   Omit<ButtonProps, 'onPress' | 'disabled'> & {
     overridePresentation?: boolean
+    ref?: React.Ref<typeof Link>
   }
 
 /**
@@ -281,6 +282,7 @@ export function Link({
   download,
   shouldProxy,
   overridePresentation,
+  ref,
   ...rest
 }: LinkProps) {
   const {href, isExternal, onPress, onLongPress} = useLink({
@@ -295,6 +297,7 @@ export function Link({
 
   return (
     <Button
+      ref={ref}
       {...rest}
       style={[a.justify_start, rest.style]}
       role="link"
@@ -451,7 +454,7 @@ export function SimpleInlineLinkText({
   const onPress = (e: GestureResponderEvent) => {
     const exitEarlyIfFalse = outerOnPress?.(e)
     if (exitEarlyIfFalse === false) return
-    Linking.openURL(href)
+    void Linking.openURL(href)
   }
 
   return (
