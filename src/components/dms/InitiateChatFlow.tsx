@@ -347,16 +347,25 @@ export function InitiateChatFlow({
 
   const setGroupChatMembers = (dids: string[]) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setGroupChatDids(dids)
-    setGroupChatProfiles(
-      items
+    setGroupChatDids(prev => {
+      const added = dids.filter(d => !prev.includes(d))
+      const removed = prev.filter(d => !dids.includes(d))
+      return [...prev.filter(d => !removed.includes(d)), ...added]
+    })
+    setGroupChatProfiles(prev => {
+      const kept = prev.filter(p => dids.includes(p.did))
+      const keptDids = new Set(kept.map(p => p.did))
+      const added = items
         .filter(
           (item): item is ProfileItem =>
-            item.type === 'profile' && dids.includes(item.profile.did),
+            item.type === 'profile' &&
+            dids.includes(item.profile.did) &&
+            !keptDids.has(item.profile.did),
         )
         .map(item => item.profile)
-        .sort((a, b) => dids.indexOf(a.did) - dids.indexOf(b.did)),
-    )
+        .sort((a, b) => dids.indexOf(a.did) - dids.indexOf(b.did))
+      return [...kept, ...added]
+    })
   }
 
   return (
