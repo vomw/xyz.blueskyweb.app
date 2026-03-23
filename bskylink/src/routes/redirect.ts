@@ -37,6 +37,7 @@ export default function (ctx: AppContext, app: Express) {
           url.pathname === '/redirect') || // is a redirect loop
         INTERNAL_IP_REGEX.test(url.hostname) // isn't directing to an internal location
       ) {
+        ctx.metrics.track('invalid_redirect', {link})
         res.setHeader('Cache-Control', 'no-store')
         res.setHeader('Location', `https://${ctx.cfg.service.appHostname}`)
         return res.status(302).end()
@@ -48,6 +49,9 @@ export default function (ctx: AppContext, app: Express) {
       res.type('html')
 
       let html: string | undefined
+      let whitelisted: 'unknown' | 'yes' = 'unknown'
+      let blocked: boolean = false
+      let warned: boolean = false
 
       if (ctx.cfg.service.safelinkEnabled) {
         const rule = await ctx.safelinkClient.tryFindRule(link)
@@ -55,6 +59,7 @@ export default function (ctx: AppContext, app: Express) {
           switch (rule.action) {
             case 'whitelist':
               redirectLogger.info({rule}, 'Whitelist rule matched')
+              whitelisted = 'yes'
               break
             case 'block':
               html = linkWarningLayout(
@@ -66,6 +71,7 @@ export default function (ctx: AppContext, app: Express) {
               )
               res.setHeader('Cache-Control', 'no-store')
               redirectLogger.info({rule}, 'Block rule matched')
+              blocked = true
               break
             case 'warn':
               html = linkWarningLayout(
@@ -77,6 +83,7 @@ export default function (ctx: AppContext, app: Express) {
               )
               res.setHeader('Cache-Control', 'no-store')
               redirectLogger.info({rule}, 'Warn rule matched')
+              warned = true
               break
             default:
               redirectLogger.warn({rule}, 'Unknown rule matched')
@@ -88,6 +95,13 @@ export default function (ctx: AppContext, app: Express) {
       if (!html) {
         html = linkRedirectContents(url.href)
       }
+
+      ctx.metrics.track('redirect', {
+        link,
+        whitelisted,
+        blocked,
+        warned,
+      })
 
       return res.end(html)
     }),
