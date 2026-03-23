@@ -1,7 +1,10 @@
 import {useCallback, useContext, useEffect, useMemo, useState} from 'react'
 import {LayoutAnimation, Platform} from 'react-native'
 import {getLocales} from 'expo-localization'
-import {onTranslateTask} from '@bsky.app/expo-translate-text'
+import {
+  isTranslationSupported,
+  onTranslateTask,
+} from '@bsky.app/expo-translate-text'
 import {type TranslationTaskResult} from '@bsky.app/expo-translate-text/build/ExpoTranslateText.types'
 import {useLingui} from '@lingui/react/macro'
 import {useFocusEffect} from '@react-navigation/native'
@@ -9,7 +12,7 @@ import {useFocusEffect} from '@react-navigation/native'
 import {useGoogleTranslate} from '#/lib/hooks/useGoogleTranslate'
 import {logger} from '#/logger'
 import {useAnalytics} from '#/analytics'
-import {HAS_ON_DEVICE_TRANSLATION, IS_ANDROID, IS_IOS} from '#/env'
+import {IS_ANDROID, IS_IOS} from '#/env'
 import {Context} from './context'
 import {
   type ContextType,
@@ -232,7 +235,7 @@ export function Provider({children}: React.PropsWithChildren<unknown>) {
         googleTranslate: shouldForceGoogleTranslate,
       })
 
-      if (shouldForceGoogleTranslate || !HAS_ON_DEVICE_TRANSLATION) {
+      if (shouldForceGoogleTranslate || !isTranslationSupported()) {
         await googleTranslate(
           text,
           expectedTargetLanguage,
