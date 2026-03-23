@@ -6,7 +6,7 @@ import {Trans} from '@lingui/react/macro'
 
 import {useInterestsDisplayNames} from '#/lib/interests'
 import {Nux, useSaveNux} from '#/state/queries/nuxs'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import {Shapes_Stroke2_Corner0_Rounded as Shapes} from '#/components/icons/Shapes'
@@ -18,7 +18,7 @@ import {Text} from '#/components/Typography'
 export function ExploreInterestsCard() {
   const t = useTheme()
   const {_} = useLingui()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const interestsDisplayNames = useInterestsDisplayNames()
   const {mutateAsync: saveNux} = useSaveNux()
   const trendingPrompt = Prompt.usePromptControl()

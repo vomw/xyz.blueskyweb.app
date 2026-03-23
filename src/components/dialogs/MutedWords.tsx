@@ -7,7 +7,7 @@ import {Trans} from '@lingui/react/macro'
 
 import {logger} from '#/logger'
 import {
-  usePreferencesQuery,
+  usePreferences,
   useRemoveMutedWordMutation,
   useUpdateMutedWordMutation,
   useUpsertMutedWordsMutation,
@@ -52,11 +52,7 @@ function MutedWordsInner() {
   const t = useTheme()
   const {_} = useLingui()
   const {gtMobile} = useBreakpoints()
-  const {
-    isLoading: isPreferencesLoading,
-    data: preferences,
-    error: preferencesError,
-  } = usePreferencesQuery()
+  const preferences = usePreferences()
   const {isPending, mutateAsync: addMutedWord} = useUpsertMutedWordsMutation()
   const [field, setField] = useState('')
   const [targets, setTargets] = useState(['content'])
@@ -378,19 +374,7 @@ function MutedWordsInner() {
             <Trans>Your muted words</Trans>
           </Text>
 
-          {isPreferencesLoading ? (
-            <Loader />
-          ) : preferencesError || !preferences ? (
-            <View
-              style={[a.py_md, a.px_lg, a.rounded_md, t.atoms.bg_contrast_25]}>
-              <Text style={[a.italic, t.atoms.text_contrast_high]}>
-                <Trans>
-                  We're sorry, but we weren't able to load your muted words at
-                  this time. Please try again.
-                </Trans>
-              </Text>
-            </View>
-          ) : preferences.moderationPrefs.mutedWords.length ? (
+          {preferences.moderationPrefs.mutedWords.length ? (
             [...preferences.moderationPrefs.mutedWords]
               .reverse()
               .map((word, i) => (

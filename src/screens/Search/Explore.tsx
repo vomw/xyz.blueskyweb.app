@@ -257,8 +257,7 @@ export function Explore({
     fetchNextPage: fetchNextFeedsPage,
   } = useGetPopularFeedsQuery({limit: 10, enabled: useFullExperience})
   const interestsNux = useNux(Nux.ExploreInterestsCard)
-  const showInterestsNux =
-    interestsNux.status === 'ready' && !interestsNux.nux?.completed
+  const showInterestsNux = !interestsNux.nux?.completed
 
   const {
     data: suggestedSPs,

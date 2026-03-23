@@ -8,7 +8,7 @@ import {
 } from '#/components/ProgressGuide/Toast'
 import {useAnalytics} from '#/analytics'
 import {
-  usePreferencesQuery,
+  usePreferences,
   useSetActiveProgressGuideMutation,
 } from '../queries/preferences'
 
@@ -73,7 +73,7 @@ export function useProgressGuideControls() {
 export function Provider({children}: React.PropsWithChildren<{}>) {
   const ax = useAnalytics()
   const {_} = useLingui()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {mutateAsync, variables, isPending} =
     useSetActiveProgressGuideMutation()
 

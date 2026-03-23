@@ -20,8 +20,8 @@ import {useQueryClient} from '@tanstack/react-query'
 
 import {cleanError} from '#/lib/strings/errors'
 import {logger} from '#/logger'
-import {usePreferencesQuery} from '#/state/queries/preferences'
-import {RQKEY, useProfileFeedgensQuery} from '#/state/queries/profile-feedgens'
+import {usePreferences} from '#/state/queries/preferences'
+import {RQKEY, useProfileFeedgens} from '#/state/queries/profile-feedgens'
 import {useSession} from '#/state/session'
 import {EmptyState} from '#/view/com/util/EmptyState'
 import {ErrorMessage} from '#/view/com/util/error/ErrorMessage'
@@ -80,7 +80,7 @@ export function ProfileFeedgens({
     refetch,
   } = useProfileFeedgensQuery(did, opts)
   const isEmpty = !isPending && !data?.pages[0]?.feeds.length
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const navigation = useNavigation()
   const {currentAccount} = useSession()
   const isSelf = currentAccount?.did === did

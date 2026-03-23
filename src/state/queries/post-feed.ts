@@ -31,14 +31,14 @@ import {aggregateUserInterests} from '#/lib/api/feed/utils'
 import {FeedTuner, type FeedTunerFn} from '#/lib/api/feed-manip'
 import {DISCOVER_FEED_URI} from '#/lib/constants'
 import {logger} from '#/logger'
+import {useFeedTuners} from '#/state/preferences/feed-tuners'
+import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {STALE} from '#/state/queries'
+import {usePreferences} from '#/state/queries/preferences'
 import {DEFAULT_LOGGED_OUT_PREFERENCES} from '#/state/queries/preferences/const'
 import {useAgent} from '#/state/session'
 import * as userActionHistory from '#/state/userActionHistory'
 import {KnownError} from '#/view/com/posts/PostFeedErrorMessage'
-import {useFeedTuners} from '../preferences/feed-tuners'
-import {useModerationOpts} from '../preferences/moderation-opts'
-import {usePreferencesQuery} from './preferences'
 import {
   didOrHandleUriMatches,
   embedViewRecordToPostView,
@@ -133,7 +133,7 @@ export function usePostFeedQuery(
 ) {
   const feedTuners = useFeedTuners(feedDesc)
   const moderationOpts = useModerationOpts()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   /**
    * Load bearing: we need to await AA state or risk FOUC. This marginally
    * delays feeds, but AA state is fetched immediately on load and is then

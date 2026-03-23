@@ -6,7 +6,7 @@ import {
 } from '#/lib/api/feed/utils'
 import {getContentLanguages} from '#/state/preferences/languages'
 import {STALE} from '#/state/queries'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {useAgent} from '#/state/session'
 
 export const createSuggestedStarterPacksQueryKey = (interests?: string[]) => [
@@ -22,7 +22,7 @@ export function useSuggestedStarterPacksQuery({
   overrideInterests?: string[]
 }) {
   const agent = useAgent()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const contentLangs = getContentLanguages().join(',')
 
   return useQuery({

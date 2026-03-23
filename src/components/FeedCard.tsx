@@ -14,7 +14,7 @@ import {logger} from '#/logger'
 import {precacheFeedFromGeneratorView} from '#/state/queries/feed'
 import {
   useAddSavedFeedsMutation,
-  usePreferencesQuery,
+  usePreferences,
   useRemoveFeedMutation,
 } from '#/state/queries/preferences'
 import {useSession} from '#/state/session'
@@ -278,7 +278,7 @@ function SaveButtonInner({
   text?: boolean
 } & Partial<ButtonProps>) {
   const {t: l} = useLingui()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {isPending: isAddSavedFeedPending, mutateAsync: saveFeeds} =
     useAddSavedFeedsMutation()
   const {isPending: isRemovePending, mutateAsync: removeFeed} =

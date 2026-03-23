@@ -9,7 +9,7 @@ import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {popularInterests, useInterestsDisplayNames} from '#/lib/interests'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useActorSearch} from '#/state/queries/actor-search'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {useGetSuggestedUsersQuery} from '#/state/queries/trending/useGetSuggestedUsersQuery'
 import {useSession} from '#/state/session'
 import {type Follow10ProgressGuide} from '#/state/shell/progress-guide'
@@ -115,7 +115,7 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
   const {_} = useLingui()
   const ax = useAnalytics()
   const interestsDisplayNames = useInterestsDisplayNames()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const personalizedInterests = preferences?.interests?.tags
   const interests = Object.keys(interestsDisplayNames)
     .sort(boostInterests(popularInterests))

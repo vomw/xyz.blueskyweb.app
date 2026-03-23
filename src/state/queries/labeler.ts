@@ -8,10 +8,7 @@ import {
   PERSISTED_QUERY_ROOT,
   STALE,
 } from '#/state/queries'
-import {
-  preferencesQueryKey,
-  usePreferencesQuery,
-} from '#/state/queries/preferences'
+import {preferencesQueryKey, usePreferences} from '#/state/queries/preferences'
 import {useAgent} from '#/state/session'
 
 const labelerInfoQueryKeyRoot = 'labeler-info'
@@ -101,7 +98,7 @@ export function useRemoveLabelersMutation() {
 export function useLabelerSubscriptionMutation() {
   const queryClient = useQueryClient()
   const agent = useAgent()
-  const preferences = usePreferencesQuery()
+  const preferences = usePreferences()
 
   return useMutation({
     async mutationFn({did, subscribe}: {did: string; subscribe: boolean}) {

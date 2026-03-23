@@ -30,6 +30,7 @@ import {makeAgeRestrictedModerationPrefs} from '#/ageAssurance/util'
 import {useAnalytics} from '#/analytics'
 
 export * from '#/state/queries/preferences/const'
+export * from '#/state/queries/preferences/context'
 export * from '#/state/queries/preferences/moderation'
 export * from '#/state/queries/preferences/types'
 
@@ -39,7 +40,7 @@ export function usePreferencesQuery() {
   const agent = useAgent()
   const aa = useAgeAssurance()
 
-  const query = useQuery({
+  return useQuery({
     staleTime: STALE.SECONDS.FIFTEEN,
     structuralSharing: replaceEqualDeep,
     refetchOnWindowFocus: true,
@@ -52,7 +53,7 @@ export function usePreferencesQuery() {
         const res = await agent.getPreferences()
 
         // save to local storage to ensure there are labels on initial requests
-        saveLabelers(
+        void saveLabelers(
           agent.did,
           res.moderationPrefs.labelers.map(l => l.did),
         )
@@ -91,20 +92,21 @@ export function usePreferencesQuery() {
             ),
           }
         }
+
+        /**
+         * The persisted query cache stores dates as strings, but our code expects a `Date`.
+         */
+        if (data.birthDate) {
+          return {
+            ...data,
+            birthDate: new Date(data.birthDate),
+          }
+        }
         return data
       },
       [aa],
     ),
   })
-
-  if (query.data?.birthDate) {
-    /**
-     * The persisted query cache stores dates as strings, but our code expects a `Date`.
-     */
-    query.data.birthDate = new Date(query.data.birthDate)
-  }
-
-  return query
 }
 
 export function useClearPreferencesMutation() {

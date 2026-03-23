@@ -5,7 +5,7 @@ import debounce from 'lodash.debounce'
 
 import {useCallOnce} from '#/lib/once'
 import {
-  usePreferencesQuery,
+  usePreferences,
   useSetThreadViewPreferencesMutation,
 } from '#/state/queries/preferences'
 import {type ThreadViewPreferences} from '#/state/queries/preferences/types'
@@ -30,7 +30,7 @@ export function useThreadPreferences({
   save,
 }: {save?: boolean} = {}): ThreadPreferences {
   const ax = useAnalytics()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const serverPrefs = preferences?.threadViewPrefs
   const once = useCallOnce()
 

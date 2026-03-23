@@ -15,7 +15,7 @@ import {type FeedSourceFeedInfo} from '#/state/queries/feed'
 import {useLikeMutation, useUnlikeMutation} from '#/state/queries/like'
 import {
   useAddSavedFeedsMutation,
-  usePreferencesQuery,
+  usePreferences,
   useRemoveFeedMutation,
   useUpdateSavedFeedsMutation,
 } from '#/state/queries/preferences'
@@ -93,7 +93,7 @@ export function ProfileFeedHeader({info}: {info: FeedSourceFeedInfo}) {
   const infoControl = Dialog.useDialogControl()
   const playHaptic = useHaptics()
 
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
 
   const [likeUri, setLikeUri] = useState(info.likeUri || '')
   const likeCount =

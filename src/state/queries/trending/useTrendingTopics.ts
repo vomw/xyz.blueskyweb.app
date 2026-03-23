@@ -3,7 +3,7 @@ import {type AppBskyUnspeccedDefs, hasMutedWord} from '@atproto/api'
 import {useQuery} from '@tanstack/react-query'
 
 import {STALE} from '#/state/queries'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {useAgent} from '#/state/session'
 
 export type TrendingTopic = AppBskyUnspeccedDefs.TrendingTopic
@@ -28,7 +28,7 @@ export const trendingTopicsQueryKey = ['trending-topics']
 
 export function useTrendingTopics() {
   const agent = useAgent()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const mutedWords = useMemo(
     () => preferences?.moderationPrefs?.mutedWords ?? [],
     [preferences?.moderationPrefs?.mutedWords],

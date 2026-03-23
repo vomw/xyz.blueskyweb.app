@@ -22,16 +22,16 @@ import {
 import {DISCOVER_FEED_URI, DISCOVER_SAVED_FEED} from '#/lib/constants'
 import {sanitizeDisplayName} from '#/lib/strings/display-names'
 import {sanitizeHandle} from '#/lib/strings/handles'
+import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {
   PERSISTED_QUERY_GCTIME,
   PERSISTED_QUERY_ROOT,
   STALE,
 } from '#/state/queries'
 import {RQKEY as listQueryKey} from '#/state/queries/list'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {useAgent, useSession} from '#/state/session'
 import {router} from '#/routes'
-import {useModerationOpts} from '../preferences/moderation-opts'
 import {type FeedDescriptor} from './post-feed'
 import {precacheResolvedUri} from './resolve-uri'
 
@@ -227,7 +227,7 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
   const {hasSession} = useSession()
   const agent = useAgent()
   const limit = options?.limit || 10
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const queryClient = useQueryClient()
   const moderationOpts = useModerationOpts()
 
@@ -424,7 +424,7 @@ const createPinnedFeedInfosQueryKeyRoot = (
 export function usePinnedFeedsInfos() {
   const {hasSession} = useSession()
   const agent = useAgent()
-  const {data: preferences, isLoading: isLoadingPrefs} = usePreferencesQuery()
+  const preferences = usePreferences()
   const pinnedItems = preferences?.savedFeeds.filter(feed => feed.pinned) ?? []
 
   return useQuery({
@@ -434,7 +434,6 @@ export function usePinnedFeedsInfos() {
     ),
     gcTime: PERSISTED_QUERY_GCTIME,
     staleTime: STALE.INFINITY,
-    enabled: !isLoadingPrefs,
     queryFn: async () => {
       if (!hasSession) {
         return [PWI_DISCOVER_FEED_STUB]
@@ -531,7 +530,7 @@ export type SavedFeedItem =
 
 export function useSavedFeeds() {
   const agent = useAgent()
-  const {data: preferences, isLoading: isLoadingPrefs} = usePreferencesQuery()
+  const preferences = usePreferences()
   const savedItems = preferences?.savedFeeds ?? []
   const queryClient = useQueryClient()
 
@@ -542,7 +541,6 @@ export function useSavedFeeds() {
     ),
     gcTime: PERSISTED_QUERY_GCTIME,
     staleTime: STALE.INFINITY,
-    enabled: !isLoadingPrefs,
     placeholderData: previousData => {
       return (
         previousData || {

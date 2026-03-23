@@ -13,10 +13,7 @@ import {
   useInterestsDisplayNames,
 } from '#/lib/interests'
 import {type CommonNavigatorParams} from '#/lib/routes/types'
-import {
-  preferencesQueryKey,
-  usePreferencesQuery,
-} from '#/state/queries/preferences'
+import {preferencesQueryKey, usePreferences} from '#/state/queries/preferences'
 import {type UsePreferencesQueryResponse} from '#/state/queries/preferences/types'
 import {createGetSuggestedFeedsQueryKey} from '#/state/queries/trending/useGetSuggestedFeedsQuery'
 import {createGetSuggestedUsersQueryKey} from '#/state/queries/trending/useGetSuggestedUsersQuery'
@@ -35,7 +32,6 @@ type Props = NativeStackScreenProps<CommonNavigatorParams, 'InterestsSettings'>
 export function InterestsSettingsScreen({}: Props) {
   const t = useTheme()
   const gutters = useGutters(['base'])
-  const {data: preferences} = usePreferencesQuery()
   const [isSaving, setIsSaving] = useState(false)
 
   return (
@@ -65,26 +61,15 @@ export function InterestsSettingsScreen({}: Props) {
 
           <Divider />
 
-          {preferences ? (
-            <Inner preferences={preferences} setIsSaving={setIsSaving} />
-          ) : (
-            <View style={[a.flex_row, a.justify_center, a.p_lg]}>
-              <Loader size="xl" />
-            </View>
-          )}
+          <Inner setIsSaving={setIsSaving} />
         </View>
       </Layout.Content>
     </Layout.Screen>
   )
 }
 
-function Inner({
-  preferences,
-  setIsSaving,
-}: {
-  preferences: UsePreferencesQueryResponse
-  setIsSaving: (isSaving: boolean) => void
-}) {
+function Inner({setIsSaving}: {setIsSaving: (isSaving: boolean) => void}) {
+  const preferences = usePreferences()
   const {_} = useLingui()
   const agent = useAgent()
   const qc = useQueryClient()

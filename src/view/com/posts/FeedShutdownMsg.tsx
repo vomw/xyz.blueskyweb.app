@@ -7,7 +7,7 @@ import {Trans} from '@lingui/react/macro'
 import {PROD_DEFAULT_FEED} from '#/lib/constants'
 import {logger} from '#/logger'
 import {
-  usePreferencesQuery,
+  usePreferences,
   useRemoveFeedMutation,
   useReplaceForYouWithDiscoverFeedMutation,
 } from '#/state/queries/preferences'
@@ -23,7 +23,7 @@ export function FeedShutdownMsg({feedUri}: {feedUri: string}) {
   const t = useTheme()
   const {_} = useLingui()
   const setSelectedFeed = useSetSelectedFeed()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {mutateAsync: removeFeed, isPending: isRemovePending} =
     useRemoveFeedMutation()
   const {mutateAsync: replaceFeedWithDiscover, isPending: isReplacePending} =

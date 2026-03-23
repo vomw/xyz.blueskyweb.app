@@ -25,7 +25,7 @@ import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useListQuery} from '#/state/queries/list'
 import {RQKEY as FEED_RQKEY} from '#/state/queries/post-feed'
 import {
-  usePreferencesQuery,
+  usePreferences,
   type UsePreferencesQueryResponse,
 } from '#/state/queries/preferences'
 import {useResolveUriQuery} from '#/state/queries/resolve-uri'
@@ -67,7 +67,7 @@ function ProfileListScreenInner(props: Props) {
   const {data: resolvedUri, error: resolveError} = useResolveUriQuery(
     AtUri.make(handleOrDid, 'app.bsky.graph.list', rkey).toString(),
   )
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {data: list, error: listError} = useListQuery(resolvedUri?.uri)
   const moderationOpts = useModerationOpts()
 

@@ -7,7 +7,7 @@ import {
   type NativeStackScreenProps,
 } from '#/lib/routes/types'
 import {
-  usePreferencesQuery,
+  usePreferences,
   useSetFeedViewPreferencesMutation,
 } from '#/state/queries/preferences'
 import {atoms as a} from '#/alf'
@@ -27,7 +27,7 @@ type Props = NativeStackScreenProps<
 export function FollowingFeedPreferencesScreen({}: Props) {
   const {_} = useLingui()
 
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {mutate: setFeedViewPref, variables} =
     useSetFeedViewPreferencesMutation()
 

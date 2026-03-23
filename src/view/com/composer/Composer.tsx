@@ -95,7 +95,7 @@ import {
   useLanguagePrefs,
   useLanguagePrefsApi,
 } from '#/state/preferences/languages'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {useProfileQuery} from '#/state/queries/profile'
 import {type Gif} from '#/state/queries/tenor'
 import {useAgent, useSession} from '#/state/session'
@@ -213,7 +213,7 @@ export const ComposePost = ({
   const {mutate: cleanupPublishedDraft} = useCleanupPublishedDraftMutation()
   const {closeAllDialogs} = useDialogStateControlContext()
   const {closeAllModals} = useModalControls()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const navigation = useNavigation<NavigationProp>()
 
   const [isKeyboardVisible] = useIsKeyboardVisible({iosUseWillEvents: true})

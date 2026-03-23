@@ -12,7 +12,7 @@ import {logger} from '#/logger'
 import {STALE} from '#/state/queries'
 import {Nux, useNuxs, useResetNuxs, useSaveNux} from '#/state/queries/nuxs'
 import {
-  usePreferencesQuery,
+  usePreferences,
   type UsePreferencesQueryResponse,
 } from '#/state/queries/preferences'
 import {useProfileQuery} from '#/state/queries/profile'
@@ -54,7 +54,7 @@ export function useNuxDialogContext() {
 
 export function NuxDialogs() {
   const {currentAccount} = useSession()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {data: profile} = useProfileQuery({
     did: currentAccount?.did,
     staleTime: STALE.INFINITY, // createdAt isn't gonna change

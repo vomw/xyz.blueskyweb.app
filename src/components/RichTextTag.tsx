@@ -8,7 +8,7 @@ import {useNavigation} from '@react-navigation/native'
 import {type NavigationProp} from '#/lib/routes/types'
 import {isInvalidHandle} from '#/lib/strings/handles'
 import {
-  usePreferencesQuery,
+  usePreferences,
   useRemoveMutedWordsMutation,
   useUpsertMutedWordsMutation,
 } from '#/state/queries/preferences'
@@ -20,7 +20,6 @@ import {
   createStaticClickIfUnmodified,
   InlineLinkText,
 } from '#/components/Link'
-import {Loader} from '#/components/Loader'
 import * as Menu from '#/components/Menu'
 import {IS_NATIVE, IS_WEB} from '#/env'
 
@@ -36,8 +35,7 @@ export function RichTextTag({
   textStyle: StyleProp<TextStyle>
 }) {
   const {_} = useLingui()
-  const {isLoading: isPreferencesLoading, data: preferences} =
-    usePreferencesQuery()
+  const preferences = usePreferences()
   const {
     mutateAsync: upsertMutedWord,
     variables: optimisticUpsert,
@@ -169,7 +167,7 @@ export function RichTextTag({
               ? _(msg`Unmute ${isCashtag ? tag : `#${tag}`}`)
               : _(msg`Mute ${isCashtag ? tag : `#${tag}`}`)}
           </Menu.ItemText>
-          <Menu.ItemIcon icon={isPreferencesLoading ? Loader : Mute} />
+          <Menu.ItemIcon icon={Mute} />
         </Menu.Item>
       </Menu.Outer>
     </Menu.Root>

@@ -5,7 +5,7 @@ import {Trans} from '@lingui/react/macro'
 
 import {urls} from '#/lib/constants'
 import {
-  usePreferencesQuery,
+  usePreferences,
   type UsePreferencesQueryResponse,
 } from '#/state/queries/preferences'
 import {useSetVerificationPrefsMutation} from '#/state/queries/preferences'
@@ -23,7 +23,7 @@ export function Screen() {
   const {_} = useLingui()
   const ax = useAnalytics()
   const gutters = useGutters(['base'])
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
 
   return (
     <Layout.Screen testID="ModerationVerificationSettingsScreen">

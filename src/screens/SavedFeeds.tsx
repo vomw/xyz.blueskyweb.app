@@ -20,7 +20,7 @@ import {logger} from '#/logger'
 import {useA11y} from '#/state/a11y'
 import {
   useOverwriteSavedFeedsMutation,
-  usePreferencesQuery,
+  usePreferences,
 } from '#/state/queries/preferences'
 import {type UsePreferencesQueryResponse} from '#/state/queries/preferences/types'
 import {useSetMinimalShellMode} from '#/state/shell'
@@ -47,7 +47,7 @@ import {Text} from '#/components/Typography'
 
 type Props = NativeStackScreenProps<CommonNavigatorParams, 'SavedFeeds'>
 export function SavedFeeds({}: Props) {
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {screenReaderEnabled} = useA11y()
   if (!preferences) {
     return <View />

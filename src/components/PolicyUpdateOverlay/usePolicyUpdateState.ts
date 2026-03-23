@@ -38,13 +38,11 @@ export function usePolicyUpdateState({
       }
     }
 
-    const nuxIsReady = nux.status === 'ready'
     const nuxIsCompleted = nux.nux?.completed === true
     const nuxIsOptimisticallyCompleted = !!variables?.completed
     const [completedForDevice, setCompletedForDevice] = deviceStorage
 
     const completed = computeCompletedState({
-      nuxIsReady,
       nuxIsCompleted,
       nuxIsOptimisticallyCompleted,
       completedForDevice,
@@ -58,7 +56,6 @@ export function usePolicyUpdateState({
 
     if (!debugOverride) {
       syncCompletedState({
-        nuxIsReady,
         nuxIsCompleted,
         nuxIsOptimisticallyCompleted,
         completedForDevice,
@@ -83,27 +80,18 @@ export function usePolicyUpdateState({
 }
 
 export function computeCompletedState({
-  nuxIsReady,
   nuxIsCompleted,
   nuxIsOptimisticallyCompleted,
   completedForDevice,
 }: {
-  nuxIsReady: boolean
   nuxIsCompleted: boolean
   nuxIsOptimisticallyCompleted: boolean
   completedForDevice: boolean | undefined
 }): boolean {
   /**
-   * Assume completed to prevent flash
-   */
-  let completed = true
-
-  /**
    * Prefer server state, if available
    */
-  if (nuxIsReady) {
-    completed = nuxIsCompleted
-  }
+  let completed = nuxIsCompleted
 
   /**
    * Override with optimistic state or device state
@@ -116,14 +104,12 @@ export function computeCompletedState({
 }
 
 export function syncCompletedState({
-  nuxIsReady,
   nuxIsCompleted,
   nuxIsOptimisticallyCompleted,
   completedForDevice,
   save,
   setCompletedForDevice,
 }: {
-  nuxIsReady: boolean
   nuxIsCompleted: boolean
   nuxIsOptimisticallyCompleted: boolean
   completedForDevice: boolean | undefined
@@ -134,7 +120,6 @@ export function syncCompletedState({
    * Sync device state to server state for this account
    */
   if (
-    nuxIsReady &&
     !nuxIsCompleted &&
     !nuxIsOptimisticallyCompleted &&
     !!completedForDevice
@@ -145,7 +130,7 @@ export function syncCompletedState({
       completed: true,
       data: undefined,
     })
-  } else if (nuxIsReady && nuxIsCompleted && !completedForDevice) {
+  } else if (nuxIsCompleted && !completedForDevice) {
     logger.debug(`syncing server state to device state`)
     /*
      * Sync server state to device state

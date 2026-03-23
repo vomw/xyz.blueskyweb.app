@@ -19,7 +19,7 @@ import {useProfileShadow} from '#/state/cache/profile-shadow'
 import {type Shadow} from '#/state/cache/types'
 import {useLabelerSubscriptionMutation} from '#/state/queries/labeler'
 import {useLikeMutation, useUnlikeMutation} from '#/state/queries/like'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {useRequireAuth, useSession} from '#/state/session'
 import {ProfileMenu} from '#/view/com/profile/ProfileMenu'
 import {atoms as a, tokens, useTheme} from '#/alf'
@@ -244,7 +244,7 @@ export function HeaderLabelerButtons({
   const requireAuth = useRequireAuth()
   const playHaptic = useHaptics()
   const editProfileControl = useDialogControl()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {
     mutateAsync: toggleSubscription,
     variables,
@@ -252,7 +252,7 @@ export function HeaderLabelerButtons({
   } = useLabelerSubscriptionMutation()
   const isSubscribed =
     variables?.subscribe ??
-    preferences?.moderationPrefs.labelers.find(l => l.did === profile.did)
+    preferences.moderationPrefs.labelers.find(l => l.did === profile.did)
 
   const cantSubscribePrompt = Prompt.usePromptControl()
 

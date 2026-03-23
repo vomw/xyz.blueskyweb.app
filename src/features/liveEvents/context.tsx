@@ -9,7 +9,7 @@ import {
   isBskyCustomFeedUrl,
   makeRecordUri,
 } from '#/lib/strings/url-helpers'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {IS_DEV, LIVE_EVENTS_URL} from '#/env'
 import {useLiveEventPreferences} from '#/features/liveEvents/preferences'
 import {type LiveEventsWorkerResponse} from '#/features/liveEvents/types'
@@ -38,7 +38,7 @@ const Context = createContext<LiveEventsWorkerResponse>(DEFAULT_LIVE_EVENTS)
 export function Provider({children}: React.PropsWithChildren<{}>) {
   const [isDevMode] = useDevMode()
   const isBskyTeam = useIsBskyTeam()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const mutedWords = useMemo(
     () => preferences?.moderationPrefs?.mutedWords ?? [],
     [preferences?.moderationPrefs?.mutedWords],

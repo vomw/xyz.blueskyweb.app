@@ -23,7 +23,7 @@ import {
 import {type FeedDescriptor, type FeedParams} from '#/state/queries/post-feed'
 import {RQKEY as FEED_RQKEY} from '#/state/queries/post-feed'
 import {
-  usePreferencesQuery,
+  usePreferences,
   type UsePreferencesQueryResponse,
 } from '#/state/queries/preferences'
 import {useResolveUriQuery} from '#/state/queries/resolve-uri'
@@ -101,7 +101,7 @@ function ProfileFeedScreenIntermediate({
   feedUri: string
   feedParams: FeedParams | undefined
 }) {
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {data: info} = useFeedSourceInfoQuery({uri: feedUri})
 
   if (!preferences || !info) {

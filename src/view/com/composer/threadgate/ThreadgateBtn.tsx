@@ -11,7 +11,7 @@ import {isNetworkError} from '#/lib/strings/errors'
 import {logger} from '#/logger'
 import {usePostInteractionSettingsMutation} from '#/state/queries/post-interaction-settings'
 import {createPostgateRecord} from '#/state/queries/postgate/util'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {
   type ThreadgateAllowUISetting,
   threadgateAllowUISettingToAllowRecordValue,
@@ -65,7 +65,7 @@ export function ThreadgateBtn({
     setShowTooltip(false)
   }
 
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const [persist, setPersist] = useState(false)
 
   const onPress = () => {

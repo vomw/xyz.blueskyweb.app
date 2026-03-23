@@ -2,9 +2,9 @@ import {createContext, useContext, useMemo} from 'react'
 import {BskyAgent, type ModerationOpts} from '@atproto/api'
 
 import {useHiddenPosts, useLabelDefinitions} from '#/state/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {DEFAULT_LOGGED_OUT_LABEL_PREFERENCES} from '#/state/queries/preferences/moderation'
 import {useSession} from '#/state/session'
-import {usePreferencesQuery} from '../queries/preferences'
 
 export const moderationOptsContext = createContext<ModerationOpts | undefined>(
   undefined,
@@ -24,12 +24,12 @@ export function useModerationOpts() {
 export function Provider({children}: React.PropsWithChildren<{}>) {
   const override = useContext(moderationOptsOverrideContext)
   const {currentAccount} = useSession()
-  const prefs = usePreferencesQuery()
+  const preferences = usePreferences()
   const {labelDefs} = useLabelDefinitions()
   const hiddenPosts = useHiddenPosts() // TODO move this into pds-stored prefs
 
   const userDid = currentAccount?.did
-  const moderationPrefs = prefs.data?.moderationPrefs
+  const moderationPrefs = preferences?.moderationPrefs
   const value = useMemo<ModerationOpts | undefined>(() => {
     if (override) {
       return override

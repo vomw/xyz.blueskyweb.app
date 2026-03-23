@@ -11,7 +11,7 @@ import {
 import {logger} from '#/logger'
 import {getContentLanguages} from '#/state/preferences/languages'
 import {STALE} from '#/state/queries'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {useAgent} from '#/state/session'
 
 export type QueryProps = {
@@ -29,7 +29,7 @@ export const createGetSuggestedUsersQueryKey = (props: QueryProps) => [
 
 export function useGetSuggestedUsersQuery(props: QueryProps) {
   const agent = useAgent()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
 
   return useQuery({
     enabled: !!preferences && props.enabled !== false,

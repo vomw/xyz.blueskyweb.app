@@ -11,7 +11,7 @@ import {useGlobalLabelStrings} from '#/lib/moderation/useGlobalLabelStrings'
 import {useLabelBehaviorDescription} from '#/lib/moderation/useLabelBehaviorDescription'
 import {getLabelStrings} from '#/lib/moderation/useLabelInfo'
 import {
-  usePreferencesQuery,
+  usePreferences,
   usePreferencesSetContentLabelMutation,
 } from '#/state/queries/preferences'
 import {atoms as a, useBreakpoints, useTheme} from '#/alf'
@@ -123,7 +123,7 @@ export function GlobalLabelPreference({
   const {_} = useLingui()
 
   const {identifier} = labelDefinition
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {mutate, variables} = usePreferencesSetContentLabelMutation()
   const savedPref = preferences?.moderationPrefs.labels[identifier]
   const pref = variables?.visibility ?? savedPref ?? 'warn'
@@ -186,7 +186,7 @@ export function LabelerLabelPreference({
 
   const isGlobalLabel = !labelDefinition.definedBy
   const {identifier} = labelDefinition
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const {mutate, variables} = usePreferencesSetContentLabelMutation()
   const savedPref =
     labelerDid && !isGlobalLabel

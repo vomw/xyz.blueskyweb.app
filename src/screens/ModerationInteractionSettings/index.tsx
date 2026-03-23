@@ -8,10 +8,7 @@ import deepEqual from 'fast-deep-equal'
 import {logger} from '#/logger'
 import {usePostInteractionSettingsMutation} from '#/state/queries/post-interaction-settings'
 import {createPostgateRecord} from '#/state/queries/postgate/util'
-import {
-  usePreferencesQuery,
-  type UsePreferencesQueryResponse,
-} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {
   threadgateAllowUISettingToAllowRecordValue,
   threadgateRecordToAllowUISetting,
@@ -20,12 +17,10 @@ import {atoms as a, useGutters} from '#/alf'
 import {Admonition} from '#/components/Admonition'
 import {PostInteractionSettingsForm} from '#/components/dialogs/PostInteractionSettingsDialog'
 import * as Layout from '#/components/Layout'
-import {Loader} from '#/components/Loader'
 import * as Toast from '#/components/Toast'
 
 export function Screen() {
   const gutters = useGutters(['base'])
-  const {data: preferences} = usePreferencesQuery()
   return (
     <Layout.Screen testID="ModerationInteractionSettingsScreen">
       <Layout.Header.Outer>
@@ -46,20 +41,15 @@ export function Screen() {
               composer.
             </Trans>
           </Admonition>
-          {preferences ? (
-            <Inner preferences={preferences} />
-          ) : (
-            <View style={[gutters, a.justify_center, a.align_center]}>
-              <Loader size="xl" />
-            </View>
-          )}
+          <Inner />
         </View>
       </Layout.Content>
     </Layout.Screen>
   )
 }
 
-function Inner({preferences}: {preferences: UsePreferencesQueryResponse}) {
+function Inner() {
+  const preferences = usePreferences()
   const {_} = useLingui()
   const {mutateAsync: setPostInteractionSettings, isPending} =
     usePostInteractionSettingsMutation()

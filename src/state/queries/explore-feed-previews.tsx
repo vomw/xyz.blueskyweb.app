@@ -22,7 +22,7 @@ import {
   type FeedPostSlice,
   type FeedPostSliceItem,
 } from '#/state/queries/post-feed'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {
   didOrHandleUriMatches,
   embedViewRecordToPostView,
@@ -122,7 +122,7 @@ export function useFeedPreviews(
   const uris = feeds.map(feed => feed.uri)
   const {_} = useLingui()
   const agent = useAgent()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const userInterests = aggregateUserInterests(preferences)
   const moderationOpts = useModerationOpts()
   const enabled = feeds.length > 0 && isEnabled

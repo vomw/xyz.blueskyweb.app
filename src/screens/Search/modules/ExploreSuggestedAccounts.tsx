@@ -7,7 +7,7 @@ import {type InfiniteData} from '@tanstack/react-query'
 
 import {popularInterests, useInterestsDisplayNames} from '#/lib/interests'
 import {logger} from '#/logger'
-import {usePreferencesQuery} from '#/state/queries/preferences'
+import {usePreferences} from '#/state/queries/preferences'
 import {BlockDrawerGesture} from '#/view/shell/BlockDrawerGesture'
 import {atoms as a, useTheme} from '#/alf'
 import {boostInterests, InterestTabs} from '#/components/InterestTabs'
@@ -64,7 +64,7 @@ export function SuggestedAccountsTabBar({
   const {_} = useLingui()
   const ax = useAnalytics()
   const interestsDisplayNames = useInterestsDisplayNames()
-  const {data: preferences} = usePreferencesQuery()
+  const preferences = usePreferences()
   const personalizedInterests = preferences?.interests?.tags
   const interests = Object.keys(interestsDisplayNames)
     .sort(boostInterests(popularInterests))

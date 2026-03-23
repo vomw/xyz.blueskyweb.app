@@ -7,7 +7,7 @@ import {
 
 import {isNonConfigurableModerationAuthority} from '#/state/session/additional-moderation-authorities'
 import {useLabelersDetailedInfoQuery} from '../labeler'
-import {usePreferencesQuery} from './index'
+import {usePreferences} from './index'
 
 /**
  * More strict than our default settings for logged in users.
@@ -22,28 +22,18 @@ export function useMyLabelersQuery({
 }: {
   excludeNonConfigurableLabelers?: boolean
 } = {}) {
-  const prefs = usePreferencesQuery()
+  const preferences = usePreferences()
   let dids = Array.from(
     new Set(
       BskyAgent.appLabelers.concat(
-        prefs.data?.moderationPrefs.labelers.map(l => l.did) || [],
+        preferences?.moderationPrefs.labelers.map(l => l.did) || [],
       ),
     ),
   )
   if (excludeNonConfigurableLabelers) {
     dids = dids.filter(did => !isNonConfigurableModerationAuthority(did))
   }
-  const labelers = useLabelersDetailedInfoQuery({dids})
-  const isLoading = prefs.isLoading || labelers.isLoading
-  const error = prefs.error || labelers.error
-  return useMemo(() => {
-    return {
-      isLoading,
-      error,
-      data: labelers.data,
-      refetch: labelers.refetch,
-    }
-  }, [labelers, isLoading, error])
+  return useLabelersDetailedInfoQuery({dids})
 }
 
 export function useLabelDefinitionsQuery() {

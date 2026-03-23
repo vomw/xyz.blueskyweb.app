@@ -16,8 +16,7 @@ import {useIsBirthdateUpdateAllowed} from '#/state/birthdate'
 import {useRemoveLabelersMutation} from '#/state/queries/labeler'
 import {
   useMyLabelersQuery,
-  usePreferencesQuery,
-  type UsePreferencesQueryResponse,
+  usePreferences,
   usePreferencesSetAdultContentMutation,
 } from '#/state/queries/preferences'
 import {isNonConfigurableModerationAuthority} from '#/state/session/additional-moderation-authorities'
@@ -41,7 +40,6 @@ import {Person_Stroke2_Corner0_Rounded as Person} from '#/components/icons/Perso
 import * as LabelingService from '#/components/LabelingServiceCard'
 import * as Layout from '#/components/Layout'
 import {InlineLinkText, Link} from '#/components/Link'
-import {ListMaybePlaceholder} from '#/components/Lists'
 import {Loader} from '#/components/Loader'
 import {GlobalLabelPreference} from '#/components/moderation/LabelPreference'
 import * as Toast from '#/components/Toast'
@@ -49,50 +47,9 @@ import {Text} from '#/components/Typography'
 import {useAgeAssurance} from '#/ageAssurance'
 import {IS_IOS} from '#/env'
 
-function ErrorState({error}: {error: string}) {
-  const t = useTheme()
-  return (
-    <View style={[a.p_xl]}>
-      <Text
-        style={[
-          a.text_md,
-          a.leading_normal,
-          a.pb_md,
-          t.atoms.text_contrast_medium,
-        ]}>
-        <Trans>
-          Hmmmm, it seems we're having trouble loading this data. See below for
-          more details. If this issue persists, please contact us.
-        </Trans>
-      </Text>
-      <View
-        style={[
-          a.relative,
-          a.py_md,
-          a.px_lg,
-          a.rounded_md,
-          a.mb_2xl,
-          t.atoms.bg_contrast_25,
-        ]}>
-        <Text style={[a.text_md, a.leading_normal]}>{error}</Text>
-      </View>
-    </View>
-  )
-}
-
 export function ModerationScreen(
   _props: NativeStackScreenProps<CommonNavigatorParams, 'Moderation'>,
 ) {
-  const {_} = useLingui()
-  const {
-    isLoading: isPreferencesLoading,
-    error: preferencesError,
-    data: preferences,
-  } = usePreferencesQuery()
-
-  const isLoading = isPreferencesLoading
-  const error = preferencesError
-
   return (
     <Layout.Screen testID="moderationScreen">
       <Layout.Header.Outer>
@@ -105,18 +62,7 @@ export function ModerationScreen(
         <Layout.Header.Slot />
       </Layout.Header.Outer>
       <Layout.Content>
-        {isLoading ? (
-          <ListMaybePlaceholder isLoading={true} sideBorders={false} />
-        ) : error || !preferences ? (
-          <ErrorState
-            error={
-              preferencesError?.toString() ||
-              _(msg`Something went wrong, please try again.`)
-            }
-          />
-        ) : (
-          <ModerationScreenInner preferences={preferences} />
-        )}
+        <ModerationScreenInner />
       </Layout.Content>
     </Layout.Screen>
   )
@@ -154,11 +100,8 @@ function SubItem({
   )
 }
 
-export function ModerationScreenInner({
-  preferences,
-}: {
-  preferences: UsePreferencesQueryResponse
-}) {
+export function ModerationScreenInner() {
+  const preferences = usePreferences()
   const {_} = useLingui()
   const t = useTheme()
   const setMinimalShellMode = useSetMinimalShellMode()
