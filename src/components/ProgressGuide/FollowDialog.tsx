@@ -94,15 +94,13 @@ export function FollowDialog({
  */
 export function FollowDialogWithoutGuide({
   control,
-  recId,
 }: {
   control: Dialog.DialogOuterProps['control']
-  recId?: string
 }) {
   return (
     <Dialog.Outer control={control} nativeOptions={{fullHeight: true}}>
       <Dialog.Handle />
-      <DialogInner recId={recId} />
+      <DialogInner />
     </Dialog.Outer>
   )
 }
@@ -111,13 +109,7 @@ export function FollowDialogWithoutGuide({
 let lastSelectedInterest = ''
 let lastSearchText = ''
 
-function DialogInner({
-  guide,
-  recId,
-}: {
-  guide?: Follow10ProgressGuide
-  recId?: string
-}) {
+function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
   const {t: l} = useLingui()
   const ax = useAnalytics()
   const interestsDisplayNames = useInterestsDisplayNames()
@@ -233,9 +225,7 @@ function DialogInner({
   ])
 
   const isGuide = Boolean(guide)
-  const recIdForLogging = hasSearchText
-    ? undefined
-    : (recId ?? suggestions?.recId)
+  const recIdForLogging = hasSearchText ? undefined : suggestions?.recId
 
   const renderItems = useCallback(
     ({item, index}: {item: Item; index: number}) => {

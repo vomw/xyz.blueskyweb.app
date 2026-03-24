@@ -587,7 +587,7 @@ export function ProfileGrid({
           </Button>
         )}
       </View>
-      <FollowDialogWithoutGuide control={followDialogControl} recId={recId} />
+      <FollowDialogWithoutGuide control={followDialogControl} />
       <LayoutAnimationConfig skipExiting skipEntering>
         {gtMobile ? (
           <View style={[a.p_lg, a.pt_md]}>
