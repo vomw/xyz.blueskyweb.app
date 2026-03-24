@@ -204,23 +204,22 @@ export async function compressImage(
   img: ComposerImage,
   options?: {
     highResolution?: boolean
-    attempts?: number
-    maxDimension?: number
   },
 ): Promise<PickerImage> {
   const source = img.transformed || img.source
   const highResolution = options?.highResolution ?? false
-  const attempts = options?.attempts || 0
-  const maxDimension =
-    options?.maxDimension || (highResolution ? 4000 : POST_IMG_MAX.width)
 
-  const [w, h] = containImageRes(source.width, source.height, maxDimension)
+  let attempts = 0
+  let maxDimension = highResolution ? 4000 : POST_IMG_MAX.width
 
   let minQualityPercentage = 0
   let maxQualityPercentage = 101 // exclusive
   let newDataUri
 
   while (maxQualityPercentage - minQualityPercentage > 1) {
+    if (attempts >= 4) break
+
+    const [w, h] = containImageRes(source.width, source.height, maxDimension)
     const qualityPercentage = Math.round(
       (maxQualityPercentage + minQualityPercentage) / 2,
     )
@@ -228,11 +227,17 @@ export async function compressImage(
     /*
      * In the event the image doesn't compress well, we want to avoid
      * unecessary iterations. In this case, binary search will check 51, 26,
-     * 13(rounded). We don't want to go below 25, hence the break here at 13,
-     * which will result in a subsequent attempt with a smaller maxDimension
-     * and reset qualityPercentage to 100.
+     * 13(rounded). We don't want to go below 25, so if we've halved to 13,
+     * reset the loop and reduce the image dimensions instead.
      */
-    if (qualityPercentage <= 13) break
+    if (qualityPercentage <= 13) {
+      minQualityPercentage = 0
+      maxQualityPercentage = 101
+      attempts++
+      // 4000px → 3200px → 2560px → 2048px → ~1638px
+      maxDimension = Math.floor(maxDimension * 0.8)
+      continue
+    }
 
     const res = await manipulateAsync(
       source.path,
@@ -262,14 +267,6 @@ export async function compressImage(
 
   if (newDataUri) {
     return newDataUri
-  }
-
-  if (attempts < 4) {
-    return compressImage(img, {
-      highResolution,
-      attempts: attempts + 1,
-      maxDimension: maxDimension * 0.8,
-    })
   }
 
   throw new Error(`Unable to compress image`)
