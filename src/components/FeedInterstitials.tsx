@@ -312,7 +312,7 @@ export function ProfileGrid({
   const logContext: Metrics['suggestedUser:seen']['logContext'] = isFeedContext
     ? 'InterstitialDiscover'
     : isProfileHeaderContext
-      ? 'Profile'
+      ? 'HeaderProfile'
       : 'InterstitialProfile'
 
   // Callback to fire seen events
