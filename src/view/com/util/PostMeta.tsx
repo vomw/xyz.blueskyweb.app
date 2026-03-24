@@ -82,9 +82,16 @@ let PostMeta = (opts: PostMetaOpts): React.ReactNode => {
           />
         </View>
       )}
-      <View style={[a.flex_row, a.align_end, a.flex_shrink]}>
+      <View
+        style={[a.flex_row, a.align_end, a.flex_shrink, web({minWidth: 0})]}>
         <ProfileHoverCard did={author.did}>
-          <View style={[a.flex_row, a.align_end, a.flex_shrink]}>
+          <View
+            style={[
+              a.flex_row,
+              a.align_end,
+              a.flex_shrink,
+              web({minWidth: 0}),
+            ]}>
             <MaybeLinkText
               emoji
               numberOfLines={1}
@@ -125,6 +132,7 @@ let PostMeta = (opts: PostMetaOpts): React.ReactNode => {
                 t.atoms.text_contrast_medium,
                 a.leading_tight,
                 {flexShrink: 10},
+                web({minWidth: 0}),
               ]}>
               {NON_BREAKING_SPACE + sanitizeHandle(handle, '@')}
             </MaybeLinkText>
