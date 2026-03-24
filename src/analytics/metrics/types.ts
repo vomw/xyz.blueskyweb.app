@@ -524,7 +524,15 @@ export type Events = {
     category: string | null
   }
   'suggestedUser:seeMore': {
-    logContext: 'SeeMoreSuggestedUsers'
+    logContext:
+      | 'Explore'
+      | 'DiscoverInterstitial'
+      | 'ProfileInterstitial'
+      | 'ProfileHeader'
+      | 'FollowDialogFeed'
+      | 'FollowDialogProfile'
+      | 'FollowDialogGuide'
+      | 'Onboarding'
     recId?: number | string
   }
   'suggestedUser:dismiss': {

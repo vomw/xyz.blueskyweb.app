@@ -566,7 +566,7 @@ export function ProfileGrid({
             onPress={() => {
               followDialogControl.open()
               ax.metric('suggestedUser:seeMore', {
-                logContext: 'SeeMoreSuggestedUsers',
+                logContext,
                 recId,
               })
             }}>
@@ -619,7 +619,7 @@ export function ProfileGrid({
                   onPress={() => {
                     followDialogControl.open()
                     ax.metric('suggestedUser:seeMore', {
-                      logContext: 'SeeMoreSuggestedUsers',
+                      logContext,
                     })
                   }}
                 />
