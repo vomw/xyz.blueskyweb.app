@@ -483,8 +483,6 @@ export type Events = {
       | 'DiscoverInterstitial'
       | 'ProfileInterstitial'
       | 'ProfileHeader'
-      | 'FollowDialogProfile'
-      | 'FollowDialogGuide'
       | 'Onboarding'
       | 'SeeMoreSuggestedUsers'
       | 'ProgressGuide'
@@ -500,8 +498,6 @@ export type Events = {
       | 'DiscoverInterstitial'
       | 'ProfileInterstitial'
       | 'ProfileHeader'
-      | 'FollowDialogProfile'
-      | 'FollowDialogGuide'
       | 'Onboarding'
       | 'SeeMoreSuggestedUsers'
     recId?: number | string
@@ -515,8 +511,6 @@ export type Events = {
       | 'DiscoverInterstitial'
       | 'ProfileInterstitial'
       | 'ProfileHeader'
-      | 'FollowDialogProfile'
-      | 'FollowDialogGuide'
       | 'Onboarding'
       | 'SeeMoreSuggestedUsers'
       | 'ProgressGuide'
@@ -531,8 +525,6 @@ export type Events = {
       | 'DiscoverInterstitial'
       | 'ProfileInterstitial'
       | 'ProfileHeader'
-      | 'FollowDialogProfile'
-      | 'FollowDialogGuide'
       | 'Onboarding'
     recId?: number | string
   }
