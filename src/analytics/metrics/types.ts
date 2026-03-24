@@ -483,6 +483,9 @@ export type Events = {
       | 'InterstitialDiscover'
       | 'InterstitialProfile'
       | 'Profile'
+      | 'FollowDialogFeed'
+      | 'FollowDialogProfile'
+      | 'FollowDialogGuide'
       | 'Onboarding'
     location: 'Card' | 'Profile' | 'FollowAll'
     recId?: number | string
@@ -495,6 +498,10 @@ export type Events = {
       | 'Explore'
       | 'InterstitialDiscover'
       | 'InterstitialProfile'
+      | 'Profile'
+      | 'FollowDialogFeed'
+      | 'FollowDialogProfile'
+      | 'FollowDialogGuide'
       | 'Onboarding'
     recId?: number | string
     position: number
@@ -507,24 +514,21 @@ export type Events = {
       | 'InterstitialDiscover'
       | 'InterstitialProfile'
       | 'Profile'
+      | 'FollowDialogFeed'
+      | 'FollowDialogProfile'
+      | 'FollowDialogGuide'
       | 'Onboarding'
-      | 'ProgressGuide'
     recId?: number | string
     position: number
     suggestedDid: string
     category: string | null
   }
   'suggestedUser:seeMore': {
-    logContext:
-      | 'Explore'
-      | 'InterstitialDiscover'
-      | 'InterstitialProfile'
-      | 'Profile'
-      | 'Onboarding'
+    logContext: 'SeeMoreSuggestedUsers'
     recId?: number | string
   }
   'suggestedUser:dismiss': {
-    logContext: 'InterstitialDiscover' | 'InterstitialProfile'
+    logContext: 'InterstitialDiscover' | 'InterstitialProfile' | 'Profile'
     recId?: number | string
     position: number
     suggestedDid: string

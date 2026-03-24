@@ -146,12 +146,12 @@ function DialogInner({
   const isFeedContext = viewContext === 'feed'
   const isGuideContext = viewContext === 'guide'
   const logContext: Metrics['suggestedUser:seen']['logContext'] = isFeedContext
-    ? 'InterstitialDiscover'
+    ? 'FollowDialogFeed'
     : isProfileHeaderContext
-      ? 'Profile'
+      ? 'FollowDialogProfile'
       : isGuideContext
-        ? 'ProgressGuide'
-        : 'InterstitialProfile'
+        ? 'FollowDialogGuide'
+        : 'FollowDialogProfile'
 
   useEffect(() => {
     lastSearchText = searchText
@@ -254,6 +254,8 @@ function DialogInner({
               profile={item.profile}
               moderationOpts={moderationOpts!}
               noBorder={index === 0}
+              logContext={logContext}
+              position={index}
             />
           )
         }
@@ -551,16 +553,22 @@ let FollowProfileCard = ({
   profile,
   moderationOpts,
   noBorder,
+  logContext,
+  position,
 }: {
   profile: bsky.profile.AnyProfileView
   moderationOpts: ModerationOpts
   noBorder?: boolean
+  logContext: 'FollowDialogFeed' | 'FollowDialogProfile' | 'FollowDialogGuide'
+  position: number
 }): React.ReactNode => {
   return (
     <FollowProfileCardInner
       profile={profile}
       moderationOpts={moderationOpts}
       noBorder={noBorder}
+      logContext={logContext}
+      position={position}
     />
   )
 }
@@ -571,14 +579,19 @@ function FollowProfileCardInner({
   moderationOpts,
   onFollow,
   noBorder,
+  logContext,
+  position,
 }: {
   profile: bsky.profile.AnyProfileView
   moderationOpts: ModerationOpts
   onFollow?: () => void
   noBorder?: boolean
+  logContext: 'FollowDialogFeed' | 'FollowDialogProfile' | 'FollowDialogGuide'
+  position: number
 }) {
   const control = Dialog.useDialogContext()
   const t = useTheme()
+  const ax = useAnalytics()
   return (
     <ProfileCard.Link
       profile={profile}
@@ -607,7 +620,16 @@ function FollowProfileCardInner({
                 moderationOpts={moderationOpts}
                 logContext="PostOnboardingFindFollows"
                 shape="round"
-                onPress={onFollow}
+                onPress={() => {
+                  ax.metric('suggestedUser:follow', {
+                    logContext,
+                    location: 'Card',
+                    position,
+                    suggestedDid: profile.did,
+                    category: null,
+                  })
+                  onFollow?.()
+                }}
                 colorInverted
               />
             </ProfileCard.Header>
