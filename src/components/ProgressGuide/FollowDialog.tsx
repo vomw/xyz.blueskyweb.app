@@ -269,7 +269,7 @@ function DialogInner({
           return null
       }
     },
-    [moderationOpts],
+    [logContext, moderationOpts],
   )
 
   // Track seen profiles
