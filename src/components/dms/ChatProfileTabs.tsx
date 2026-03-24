@@ -1,12 +1,6 @@
-import {useCallback, useState} from 'react'
-import {type LayoutChangeEvent, type ScrollView, View} from 'react-native'
-import Animated, {
-  runOnJS,
-  runOnUI,
-  useAnimatedReaction,
-  useAnimatedRef,
-  useSharedValue,
-} from 'react-native-reanimated'
+import {useCallback} from 'react'
+import {type ScrollView, View} from 'react-native'
+import Animated, {useAnimatedRef, useSharedValue} from 'react-native-reanimated'
 import {moderateProfile} from '@atproto/api'
 import {useLingui} from '@lingui/react/macro'
 
@@ -31,22 +25,8 @@ type Props = {
 export function ChatProfileTabs({testID, profiles, onRemove}: Props) {
   const t = useTheme()
   const scrollElRef = useAnimatedRef<ScrollView>()
-  const containerSize = useSharedValue(0)
   const contentSize = useSharedValue(0)
   const scrollX = useSharedValue(0)
-  const syncScrollState = useSharedValue<'synced' | 'unsynced' | 'needs-sync'>(
-    'synced',
-  )
-
-  const [containerWidth, setContainerWidth] = useState(0)
-
-  useAnimatedReaction(
-    () => containerSize.get(),
-    latestValue => {
-      runOnJS(setContainerWidth)(latestValue)
-    },
-    [containerWidth],
-  )
 
   return (
     <View testID={testID} accessibilityRole="tablist" style={[t.atoms.bg]}>
@@ -55,16 +35,8 @@ export function ChatProfileTabs({testID, profiles, onRemove}: Props) {
         testID={`${testID}-selector`}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
-        onLayout={e => {
-          containerSize.set(e.nativeEvent.layout.width)
-        }}
         onScroll={e => {
           scrollX.set(Math.round(e.nativeEvent.contentOffset.x))
-        }}
-        onScrollBeginDrag={() => {
-          // Remember that you've manually messed with the tabbar scroll.
-          // This will disable auto-adjustment until after next pager swipe or item tap.
-          syncScrollState.set('unsynced')
         }}>
         <Animated.View
           style={[
@@ -108,31 +80,12 @@ function Tab({
 }) {
   const t = useTheme()
   const {t: l} = useLingui()
-  const layouts = useSharedValue<{x: number; width: number}[]>([])
   const moderationOpts = useModerationOpts()
 
   const moderation = moderateProfile(profile, moderationOpts!)
   const displayName = sanitizeDisplayName(
     profile.displayName || sanitizeHandle(profile.handle),
     moderation.ui('displayName'),
-  )
-
-  const onItemLayout = useCallback(
-    (i: number, layout: {x: number; width: number}) => {
-      'worklet'
-      layouts.modify(ls => {
-        ls[i] = layout
-        return ls
-      })
-    },
-    [layouts],
-  )
-
-  const handleLayout = useCallback(
-    (index: number) => (e: LayoutChangeEvent) => {
-      runOnUI(onItemLayout)(index, e.nativeEvent.layout)
-    },
-    [onItemLayout],
   )
 
   const onPressItem = useCallback(
@@ -157,8 +110,7 @@ function Tab({
         t.atoms.border_contrast_low,
         t.atoms.bg,
         index === 0 ? a.ml_lg : index === total - 1 ? a.mr_lg : null,
-      ]}
-      onLayout={handleLayout(index)}>
+      ]}>
       {moderationOpts ? (
         <>
           <ProfileCard.Avatar
