@@ -1,4 +1,11 @@
-import {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react'
+import {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import {LayoutAnimation, TextInput, View} from 'react-native'
 import {moderateProfile, type ModerationOpts} from '@atproto/api'
 import {Trans, useLingui} from '@lingui/react/macro'
@@ -74,6 +81,105 @@ enum ChatState {
   GROUP_NAME,
 }
 
+export type State = {
+  chatState: ChatState
+  screenTitle: string
+  groupChatDids: string[]
+  groupChatProfiles: bsky.profile.AnyProfileView[]
+  groupName: string
+}
+
+export type Action =
+  | {
+      type: 'startNewGroupChat'
+      screenTitle: string
+    }
+  | {
+      type: 'setDids'
+      groupChatDids: string[]
+      groupChatProfiles: bsky.profile.AnyProfileView[]
+    }
+  | {
+      type: 'removeDids'
+      groupChatDids: string[]
+      groupChatProfiles: bsky.profile.AnyProfileView[]
+    }
+  | {
+      type: 'startNameGroup'
+      screenTitle: string
+    }
+  | {
+      type: 'nameGroup'
+      groupName: string
+    }
+  | {
+      type: 'goBackFromNewGroupChat'
+      screenTitle: string
+    }
+  | {
+      type: 'goBackFromGroupName'
+      screenTitle: string
+    }
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'startNewGroupChat': {
+      return {
+        ...state,
+        chatState: ChatState.NEW_GROUP_CHAT,
+        screenTitle: action.screenTitle,
+        groupChatDids: [],
+        groupChatProfiles: [],
+        groupName: '',
+      }
+    }
+    case 'setDids': {
+      return {
+        ...state,
+        groupChatDids: action.groupChatDids,
+        groupChatProfiles: action.groupChatProfiles,
+      }
+    }
+    case 'removeDids': {
+      return {
+        ...state,
+        groupChatDids: action.groupChatDids,
+        groupChatProfiles: action.groupChatProfiles,
+      }
+    }
+    case 'startNameGroup': {
+      return {
+        ...state,
+        chatState: ChatState.GROUP_NAME,
+        screenTitle: action.screenTitle,
+      }
+    }
+    case 'nameGroup': {
+      return {
+        ...state,
+        groupName: action.groupName,
+      }
+    }
+    case 'goBackFromNewGroupChat': {
+      return {
+        ...state,
+        chatState: ChatState.NEW_CHAT,
+        screenTitle: action.screenTitle,
+        groupChatDids: [],
+        groupChatProfiles: [],
+        groupName: '',
+      }
+    }
+    case 'goBackFromGroupName': {
+      return {
+        ...state,
+        chatState: ChatState.NEW_GROUP_CHAT,
+        screenTitle: action.screenTitle,
+        groupName: '',
+      }
+    }
+  }
+}
 export function InitiateChatFlow({
   title,
   onSelectChat,
@@ -101,24 +207,33 @@ export function InitiateChatFlow({
   } = useActorAutocompleteQuery(searchText, true, 12)
   const {data: follows} = useProfileFollowsQuery(currentAccount?.did)
 
-  const [chatState, setChatState] = useState(ChatState.NEW_CHAT)
-  const [chatTitle, setChatTitle] = useState(title)
-  const [groupChatDids, setGroupChatDids] = useState<string[]>([])
-  const [groupChatProfiles, setGroupChatProfiles] = useState<
-    bsky.profile.AnyProfileView[]
-  >([])
-  const [groupName, setGroupName] = useState('')
+  const [
+    {chatState, screenTitle, groupChatDids, groupChatProfiles, groupName},
+    dispatch,
+  ] = useReducer(reducer, {
+    chatState: ChatState.NEW_CHAT,
+    screenTitle: title,
+    groupChatDids: [],
+    groupChatProfiles: [],
+    groupName: '',
+  })
 
   const newGroupChatTitle = l`New group chat`
   const groupNameTitle = l`Group name`
 
-  const onRemoveDid = (did: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setGroupChatDids(prev => [...prev].filter(d => d !== did))
-    setGroupChatProfiles(prev =>
-      [...prev].filter(profile => profile.did !== did),
-    )
-  }
+  const onRemoveDid = useCallback(
+    (did: string) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+      dispatch({
+        type: 'removeDids',
+        groupChatDids: groupChatDids.filter(d => d !== did),
+        groupChatProfiles: groupChatProfiles.filter(
+          profile => profile.did !== did,
+        ),
+      })
+    },
+    [groupChatDids, groupChatProfiles],
+  )
 
   const items = useMemo(() => {
     let _items: Item[] = []
@@ -220,26 +335,25 @@ export function InitiateChatFlow({
         control.close()
         break
       case ChatState.NEW_GROUP_CHAT:
-        setChatTitle(title)
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        setChatState(ChatState.NEW_CHAT)
-        setGroupChatDids([])
-        setGroupChatProfiles([])
+        dispatch({type: 'goBackFromNewGroupChat', screenTitle: title})
         setSearchText('')
         break
       case ChatState.GROUP_NAME:
-        setChatTitle(newGroupChatTitle)
-        setGroupName('')
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        setChatState(ChatState.NEW_GROUP_CHAT)
+        dispatch({type: 'goBackFromGroupName', screenTitle: newGroupChatTitle})
         break
     }
   }, [chatState, control, newGroupChatTitle, title])
 
+  const handlePressNewGroupChat = useCallback(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+    dispatch({type: 'startNewGroupChat', screenTitle: newGroupChatTitle})
+  }, [newGroupChatTitle])
+
   const handlePressNext = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setChatState(ChatState.GROUP_NAME)
-    setChatTitle(groupNameTitle)
+    dispatch({type: 'startNameGroup', screenTitle: groupNameTitle})
     setSearchText('')
   }, [groupNameTitle])
 
@@ -247,11 +361,9 @@ export function InitiateChatFlow({
     onSelectGroupChat(groupChatDids, groupName)
   }, [groupChatDids, groupName, onSelectGroupChat])
 
-  const handlePressNewGroupChat = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setChatState(ChatState.NEW_GROUP_CHAT)
-    setChatTitle(newGroupChatTitle)
-  }, [newGroupChatTitle])
+  const setGroupName = (newGroupName: string) => {
+    dispatch({type: 'nameGroup', groupName: newGroupName})
+  }
 
   const renderItems = useCallback(
     ({item}: {item: Item}) => {
@@ -383,7 +495,7 @@ export function InitiateChatFlow({
                 native(a.text_center),
                 native(a.px_5xl),
               ]}>
-              {chatTitle}
+              {screenTitle}
             </Text>
             {showButton ? (
               <Button
@@ -460,7 +572,7 @@ export function InitiateChatFlow({
     t.scheme,
     l,
     handlePressBack,
-    chatTitle,
+    screenTitle,
     showButton,
     buttonLabel,
     isButtonDisabled,
@@ -471,28 +583,35 @@ export function InitiateChatFlow({
     control.close,
     showChatProfileTabs,
     groupChatProfiles,
+    onRemoveDid,
   ])
 
   const setGroupChatMembers = (dids: string[]) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setGroupChatDids(prev => {
-      const added = dids.filter(d => !prev.includes(d))
-      const removed = prev.filter(d => !dids.includes(d))
-      return [...prev.filter(d => !removed.includes(d)), ...added]
-    })
-    setGroupChatProfiles(prev => {
-      const kept = prev.filter(p => dids.includes(p.did))
-      const keptDids = new Set(kept.map(p => p.did))
-      const added = items
-        .filter(
-          (item): item is ProfileItem =>
-            item.type === 'profile' &&
-            dids.includes(item.profile.did) &&
-            !keptDids.has(item.profile.did),
-        )
-        .map(item => item.profile)
-        .sort((a, b) => dids.indexOf(a.did) - dids.indexOf(b.did))
-      return [...kept, ...added]
+
+    const added = dids.filter(d => !groupChatDids.includes(d))
+    const removed = groupChatDids.filter(d => !dids.includes(d))
+    const newDids = [
+      ...groupChatDids.filter(d => !removed.includes(d)),
+      ...added,
+    ]
+
+    const kept = groupChatProfiles.filter(p => dids.includes(p.did))
+    const keptDids = new Set(kept.map(p => p.did))
+    const addedProfiles = items
+      .filter(
+        (item): item is ProfileItem =>
+          item.type === 'profile' &&
+          dids.includes(item.profile.did) &&
+          !keptDids.has(item.profile.did),
+      )
+      .map(item => item.profile)
+      .sort((a, b) => dids.indexOf(a.did) - dids.indexOf(b.did))
+
+    dispatch({
+      type: 'setDids',
+      groupChatDids: newDids,
+      groupChatProfiles: [...kept, ...addedProfiles],
     })
   }
 
