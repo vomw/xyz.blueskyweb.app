@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: 49a8cb746fbc2ae5707392ee41ddec4c\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-20 16:42\n"
+"PO-Revision-Date: 2026-03-24 20:42\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -457,11 +457,11 @@ msgstr "{MAX_ALT_TEXT, plural, other {替代文字不得超過 # 個字元。}}"
 
 #: src/screens/Profile/Header/EditProfileDialog.tsx:380
 msgid "{MAX_DESCRIPTION, plural, other {Description is too long. The maximum number of characters is #.}}"
-msgstr ""
+msgstr "{MAX_DESCRIPTION, plural, other {簡介太長了，不得超過 # 個字元。}}"
 
 #: src/screens/Profile/Header/EditProfileDialog.tsx:329
 msgid "{MAX_DISPLAY_NAME, plural, other {Display name is too long. The maximum number of characters is #.}}"
-msgstr ""
+msgstr "{MAX_DISPLAY_NAME, plural, other {名稱太長了，不得超過 # 個字元。}}"
 
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:394
 msgid "{MAX_HIDDEN_REPLIES, plural, other {You can hide a maximum of # replies.}}"
@@ -7194,7 +7194,7 @@ msgstr "我們的內容審查人員在審閱相關檢舉後，決定停用您在
 
 #: src/components/dialogs/StarterPackDialog.tsx:384
 msgid "Owner"
-msgstr ""
+msgstr "擁有者"
 
 #: src/components/Lists.tsx:205
 #: src/components/Lists.tsx:220

@@ -8,7 +8,7 @@ msgstr ""
 "Language: ga\n"
 "Project-Id-Version: 49a8cb746fbc2ae5707392ee41ddec4c\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-20 16:42\n"
+"PO-Revision-Date: 2026-03-24 20:42\n"
 "Last-Translator: \n"
 "Language-Team: Irish\n"
 "Plural-Forms: nplurals=5; plural=(n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : 4);\n"
@@ -21,7 +21,7 @@ msgstr ""
 #. Accessibility label for a category (e.g. Art, Video Games, Sports, etc.) that shows suggested accounts for the user to follow. The tab is currently selected.
 #: src/components/InterestTabs.tsx:330
 msgid "\"{interestsDisplayName}\" category (active)"
-msgstr ""
+msgstr "Catagóir \"{interestsDisplayName}\" (gníomhach)"
 
 #: src/screens/Messages/components/ChatListItem.tsx:159
 msgid "(contains embedded content)"
@@ -153,12 +153,12 @@ msgstr ""
 #: src/lib/strings/time.ts:13
 msgctxt "date and time formatted like this: [time] · [date]"
 msgid "{0} · {1}"
-msgstr ""
+msgstr "{0} · {1}"
 
 #. placeholder {0}: desc.name
 #: src/components/moderation/ContentHider.tsx:100
 msgid "{0} (Account)"
-msgstr ""
+msgstr "{0} (Cuntas)"
 
 #. Pattern: {wordValue} in tags
 #. placeholder {0}: word.value
@@ -175,17 +175,17 @@ msgstr "{0} <0>i <1>dtéacs agus i gclibeanna</1></0>"
 #. placeholder {0}: profile.followsCount || 0
 #: src/screens/Profile/Header/Metrics.tsx:49
 msgid "{0} following"
-msgstr ""
+msgstr "{0} á leanúint"
 
 #. placeholder {0}: sanitizeHandle(profile.handle)
 #: src/features/liveNow/components/LiveStatusDialog.tsx:80
 msgid "{0} is live"
-msgstr ""
+msgstr "Tá {0} beo anois"
 
 #. placeholder {0}: createFullHandle(draftValue, state.userDomain)
 #: src/screens/Signup/StepHandle/index.tsx:186
 msgid "{0} is not available"
-msgstr ""
+msgstr "Níl {0} ar fáil"
 
 #. placeholder {0}: formatCount(i18n, JOINED_THIS_WEEK)
 #: src/screens/StarterPack/StarterPackLandingScreen.tsx:232
@@ -202,33 +202,33 @@ msgstr "{0} as {1}"
 #. placeholder {0}: state.name?.length
 #: src/screens/StarterPack/Wizard/StepDetails.tsx:56
 msgid "{0} out of 50"
-msgstr ""
+msgstr "{0} as 50"
 
 #. placeholder {0}: sanitizeDisplayName( sender.displayName || sender.handle, )
 #. placeholder {1}: reaction.value
 #: src/components/dms/MessageItem.tsx:143
 msgid "{0} reacted {1}"
-msgstr ""
+msgstr "D'fhreagair {0} {1}"
 
 #. placeholder {0}: sanitizeDisplayName( sender.displayName || sender.handle, )
 #. placeholder {1}: convo.lastReaction.reaction.value
 #. placeholder {2}: lastMessageText ? `"${convo.lastReaction.message.text}"` : fallbackMessage
 #: src/screens/Messages/components/ChatListItem.tsx:230
 msgid "{0} reacted {1} to {2}"
-msgstr ""
+msgstr "D'fhreagair {0} {1} do {2}"
 
 #. placeholder {0}: feed.displayName
 #. placeholder {1}: sanitizeHandle(feed.creatorHandle, '@')
 #. placeholder {2}: feed.likeCount || 0
 #: src/view/com/feeds/FeedSourceCard.tsx:189
 msgid "{0}, a feed by {1}, liked by {2}"
-msgstr ""
+msgstr "{0}, fotha le {1}, a thaitníonn le {2}"
 
 #. placeholder {0}: feed.displayName
 #. placeholder {1}: sanitizeHandle(feed.creatorHandle, '@')
 #: src/view/com/feeds/FeedSourceCard.tsx:192
 msgid "{0}, a list by {1}"
-msgstr ""
+msgstr "{0}, liosta a rinne {1}"
 
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || sanitizeHandle(profile.handle), )
 #. placeholder {0}: sanitizeDisplayName( profile.displayName || sanitizeHandle(profile.handle), )
@@ -352,7 +352,7 @@ msgstr "Chláraigh {firstAuthorLink} le do phacáiste fáilte"
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:447
 msgid "{firstAuthorLink} verified you"
-msgstr ""
+msgstr "Dheimhnigh {firstAuthorLink} thú"
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:341
 msgid "{firstAuthorName} and {additionalAuthorsCount, plural, one {{formattedAuthorsCount} other} other {{formattedAuthorsCount} others}} followed you"
@@ -428,7 +428,7 @@ msgstr "Chláraigh {firstAuthorName} le do phacáiste fáilte"
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:433
 msgid "{firstAuthorName} verified you"
-msgstr ""
+msgstr "Dheimhnigh {firstAuthorName} thú"
 
 #: src/components/ProfileHoverCard/index.web.tsx:572
 msgid "{following} following"
@@ -661,7 +661,7 @@ msgstr ""
 
 #: src/components/contacts/screens/VerifyNumber.tsx:143
 msgid "A new code has been sent"
-msgstr ""
+msgstr "Seoladh cód nua chugat"
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:93
 msgid "A new form of verification"
@@ -1006,7 +1006,7 @@ msgstr "Daoine fásta"
 
 #: src/components/moderation/ReportDialog/utils/useReportOptions.ts:66
 msgid "Adult content"
-msgstr ""
+msgstr "Ábhar do dhaoine fásta"
 
 #: src/components/moderation/ContentHider.tsx:131
 #: src/lib/moderation/useGlobalLabelStrings.ts:34
@@ -1056,7 +1056,7 @@ msgstr ""
 
 #: src/components/dialogs/EmailDialog/screens/Update.tsx:224
 msgid "alice@example.com"
-msgstr ""
+msgstr "aoife@example.com"
 
 #. the default tab in the interests tab bar
 #: src/screens/Onboarding/StepSuggestedAccounts/index.tsx:199
@@ -1145,7 +1145,7 @@ msgstr "An bhfuil cód agat cheana?"
 
 #: src/components/WelcomeModal.tsx:192
 msgid "Already have an account?"
-msgstr ""
+msgstr "An bhfuil cuntas agat cheana?"
 
 #. placeholder {0}: account.handle
 #: src/screens/Login/ChooseAccountForm.tsx:46
@@ -1246,18 +1246,18 @@ msgstr "Tharla earráid agus na cuntais go léir á leanúint"
 
 #: src/view/com/composer/state/video.ts:451
 msgid "An error occurred while uploading the video. {message}"
-msgstr ""
+msgstr "Tharla earráid agus an físeán á uaslódáil. {message}"
 
 #: src/view/com/composer/state/video.ts:443
 msgid "An error occurred while uploading the video. Please check your internet connection and try again."
-msgstr ""
+msgstr "Tharla earráid agus an físeán á uaslódáil. Seiceáil do cheangal leis an idirlíon agus bain triail eile as."
 
 #. placeholder {0}: cleanError(err)
 #: src/components/contacts/screens/PhoneInput.tsx:120
 #: src/components/contacts/screens/VerifyNumber.tsx:131
 #: src/components/contacts/screens/VerifyNumber.tsx:184
 msgid "An error occurred. {0}"
-msgstr ""
+msgstr "Tharla earráid. {0}"
 
 #: src/components/contacts/components/HeroImage.tsx:28
 #: src/components/dialogs/nuxs/FindContactsAnnouncement.tsx:79
@@ -1329,7 +1329,7 @@ msgstr "GIF beo"
 
 #: src/components/PolicyUpdateOverlay/Badge.tsx:33
 msgid "Announcement"
-msgstr ""
+msgstr "Fógra"
 
 #: src/components/dialogs/nuxs/InitialVerificationAnnouncement.tsx:39
 msgid "Announcing verification on Bluesky"
@@ -1337,7 +1337,7 @@ msgstr ""
 
 #: src/components/dialogs/PostInteractionSettingsDialog.tsx:457
 msgid "Anyone"
-msgstr ""
+msgstr "Aon duine"
 
 #: src/view/com/composer/threadgate/ThreadgateBtn.tsx:137
 msgid "Anyone can interact"
@@ -1547,7 +1547,7 @@ msgstr "Seinn físeáin agus GIFanna go huathoibríoch"
 #. Shown next to an available username suggestion in the account creation flow
 #: src/screens/Signup/StepHandle/HandleSuggestions.tsx:73
 msgid "Available"
-msgstr ""
+msgstr "Ar fáil"
 
 #: src/components/moderation/LabelsOnMeDialog.tsx:334
 #: src/components/moderation/LabelsOnMeDialog.tsx:335
@@ -1744,7 +1744,7 @@ msgstr "Ní féidir le Bluesky an dáta maíte a dheimhniú."
 #: src/screens/Settings/AppIconSettings/useAppIconSets.ts:165
 msgctxt "Name of app icon variant"
 msgid "Bluesky Classic™"
-msgstr ""
+msgstr "Bluesky Classic™"
 
 #: src/components/contacts/screens/GetContacts.tsx:235
 msgid "Bluesky helps friends find each other by creating an encoded digital fingerprint, called a \"hash\", and then looking for matching hashes."
@@ -2026,7 +2026,7 @@ msgstr ""
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:262
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:268
 msgid "Change password"
-msgstr ""
+msgstr "Athraigh mo phasfhocal"
 
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:165
 msgid "Change password dialog"
@@ -2046,7 +2046,7 @@ msgstr ""
 
 #: src/screens/Settings/components/ChangePasswordDialog.tsx:58
 msgid "Change your password"
-msgstr ""
+msgstr "Athraigh do phasfhocal"
 
 #: src/screens/Settings/AppIconSettings/index.tsx:219
 msgid "Changes app icon"
@@ -2077,7 +2077,7 @@ msgstr "Comhrá"
 #: src/screens/Messages/components/RequestButtons.tsx:335
 msgctxt "toast"
 msgid "Chat deleted"
-msgstr ""
+msgstr "Scriosadh an comhrá"
 
 #: src/lib/hooks/useNotificationHandler.ts:117
 msgid "Chat messages - silent"
@@ -2124,7 +2124,7 @@ msgstr "Díbhalbhaíodh an comhrá"
 #: src/screens/Messages/ChatList.tsx:401
 #: src/screens/Messages/ChatList.tsx:425
 msgid "Chats"
-msgstr ""
+msgstr "Comhráite"
 
 #: src/screens/Settings/components/DeleteAccountDialog.tsx:236
 msgid "Check <0>{currentEmail}</0> for an email with the confirmation code to enter below:"
@@ -2161,7 +2161,7 @@ msgstr "Roghnaigh ar mo shon"
 
 #: src/components/dialogs/LanguageSelectDialog.tsx:199
 msgid "Choose languages"
-msgstr ""
+msgstr "Roghnaigh teangacha"
 
 #: src/screens/StarterPack/Wizard/index.tsx:212
 msgid "Choose People"
@@ -2436,7 +2436,7 @@ msgstr "Scríobh freagra"
 
 #: src/view/com/composer/Composer.tsx:2390
 msgid "Compressing GIF..."
-msgstr ""
+msgstr "GIF á chomhbhrú..."
 
 #: src/view/com/composer/Composer.tsx:2392
 msgid "Compressing video..."
@@ -2606,7 +2606,7 @@ msgstr "Lean ar aghaidh go dtí an chéad chéim eile"
 
 #: src/screens/Messages/Conversation.tsx:57
 msgid "Conversation"
-msgstr ""
+msgstr "Comhrá"
 
 #: src/screens/Messages/components/ChatListItem.tsx:195
 msgid "Conversation deleted"
@@ -2799,7 +2799,7 @@ msgstr ""
 
 #: src/components/InternationalPhoneCodeSelect.tsx:80
 msgid "Country code"
-msgstr ""
+msgstr "Cód tíre"
 
 #. Text on button to create a new starter pack
 #. Text on button to create a new starter pack
@@ -2812,7 +2812,7 @@ msgstr "Cruthaigh"
 #: src/view/com/lists/ProfileLists.tsx:166
 #: src/view/com/lists/ProfileLists.tsx:167
 msgid "Create a list"
-msgstr ""
+msgstr "Cruthaigh liosta"
 
 #: src/screens/StarterPack/StarterPackScreen.tsx:622
 msgid "Create a list from this starter pack"
@@ -6234,7 +6234,7 @@ msgstr ""
 #: src/view/com/profile/ProfileMenu.tsx:448
 #: src/view/com/profile/ProfileMenu.tsx:455
 msgid "Mute account"
-msgstr ""
+msgstr "Balbhaigh cuntas"
 
 #: src/screens/ProfileList/components/SubscribeMenu.tsx:83
 #: src/screens/ProfileList/components/SubscribeMenu.tsx:86

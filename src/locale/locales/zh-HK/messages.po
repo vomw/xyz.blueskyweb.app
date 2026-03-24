@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: 49a8cb746fbc2ae5707392ee41ddec4c\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-03-20 16:42\n"
+"PO-Revision-Date: 2026-03-24 20:42\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional, Hong Kong\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -457,11 +457,11 @@ msgstr "{MAX_ALT_TEXT, plural, other {替代文字唔得超過 # 個字元。}}"
 
 #: src/screens/Profile/Header/EditProfileDialog.tsx:380
 msgid "{MAX_DESCRIPTION, plural, other {Description is too long. The maximum number of characters is #.}}"
-msgstr ""
+msgstr "{MAX_DESCRIPTION, plural, other {簡介太長，唔得超過 # 個字元。}}"
 
 #: src/screens/Profile/Header/EditProfileDialog.tsx:329
 msgid "{MAX_DISPLAY_NAME, plural, other {Display name is too long. The maximum number of characters is #.}}"
-msgstr ""
+msgstr "{MAX_DISPLAY_NAME, plural, other {名稱太長，唔得超過 # 個字元。}}"
 
 #: src/components/PostControls/PostMenu/PostMenuItems.tsx:394
 msgid "{MAX_HIDDEN_REPLIES, plural, other {You can hide a maximum of # replies.}}"
@@ -976,7 +976,7 @@ msgstr "加入用戶到清單"
 
 #: src/ageAssurance/components/NoAccessScreen.tsx:234
 msgid "Add your birthdate"
-msgstr "加入你嘅出世日期"
+msgstr "新增你嘅出世日期"
 
 #: src/components/dialogs/lists/ListAddRemoveUsersDialog.tsx:113
 #: src/view/com/modals/UserAddRemoveLists.tsx:163
@@ -7194,7 +7194,7 @@ msgstr "我哋嘅內容審覈服務提供者已經睇過你嘅擧報，決定停
 
 #: src/components/dialogs/StarterPackDialog.tsx:384
 msgid "Owner"
-msgstr ""
+msgstr "擁有者"
 
 #: src/components/Lists.tsx:205
 #: src/components/Lists.tsx:220
@@ -10337,7 +10337,7 @@ msgstr "無法使用呢張圖片，試吓第種檔案格式，好似 .jpg 或 .p
 
 #: src/components/dialogs/BirthDateSettings.tsx:56
 msgid "This information is private and not shared with other users."
-msgstr "呢份資訊係私人內容唔回分享俾其他用戶。"
+msgstr "呢份資訊係私人內容唔會分享畀其他用戶。"
 
 #: src/view/screens/Debug.tsx:327
 msgid "This is an empty state"
