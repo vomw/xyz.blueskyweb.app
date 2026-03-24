@@ -322,13 +322,14 @@ export function InitiateChatFlow({
   let handleButtonPress = handlePressNext
   let showButton =
     chatState === ChatState.NEW_GROUP_CHAT && groupChatProfiles.length > 0
+  let isButtonDisabled = false
   switch (chatState) {
     case ChatState.GROUP_NAME:
-      buttonLabel =
-        groupName === '' ? l`Skip and create group chat` : l`Create group chat`
-      buttonText = groupName === '' ? l`Skip` : l`Create`
+      buttonLabel = l`Create group chat`
+      buttonText = l`Create`
       handleButtonPress = handlePressConfirm
       showButton = true
+      isButtonDisabled = groupName === ''
       break
   }
 
@@ -398,6 +399,7 @@ export function InitiateChatFlow({
                     },
                   ]),
                 ]}
+                disabled={isButtonDisabled}
                 onPress={handleButtonPress}>
                 <ButtonText>{buttonText}</ButtonText>
               </Button>
@@ -420,7 +422,9 @@ export function InitiateChatFlow({
                     autoComplete="off"
                     autoCapitalize="none"
                     onChangeText={setGroupName}
-                    onSubmitEditing={handleButtonPress}
+                    onSubmitEditing={
+                      isButtonDisabled ? undefined : handleButtonPress
+                    }
                   />
                 </TextField.Root>
               </View>
@@ -449,6 +453,7 @@ export function InitiateChatFlow({
       </View>
     )
   }, [
+    chatState,
     t.atoms.border_contrast_low,
     t.atoms.bg,
     t.atoms.text_contrast_high,
@@ -458,9 +463,9 @@ export function InitiateChatFlow({
     chatTitle,
     showButton,
     buttonLabel,
+    isButtonDisabled,
     handleButtonPress,
     buttonText,
-    chatState,
     groupName,
     searchText,
     control.close,
