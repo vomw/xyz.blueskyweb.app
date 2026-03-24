@@ -233,6 +233,9 @@ function DialogInner({
   ])
 
   const isGuide = Boolean(guide)
+  const recIdForLogging = hasSearchText
+    ? undefined
+    : (recId ?? suggestions?.recId)
 
   const renderItems = useCallback(
     ({item, index}: {item: Item; index: number}) => {
@@ -244,7 +247,7 @@ function DialogInner({
               moderationOpts={moderationOpts!}
               noBorder={index === 0}
               position={index}
-              recId={hasSearchText ? undefined : suggestions?.recId}
+              recId={recIdForLogging}
               isGuide={isGuide}
             />
           )
@@ -259,7 +262,7 @@ function DialogInner({
           return null
       }
     },
-    [moderationOpts, hasSearchText, suggestions?.recId, isGuide],
+    [moderationOpts, recIdForLogging, isGuide],
   )
 
   // Track seen profiles
@@ -281,7 +284,7 @@ function DialogInner({
             )
             ax.metric('suggestedUser:seen', {
               logContext: isGuide ? 'ProgressGuide' : 'SeeMoreSuggestedUsers',
-              recId: hasSearchText ? undefined : (recId ?? suggestions?.recId),
+              recId: recIdForLogging,
               position: position !== -1 ? position : 0,
               suggestedDid: item.profile.did,
               category: selectedInterestRef.current,
