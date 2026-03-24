@@ -310,10 +310,10 @@ export function ProfileGrid({
   const containerRef = useRef<View>(null)
   const hasTrackedRef = useRef(false)
   const logContext: Metrics['suggestedUser:seen']['logContext'] = isFeedContext
-    ? 'InterstitialDiscover'
+    ? 'DiscoverInterstitial'
     : isProfileHeaderContext
-      ? 'HeaderProfile'
-      : 'InterstitialProfile'
+      ? 'ProfileHeader'
+      : 'ProfileInterstitial'
 
   // Callback to fire seen events
   const fireSeen = useCallback(() => {
