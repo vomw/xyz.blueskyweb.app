@@ -29,7 +29,7 @@ export function ChatProfileTabs({testID, profiles, onRemove}: Props) {
   const scrollX = useSharedValue(0)
 
   return (
-    <View testID={testID} accessibilityRole="tablist" style={[t.atoms.bg]}>
+    <View testID={testID} accessibilityRole="list" style={[t.atoms.bg]}>
       <DraggableScrollView
         ref={scrollElRef}
         testID={`${testID}-selector`}
