@@ -1,9 +1,7 @@
 import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {TextInput, View, type ViewToken} from 'react-native'
 import {type ModerationOpts} from '@atproto/api'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
-import {Trans} from '@lingui/react/macro'
+import {Trans, useLingui} from '@lingui/react/macro'
 
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {popularInterests, useInterestsDisplayNames} from '#/lib/interests'
@@ -31,7 +29,7 @@ import {TimesLarge_Stroke2_Corner0_Rounded as X} from '#/components/icons/Times'
 import {boostInterests, InterestTabs} from '#/components/InterestTabs'
 import * as ProfileCard from '#/components/ProfileCard'
 import {Text} from '#/components/Typography'
-import {type Metrics, useAnalytics} from '#/analytics'
+import {useAnalytics} from '#/analytics'
 import {IS_WEB} from '#/env'
 import type * as bsky from '#/types/bsky'
 import {ProgressGuideTask} from './Task'
@@ -64,14 +62,14 @@ export function FollowDialog({
   showArrow?: boolean
 }) {
   const ax = useAnalytics()
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const control = Dialog.useDialogControl()
   const {gtPhone} = useBreakpoints()
 
   return (
     <>
       <Button
-        label={_(msg`Find people to follow`)}
+        label={l`Find people to follow`}
         onPress={() => {
           control.open()
           ax.metric('progressGuide:followDialog:open', {})
@@ -85,7 +83,7 @@ export function FollowDialog({
       </Button>
       <Dialog.Outer control={control} nativeOptions={{fullHeight: true}}>
         <Dialog.Handle />
-        <DialogInner guide={guide} viewContext="guide" />
+        <DialogInner guide={guide} />
       </Dialog.Outer>
     </>
   )
@@ -96,15 +94,13 @@ export function FollowDialog({
  */
 export function FollowDialogWithoutGuide({
   control,
-  viewContext,
 }: {
   control: Dialog.DialogOuterProps['control']
-  viewContext: 'profile' | 'profileHeader' | 'feed'
 }) {
   return (
     <Dialog.Outer control={control} nativeOptions={{fullHeight: true}}>
       <Dialog.Handle />
-      <DialogInner viewContext={viewContext} />
+      <DialogInner />
     </Dialog.Outer>
   )
 }
@@ -113,14 +109,8 @@ export function FollowDialogWithoutGuide({
 let lastSelectedInterest = ''
 let lastSearchText = ''
 
-function DialogInner({
-  guide,
-  viewContext,
-}: {
-  guide?: Follow10ProgressGuide
-  viewContext: 'profile' | 'profileHeader' | 'feed' | 'guide'
-}) {
-  const {_} = useLingui()
+function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
+  const {t: l} = useLingui()
   const ax = useAnalytics()
   const interestsDisplayNames = useInterestsDisplayNames()
   const {data: preferences} = usePreferencesQuery()
@@ -141,17 +131,6 @@ function DialogInner({
   const inputRef = useRef<TextInput>(null)
   const [headerHeight, setHeaderHeight] = useState(0)
   const {currentAccount} = useSession()
-
-  const isProfileHeaderContext = viewContext === 'profileHeader'
-  const isFeedContext = viewContext === 'feed'
-  const isGuideContext = viewContext === 'guide'
-  const logContext: Metrics['suggestedUser:seen']['logContext'] = isFeedContext
-    ? 'FollowDialogFeed'
-    : isProfileHeaderContext
-      ? 'FollowDialogProfile'
-      : isGuideContext
-        ? 'FollowDialogGuide'
-        : 'FollowDialogProfile'
 
   useEffect(() => {
     lastSearchText = searchText
@@ -201,7 +180,7 @@ function DialogInner({
       _items.push({
         type: 'empty',
         key: 'empty',
-        message: _(msg`We're having network issues, try again`),
+        message: l`We're having network issues, try again`,
       })
     } else {
       const seen = new Set<string>()
@@ -227,12 +206,12 @@ function DialogInner({
       !_items.length &&
       !isSearchResultsError
     ) {
-      _items.push({type: 'empty', key: 'empty', message: _(msg`No results`)})
+      _items.push({type: 'empty', key: 'empty', message: l`No results`})
     }
 
     return _items
   }, [
-    _,
+    l,
     suggestions,
     suggestionsError,
     isFetchingSuggestions,
@@ -254,7 +233,6 @@ function DialogInner({
               profile={item.profile}
               moderationOpts={moderationOpts!}
               noBorder={index === 0}
-              logContext={logContext}
               position={index}
             />
           )
@@ -269,7 +247,7 @@ function DialogInner({
           return null
       }
     },
-    [logContext, moderationOpts],
+    [moderationOpts],
   )
 
   // Track seen profiles
@@ -290,7 +268,7 @@ function DialogInner({
               i => i.type === 'profile' && i.profile.did === item.profile.did,
             )
             ax.metric('suggestedUser:seen', {
-              logContext,
+              logContext: 'SeeMoreSuggestedUsers',
               recId: hasSearchText ? undefined : suggestions?.recId,
               position: position !== -1 ? position : 0,
               suggestedDid: item.profile.did,
@@ -425,7 +403,7 @@ let Header = ({
 Header = memo(Header)
 
 function HeaderTop({guide}: {guide?: Follow10ProgressGuide}) {
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const t = useTheme()
   const control = Dialog.useDialogContext()
   return (
@@ -459,7 +437,7 @@ function HeaderTop({guide}: {guide?: Follow10ProgressGuide}) {
       )}
       {IS_WEB ? (
         <Button
-          label={_(msg`Close`)}
+          label={l`Close`}
           size="small"
           shape="round"
           variant={IS_WEB ? 'ghost' : 'solid'}
@@ -495,22 +473,18 @@ let Tab = ({
   onLayout: (index: number, x: number, width: number) => void
 }): React.ReactNode => {
   const t = useTheme()
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const label = active
-    ? _(
-        msg({
-          message: `Search for "${interestsDisplayName}" (active)`,
-          comment:
-            'Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.',
-        }),
-      )
-    : _(
-        msg({
-          message: `Search for "${interestsDisplayName}"`,
-          comment:
-            'Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.',
-        }),
-      )
+    ? l({
+        message: `Search for "${interestsDisplayName}" (active)`,
+        comment:
+          'Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.',
+      })
+    : l({
+        message: `Search for "${interestsDisplayName}"`,
+        comment:
+          'Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.',
+      })
   return (
     <View
       key={interest}
@@ -553,13 +527,11 @@ let FollowProfileCard = ({
   profile,
   moderationOpts,
   noBorder,
-  logContext,
   position,
 }: {
   profile: bsky.profile.AnyProfileView
   moderationOpts: ModerationOpts
   noBorder?: boolean
-  logContext: 'FollowDialogFeed' | 'FollowDialogProfile' | 'FollowDialogGuide'
   position: number
 }): React.ReactNode => {
   return (
@@ -567,7 +539,6 @@ let FollowProfileCard = ({
       profile={profile}
       moderationOpts={moderationOpts}
       noBorder={noBorder}
-      logContext={logContext}
       position={position}
     />
   )
@@ -579,14 +550,12 @@ function FollowProfileCardInner({
   moderationOpts,
   onFollow,
   noBorder,
-  logContext,
   position,
 }: {
   profile: bsky.profile.AnyProfileView
   moderationOpts: ModerationOpts
   onFollow?: () => void
   noBorder?: boolean
-  logContext: 'FollowDialogFeed' | 'FollowDialogProfile' | 'FollowDialogGuide'
   position: number
 }) {
   const control = Dialog.useDialogContext()
@@ -622,7 +591,7 @@ function FollowProfileCardInner({
                 shape="round"
                 onPress={() => {
                   ax.metric('suggestedUser:follow', {
-                    logContext,
+                    logContext: 'SeeMoreSuggestedUsers',
                     location: 'Card',
                     position,
                     suggestedDid: profile.did,
@@ -673,7 +642,7 @@ function SearchInput({
   defaultValue: string
 }) {
   const t = useTheme()
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const {
     state: hovered,
     onIn: onMouseEnter,
@@ -693,10 +662,9 @@ function SearchInput({
         size="md"
         fill={interacted ? t.palette.primary_500 : t.palette.contrast_300}
       />
-
       <TextInput
         ref={inputRef}
-        placeholder={_(msg`Search by name or interest`)}
+        placeholder={l`Search by name or interest`}
         defaultValue={defaultValue}
         onChangeText={onChangeText}
         onFocus={onFocus}
@@ -715,8 +683,8 @@ function SearchInput({
         autoCorrect={false}
         autoComplete="off"
         autoCapitalize="none"
-        accessibilityLabel={_(msg`Search profiles`)}
-        accessibilityHint={_(msg`Searches for profiles`)}
+        accessibilityLabel={l`Search profiles`}
+        accessibilityHint={l`Searches for profiles`}
       />
     </View>
   )
