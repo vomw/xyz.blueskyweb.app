@@ -360,4 +360,21 @@ describe('link service no safelink', async () => {
     // No blocked-site div, always safe
     assert.doesNotMatch(html, /"blocked-site"/)
   })
+
+  it('normal redirect with query params', async () => {
+    const urlToRedirect = 'https://bsky.app/settings'
+    const url = new URL(`${baseUrl}/redirect`)
+    url.searchParams.set('u', urlToRedirect)
+    url.searchParams.set('utm_source', 'test')
+    const res = await fetch(url, {redirect: 'manual'})
+    assert.strictEqual(res.status, 200)
+    const html = await res.text()
+    assert.match(html, /meta http-equiv="refresh"/)
+    assert.match(
+      html,
+      new RegExp(urlToRedirect.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+    )
+    // No blocked-site div, always safe
+    assert.doesNotMatch(html, /"blocked-site"/)
+  })
 })

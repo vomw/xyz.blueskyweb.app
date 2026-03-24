@@ -101,6 +101,11 @@ export default function (ctx: AppContext, app: Express) {
         whitelisted,
         blocked,
         warned,
+        utm_source: req.query.utm_source?.toString(),
+        utm_medium: req.query.utm_medium?.toString(),
+        utm_campaign: req.query.utm_campaign?.toString(),
+        utm_content: req.query.utm_content?.toString(),
+        utm_term: req.query.utm_term?.toString(),
       })
 
       return res.end(html)
