@@ -488,6 +488,7 @@ export type Events = {
       | 'FollowDialogGuide'
       | 'Onboarding'
       | 'SeeMoreSuggestedUsers'
+      | 'ProgressGuide'
     location: 'Card' | 'Profile' | 'FollowAll'
     recId?: number | string
     position: number
@@ -521,6 +522,7 @@ export type Events = {
       | 'FollowDialogGuide'
       | 'Onboarding'
       | 'SeeMoreSuggestedUsers'
+      | 'ProgressGuide'
     recId?: number | string
     position: number
     suggestedDid: string

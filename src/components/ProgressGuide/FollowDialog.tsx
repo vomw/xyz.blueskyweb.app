@@ -224,6 +224,8 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
     isSearchResultsError,
   ])
 
+  const isGuide = Boolean(guide)
+
   const renderItems = useCallback(
     ({item, index}: {item: Item; index: number}) => {
       switch (item.type) {
@@ -234,6 +236,8 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
               moderationOpts={moderationOpts!}
               noBorder={index === 0}
               position={index}
+              recId={hasSearchText ? undefined : suggestions?.recId}
+              isGuide={isGuide}
             />
           )
         }
@@ -247,7 +251,7 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
           return null
       }
     },
-    [moderationOpts],
+    [moderationOpts, hasSearchText, suggestions?.recId, isGuide],
   )
 
   // Track seen profiles
@@ -268,7 +272,7 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
               i => i.type === 'profile' && i.profile.did === item.profile.did,
             )
             ax.metric('suggestedUser:seen', {
-              logContext: 'SeeMoreSuggestedUsers',
+              logContext: isGuide ? 'ProgressGuide' : 'SeeMoreSuggestedUsers',
               recId: hasSearchText ? undefined : suggestions?.recId,
               position: position !== -1 ? position : 0,
               suggestedDid: item.profile.did,
@@ -528,11 +532,15 @@ let FollowProfileCard = ({
   moderationOpts,
   noBorder,
   position,
+  recId,
+  isGuide,
 }: {
   profile: bsky.profile.AnyProfileView
   moderationOpts: ModerationOpts
   noBorder?: boolean
   position: number
+  recId?: string
+  isGuide: boolean
 }): React.ReactNode => {
   return (
     <FollowProfileCardInner
@@ -540,6 +548,8 @@ let FollowProfileCard = ({
       moderationOpts={moderationOpts}
       noBorder={noBorder}
       position={position}
+      recId={recId}
+      isGuide={isGuide}
     />
   )
 }
@@ -551,12 +561,16 @@ function FollowProfileCardInner({
   onFollow,
   noBorder,
   position,
+  recId,
+  isGuide,
 }: {
   profile: bsky.profile.AnyProfileView
   moderationOpts: ModerationOpts
   onFollow?: () => void
   noBorder?: boolean
   position: number
+  recId?: string
+  isGuide: boolean
 }) {
   const control = Dialog.useDialogContext()
   const t = useTheme()
@@ -591,8 +605,11 @@ function FollowProfileCardInner({
                 shape="round"
                 onPress={() => {
                   ax.metric('suggestedUser:follow', {
-                    logContext: 'SeeMoreSuggestedUsers',
+                    logContext: isGuide
+                      ? 'ProgressGuide'
+                      : 'SeeMoreSuggestedUsers',
                     location: 'Card',
+                    recId,
                     position,
                     suggestedDid: profile.did,
                     category: null,
