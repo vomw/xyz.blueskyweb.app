@@ -487,7 +487,7 @@ export type Events = {
       | 'FollowDialogProfile'
       | 'FollowDialogGuide'
       | 'Onboarding'
-    location: 'Card' | 'ProfileHeader' | 'FollowAll'
+    location: 'Card' | 'Profile' | 'FollowAll'
     recId?: number | string
     position: number
     suggestedDid: string

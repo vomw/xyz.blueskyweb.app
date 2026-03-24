@@ -510,7 +510,7 @@ export function ProfileGrid({
                       onFollow={() => {
                         ax.metric('suggestedUser:follow', {
                           logContext,
-                          location: 'Card',
+                          location: 'Profile',
                           recId: profile.recId,
                           position: index,
                           suggestedDid: profile.actor.did,
