@@ -1,5 +1,5 @@
 import {forwardRef, memo, useDeferredValue, useMemo} from 'react'
-import {RefreshControl, type ViewToken} from 'react-native'
+import {RefreshControl, type LayoutChangeEvent, type ViewToken} from 'react-native'
 import {
   type FlatListPropsWithLayout,
   runOnJS,
@@ -54,6 +54,7 @@ let List = forwardRef<ListMethods, ListProps>(
       headerOffset,
       style,
       progressViewOffset,
+      onLayout,
       automaticallyAdjustsScrollIndicatorInsets = false,
       ...props
     },
@@ -153,6 +154,11 @@ let List = forwardRef<ListMethods, ListProps>(
       contentOffset = {x: 0, y: headerOffset * -1}
     }
 
+    const handleLayout = (e: LayoutChangeEvent) => {
+      updateActiveVideoViewAsync()
+      onLayout?.(e)
+    }
+
     return (
       <FlatList_INTERNAL
         showsVerticalScrollIndicator // overridable
@@ -170,6 +176,7 @@ let List = forwardRef<ListMethods, ListProps>(
         indicatorStyle={t.scheme === 'dark' ? 'white' : 'black'}
         contentOffset={contentOffset}
         refreshControl={refreshControl}
+        onLayout={handleLayout}
         onScroll={scrollHandler}
         scrollsToTop={scrollsToTop}
         scrollEventThrottle={1}
