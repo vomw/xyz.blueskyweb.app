@@ -14,6 +14,30 @@ import {
 
 import * as bsky from '#/types/bsky'
 
+/**
+ * Helper method to ensure consistent query keys and key ordering
+ */
+export function createQueryKey(root: string): readonly [string]
+export function createQueryKey<T extends Record<string, unknown>>(
+  root: string,
+  args: T,
+): readonly [string, T]
+export function createQueryKey<T extends Record<string, unknown>>(
+  /**
+   * The query key root. All queries must have a root.
+   */
+  root: string,
+  /**
+   * Any arguments the query depends on, and if changed, should result in the query being refetched.
+   */
+  args?: T,
+) {
+  if (args === undefined) {
+    return [root] as const
+  }
+  return [root, args] as const
+}
+
 export async function truncateAndInvalidate<T = any>(
   queryClient: QueryClient,
   queryKey: QueryKey,
