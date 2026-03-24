@@ -1,5 +1,5 @@
 import {forwardRef, memo, useDeferredValue, useMemo} from 'react'
-import {RefreshControl, type LayoutChangeEvent, type ViewToken} from 'react-native'
+import {type LayoutChangeEvent, RefreshControl, type ViewToken} from 'react-native'
 import {
   type FlatListPropsWithLayout,
   runOnJS,
