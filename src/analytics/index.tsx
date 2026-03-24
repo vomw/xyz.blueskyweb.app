@@ -89,7 +89,6 @@ const Context = createContext<AnalyticsBaseContextType>({
       delete metadata.__meta
     }
     if (event.startsWith('suggestedUser:')) {
-      console.log('DEBUG >>>', event, payload)
     }
     metrics.track(event, payload, {
       ...metadata,

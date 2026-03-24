@@ -94,13 +94,15 @@ export function FollowDialog({
  */
 export function FollowDialogWithoutGuide({
   control,
+  recId,
 }: {
   control: Dialog.DialogOuterProps['control']
+  recId?: string
 }) {
   return (
     <Dialog.Outer control={control} nativeOptions={{fullHeight: true}}>
       <Dialog.Handle />
-      <DialogInner />
+      <DialogInner recId={recId} />
     </Dialog.Outer>
   )
 }
@@ -109,7 +111,13 @@ export function FollowDialogWithoutGuide({
 let lastSelectedInterest = ''
 let lastSearchText = ''
 
-function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
+function DialogInner({
+  guide,
+  recId,
+}: {
+  guide?: Follow10ProgressGuide
+  recId?: string
+}) {
   const {t: l} = useLingui()
   const ax = useAnalytics()
   const interestsDisplayNames = useInterestsDisplayNames()
@@ -273,7 +281,7 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
             )
             ax.metric('suggestedUser:seen', {
               logContext: isGuide ? 'ProgressGuide' : 'SeeMoreSuggestedUsers',
-              recId: hasSearchText ? undefined : suggestions?.recId,
+              recId: hasSearchText ? undefined : (recId ?? suggestions?.recId),
               position: position !== -1 ? position : 0,
               suggestedDid: item.profile.did,
               category: selectedInterestRef.current,
