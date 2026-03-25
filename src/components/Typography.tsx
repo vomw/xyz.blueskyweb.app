@@ -108,6 +108,7 @@ export function P({style, ...rest}: TextProps) {
 const numberOfLinesClippingFix = {
   overflowY: 'visible',
   overflowX: 'clip',
+  minWidth: 0,
   // this is neater and supports vertical writing modes, but it's only baseline newly available
   // overflowInline: 'clip',
 } satisfies React.CSSProperties as TextStyleProp
