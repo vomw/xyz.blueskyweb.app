@@ -39,7 +39,7 @@ export function usePreferencesQuery() {
   const agent = useAgent()
   const aa = useAgeAssurance()
 
-  const query = useQuery({
+  return useQuery({
     staleTime: STALE.SECONDS.FIFTEEN,
     structuralSharing: replaceEqualDeep,
     refetchOnWindowFocus: true,
@@ -52,7 +52,7 @@ export function usePreferencesQuery() {
         const res = await agent.getPreferences()
 
         // save to local storage to ensure there are labels on initial requests
-        saveLabelers(
+        void saveLabelers(
           agent.did,
           res.moderationPrefs.labelers.map(l => l.did),
         )
@@ -79,32 +79,25 @@ export function usePreferencesQuery() {
     },
     select: useCallback(
       (data: UsePreferencesQueryResponse) => {
-        /**
-         * Prefs are all downstream of age assurance now. For logged-out
-         * users, we override moderation prefs based on AA state.
-         */
-        if (aa.state.access !== aa.Access.Full) {
-          data = {
-            ...data,
-            moderationPrefs: makeAgeRestrictedModerationPrefs(
-              data.moderationPrefs,
-            ),
-          }
+        return {
+          ...data,
+          /**
+           * The persisted query cache stores dates as strings, but our code expects a `Date`.
+           */
+          birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
+          /**
+           * Prefs are all downstream of age assurance. For logged-out
+           * users, we override moderation prefs based on AA state.
+           */
+          moderationPrefs:
+            aa.state.access !== aa.Access.Full
+              ? makeAgeRestrictedModerationPrefs(data.moderationPrefs)
+              : data.moderationPrefs,
         }
-        return data
       },
       [aa],
     ),
   })
-
-  if (query.data?.birthDate) {
-    /**
-     * The persisted query cache stores dates as strings, but our code expects a `Date`.
-     */
-    query.data.birthDate = new Date(query.data.birthDate)
-  }
-
-  return query
 }
 
 export function useClearPreferencesMutation() {
