@@ -237,7 +237,7 @@ export function LanguageSettingsScreen({}: Props) {
                     feeds.
                   </Trans>
                 }
-                currentLanguages={langPrefs.contentLanguages}
+                currentLanguages={contentLanguages}
                 onSelectLanguages={languages => {
                   setContentLanguages(languages)
                   setRecentLanguages(recent => [
