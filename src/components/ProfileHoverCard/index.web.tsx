@@ -519,6 +519,7 @@ function Inner({
                 a.leading_snug,
                 a.font_semi_bold,
                 a.self_start,
+                {minWidth: 0},
               ]}>
               {sanitizeDisplayName(
                 profile.displayName || sanitizeHandle(profile.handle),
