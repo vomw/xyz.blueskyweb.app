@@ -657,7 +657,7 @@ export function InitiateChatFlow({
           web([a.py_0, {height: '100vh', maxHeight: 600}, a.px_0]),
           native({height: '100%'}),
         ]}
-        webInnerContentContainerStyle={a.py_0}
+        webInnerContentContainerStyle={[a.py_0, {paddingBottom: footerHeight}]}
         webInnerStyle={[a.py_0, {maxWidth: 500, minWidth: 200}]}
         scrollIndicatorInsets={{top: headerHeight, bottom: footerHeight}}
         keyboardDismissMode="on-drag"
