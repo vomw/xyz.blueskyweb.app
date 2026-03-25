@@ -344,7 +344,8 @@ function NewGroupChatButton({onPress}: {onPress: () => void}) {
       {({hovered, pressed, focused}) => (
         <View
           style={[
-            a.p_lg,
+            a.px_lg,
+            a.py_md,
             a.flex_row,
             a.flex_1,
             a.justify_between,
