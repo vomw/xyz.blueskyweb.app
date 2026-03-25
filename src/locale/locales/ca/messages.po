@@ -1823,20 +1823,20 @@ msgstr "Incompliment de les normes del lloc"
 msgid "Browse custom feeds"
 msgstr "Navega pels canals personalitzats"
 
-#: src/components/FeedInterstitials.tsx:641
+#: src/components/FeedInterstitials.tsx:631
 msgid "Browse more accounts"
 msgstr "Navega per més comptes"
 
-#: src/components/FeedInterstitials.tsx:771
+#: src/components/FeedInterstitials.tsx:761
 msgid "Browse more feeds on the Explore page"
 msgstr "Explora més canals a la pàgina Explora"
 
-#: src/components/FeedInterstitials.tsx:752
-#: src/components/FeedInterstitials.tsx:755
+#: src/components/FeedInterstitials.tsx:742
+#: src/components/FeedInterstitials.tsx:745
 msgid "Browse more suggestions"
 msgstr "Explora més recomanacions"
 
-#: src/components/FeedInterstitials.tsx:780
+#: src/components/FeedInterstitials.tsx:770
 msgid "Browse more suggestions on the Explore page"
 msgstr "Explora més recomanacions a la pàgina Explora"
 
@@ -2288,7 +2288,7 @@ msgstr "Clop 🐴 clop 🐴"
 #: src/components/NewskieDialog.tsx:169
 #: src/components/NewskieDialog.tsx:175
 #: src/components/Post/Embed/VideoEmbed/GifPresentationControls.tsx:107
-#: src/components/ProgressGuide/FollowDialog.tsx:441
+#: src/components/ProgressGuide/FollowDialog.tsx:445
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:122
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:128
 #: src/components/verification/VerificationsDialog.tsx:146
@@ -3274,7 +3274,7 @@ msgstr "Ignora el bàner d'esdeveniment en directe"
 msgid "Dismiss this section"
 msgstr "Amaga aquesta secció"
 
-#: src/components/FeedInterstitials.tsx:445
+#: src/components/FeedInterstitials.tsx:441
 msgid "Dismiss this suggestion"
 msgstr "Descarta aquest suggeriment"
 
@@ -4323,9 +4323,9 @@ msgid "Find my friends"
 msgstr "Troba els meus amics"
 
 #. Starter packs suggested to the user for them to follow
-#: src/components/ProgressGuide/FollowDialog.tsx:74
-#: src/components/ProgressGuide/FollowDialog.tsx:82
-#: src/components/ProgressGuide/FollowDialog.tsx:427
+#: src/components/ProgressGuide/FollowDialog.tsx:72
+#: src/components/ProgressGuide/FollowDialog.tsx:80
+#: src/components/ProgressGuide/FollowDialog.tsx:431
 #: src/screens/Onboarding/StepSuggestedStarterpacks/index.tsx:43
 msgid "Find people to follow"
 msgstr "Troba gent per seguir"
@@ -6641,7 +6641,7 @@ msgid "No result"
 msgstr "Cap resultat"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:224
-#: src/components/ProgressGuide/FollowDialog.tsx:211
+#: src/components/ProgressGuide/FollowDialog.tsx:209
 msgid "No results"
 msgstr "Cap resultat"
 
@@ -8701,7 +8701,7 @@ msgstr "Cerca"
 msgid "Search @{0}'s posts"
 msgstr "Cerca a les publicacions de @{0}"
 
-#: src/components/ProgressGuide/FollowDialog.tsx:658
+#: src/components/ProgressGuide/FollowDialog.tsx:685
 msgid "Search by name or interest"
 msgstr "Cerca per nom o interès"
 
@@ -8714,12 +8714,12 @@ msgid "Search feeds"
 msgstr "Cerca canals"
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:487
+#: src/components/ProgressGuide/FollowDialog.tsx:488
 msgid "Search for \"{interestsDisplayName}\""
 msgstr "Cerca per \"{interestsDisplayName}\""
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:480
+#: src/components/ProgressGuide/FollowDialog.tsx:483
 msgid "Search for \"{interestsDisplayName}\" (active)"
 msgstr "Cerca per \"{interestsDisplayName}\"(activa)"
 
@@ -8771,7 +8771,7 @@ msgid "Search posts"
 msgstr "Cerca publicacions"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:535
-#: src/components/ProgressGuide/FollowDialog.tsx:677
+#: src/components/ProgressGuide/FollowDialog.tsx:704
 msgid "Search profiles"
 msgstr "Cerca perfils"
 
@@ -8784,7 +8784,7 @@ msgid "Search..."
 msgstr "Cerca..."
 
 #: src/components/dialogs/SearchablePeopleList.tsx:536
-#: src/components/ProgressGuide/FollowDialog.tsx:678
+#: src/components/ProgressGuide/FollowDialog.tsx:705
 msgid "Searches for profiles"
 msgstr "Cerca perfils"
 
@@ -8822,12 +8822,12 @@ msgstr "Mostra les publicacions amb #{tag} de l'usuari"
 msgid "See jobs at Bluesky"
 msgstr "Veure les feines a Bluesky"
 
-#: src/components/FeedInterstitials.tsx:592
-#: src/components/FeedInterstitials.tsx:655
+#: src/components/FeedInterstitials.tsx:584
+#: src/components/FeedInterstitials.tsx:645
 msgid "See more"
 msgstr "Veure més"
 
-#: src/components/FeedInterstitials.tsx:573
+#: src/components/FeedInterstitials.tsx:565
 msgid "See more suggested profiles"
 msgstr "Veure més perfils suggerits"
 
@@ -9519,7 +9519,7 @@ msgstr "Alguns serveis de moderació de la teva llista ja no estan disponibles."
 msgid "Some of your verifications are invalid."
 msgstr "Algunes de les teves verificacions no són vàlides."
 
-#: src/components/FeedInterstitials.tsx:734
+#: src/components/FeedInterstitials.tsx:724
 msgid "Some other feeds you might like"
 msgstr "Alguns altres canals que potser t'agradaran"
 
@@ -9777,7 +9777,7 @@ msgid "Suggested accounts"
 msgstr "Comptes suggerits"
 
 #. Accounts suggested to the user for them to follow
-#: src/components/FeedInterstitials.tsx:569
+#: src/components/FeedInterstitials.tsx:561
 #: src/screens/Onboarding/StepSuggestedAccounts/index.tsx:180
 msgid "Suggested for you"
 msgstr "Suggeriments per tu"
@@ -11604,7 +11604,7 @@ msgid "We're having issues initializing the age assurance process for your accou
 msgstr "Estem tenint problemes per inicialitzar el procés de garantia d'edat per al vostre compte. <0>Contacta amb l'assistència</0> per obtenir ajuda."
 
 #: src/components/dialogs/SearchablePeopleList.tsx:108
-#: src/components/ProgressGuide/FollowDialog.tsx:185
+#: src/components/ProgressGuide/FollowDialog.tsx:183
 msgid "We're having network issues, try again"
 msgstr "Tenim problemes de xarxa, torna-ho a provar"
 

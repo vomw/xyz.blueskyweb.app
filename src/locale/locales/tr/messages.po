@@ -1823,20 +1823,20 @@ msgstr "Site kurallarını ihlal"
 msgid "Browse custom feeds"
 msgstr "Özelleştirilmiş akışları göster"
 
-#: src/components/FeedInterstitials.tsx:641
+#: src/components/FeedInterstitials.tsx:631
 msgid "Browse more accounts"
 msgstr "Diğer hesaplara göz at"
 
-#: src/components/FeedInterstitials.tsx:771
+#: src/components/FeedInterstitials.tsx:761
 msgid "Browse more feeds on the Explore page"
 msgstr "Keşfet sayfasında daha fazla akış bul"
 
-#: src/components/FeedInterstitials.tsx:752
-#: src/components/FeedInterstitials.tsx:755
+#: src/components/FeedInterstitials.tsx:742
+#: src/components/FeedInterstitials.tsx:745
 msgid "Browse more suggestions"
 msgstr "Daha çok öneriye göz at"
 
-#: src/components/FeedInterstitials.tsx:780
+#: src/components/FeedInterstitials.tsx:770
 msgid "Browse more suggestions on the Explore page"
 msgstr "Keşfet sayfasında daha çok öneriye göz at"
 
@@ -2288,7 +2288,7 @@ msgstr "Klip 🐴 klop 🐴"
 #: src/components/NewskieDialog.tsx:169
 #: src/components/NewskieDialog.tsx:175
 #: src/components/Post/Embed/VideoEmbed/GifPresentationControls.tsx:107
-#: src/components/ProgressGuide/FollowDialog.tsx:441
+#: src/components/ProgressGuide/FollowDialog.tsx:445
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:122
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:128
 #: src/components/verification/VerificationsDialog.tsx:146
@@ -3274,7 +3274,7 @@ msgstr "Canlı etkinlik panelini kapat"
 msgid "Dismiss this section"
 msgstr "Bu bölümü gizle"
 
-#: src/components/FeedInterstitials.tsx:445
+#: src/components/FeedInterstitials.tsx:441
 msgid "Dismiss this suggestion"
 msgstr "Bu öneriyi gizle"
 
@@ -4323,9 +4323,9 @@ msgid "Find my friends"
 msgstr "Arkadaşlarımı bul"
 
 #. Starter packs suggested to the user for them to follow
-#: src/components/ProgressGuide/FollowDialog.tsx:74
-#: src/components/ProgressGuide/FollowDialog.tsx:82
-#: src/components/ProgressGuide/FollowDialog.tsx:427
+#: src/components/ProgressGuide/FollowDialog.tsx:72
+#: src/components/ProgressGuide/FollowDialog.tsx:80
+#: src/components/ProgressGuide/FollowDialog.tsx:431
 #: src/screens/Onboarding/StepSuggestedStarterpacks/index.tsx:43
 msgid "Find people to follow"
 msgstr "Takip edilecek kişiler bulun"
@@ -6641,7 +6641,7 @@ msgid "No result"
 msgstr "Sonuç yok"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:224
-#: src/components/ProgressGuide/FollowDialog.tsx:211
+#: src/components/ProgressGuide/FollowDialog.tsx:209
 msgid "No results"
 msgstr "Sonuç yok"
 
@@ -8701,7 +8701,7 @@ msgstr "Ara"
 msgid "Search @{0}'s posts"
 msgstr "@{0} gönderilerini ara"
 
-#: src/components/ProgressGuide/FollowDialog.tsx:658
+#: src/components/ProgressGuide/FollowDialog.tsx:685
 msgid "Search by name or interest"
 msgstr "İsim veya ilgi alanına göre ara"
 
@@ -8714,12 +8714,12 @@ msgid "Search feeds"
 msgstr "Akışları ara"
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:487
+#: src/components/ProgressGuide/FollowDialog.tsx:488
 msgid "Search for \"{interestsDisplayName}\""
 msgstr "\"{interestsDisplayName}\" ara"
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:480
+#: src/components/ProgressGuide/FollowDialog.tsx:483
 msgid "Search for \"{interestsDisplayName}\" (active)"
 msgstr "\"{interestsDisplayName}\" ara (etkin)"
 
@@ -8771,7 +8771,7 @@ msgid "Search posts"
 msgstr "Gönderileri ara"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:535
-#: src/components/ProgressGuide/FollowDialog.tsx:677
+#: src/components/ProgressGuide/FollowDialog.tsx:704
 msgid "Search profiles"
 msgstr "Profilleri ara"
 
@@ -8784,7 +8784,7 @@ msgid "Search..."
 msgstr "Ara..."
 
 #: src/components/dialogs/SearchablePeopleList.tsx:536
-#: src/components/ProgressGuide/FollowDialog.tsx:678
+#: src/components/ProgressGuide/FollowDialog.tsx:705
 msgid "Searches for profiles"
 msgstr "Profilleri arar"
 
@@ -8822,12 +8822,12 @@ msgstr "Kullanıcının #{tag} gönderilerini gör"
 msgid "See jobs at Bluesky"
 msgstr "Bluesky'daki iş fırsatlarını görün"
 
-#: src/components/FeedInterstitials.tsx:592
-#: src/components/FeedInterstitials.tsx:655
+#: src/components/FeedInterstitials.tsx:584
+#: src/components/FeedInterstitials.tsx:645
 msgid "See more"
 msgstr "Daha fazlasını gör"
 
-#: src/components/FeedInterstitials.tsx:573
+#: src/components/FeedInterstitials.tsx:565
 msgid "See more suggested profiles"
 msgstr "Daha çok önerilen profil göster"
 
@@ -9519,7 +9519,7 @@ msgstr "Listenizdeki bazı moderasyon hizmetleri kullanım dışıdır."
 msgid "Some of your verifications are invalid."
 msgstr "Doğrulamalarınızdan bazıları geçersiz."
 
-#: src/components/FeedInterstitials.tsx:734
+#: src/components/FeedInterstitials.tsx:724
 msgid "Some other feeds you might like"
 msgstr "Beğenebileceğiniz diğer akışlar"
 
@@ -9777,7 +9777,7 @@ msgid "Suggested accounts"
 msgstr "Önerilen hesaplar"
 
 #. Accounts suggested to the user for them to follow
-#: src/components/FeedInterstitials.tsx:569
+#: src/components/FeedInterstitials.tsx:561
 #: src/screens/Onboarding/StepSuggestedAccounts/index.tsx:180
 msgid "Suggested for you"
 msgstr "Size önerilenler"
@@ -11604,7 +11604,7 @@ msgid "We're having issues initializing the age assurance process for your accou
 msgstr "Hesabınızın yaş güvencesi işlemini başlatmakta sıkıntı yaşıyoruz. Lütfen yardım için <0>desteğe ulaşın</0>."
 
 #: src/components/dialogs/SearchablePeopleList.tsx:108
-#: src/components/ProgressGuide/FollowDialog.tsx:185
+#: src/components/ProgressGuide/FollowDialog.tsx:183
 msgid "We're having network issues, try again"
 msgstr "Ağ sorunları yaşıyoruz, tekrar deneyin"
 

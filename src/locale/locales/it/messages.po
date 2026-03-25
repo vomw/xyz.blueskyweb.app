@@ -1823,20 +1823,20 @@ msgstr "Violazione regole del sito"
 msgid "Browse custom feeds"
 msgstr "Esplora feed personalizzati"
 
-#: src/components/FeedInterstitials.tsx:641
+#: src/components/FeedInterstitials.tsx:631
 msgid "Browse more accounts"
 msgstr "Esplora più account"
 
-#: src/components/FeedInterstitials.tsx:771
+#: src/components/FeedInterstitials.tsx:761
 msgid "Browse more feeds on the Explore page"
 msgstr "Scopri nuovi feed nella pagina Esplora"
 
-#: src/components/FeedInterstitials.tsx:752
-#: src/components/FeedInterstitials.tsx:755
+#: src/components/FeedInterstitials.tsx:742
+#: src/components/FeedInterstitials.tsx:745
 msgid "Browse more suggestions"
 msgstr "Scopri nuovi suggerimenti"
 
-#: src/components/FeedInterstitials.tsx:780
+#: src/components/FeedInterstitials.tsx:770
 msgid "Browse more suggestions on the Explore page"
 msgstr "Scopri nuovi suggerimenti nella pagina Esplora"
 
@@ -2288,7 +2288,7 @@ msgstr "Clop 🐴 clop 🐴"
 #: src/components/NewskieDialog.tsx:169
 #: src/components/NewskieDialog.tsx:175
 #: src/components/Post/Embed/VideoEmbed/GifPresentationControls.tsx:107
-#: src/components/ProgressGuide/FollowDialog.tsx:441
+#: src/components/ProgressGuide/FollowDialog.tsx:445
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:122
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:128
 #: src/components/verification/VerificationsDialog.tsx:146
@@ -3274,7 +3274,7 @@ msgstr "Chiudi il banner delle dirette"
 msgid "Dismiss this section"
 msgstr "Ignora questa sezione"
 
-#: src/components/FeedInterstitials.tsx:445
+#: src/components/FeedInterstitials.tsx:441
 msgid "Dismiss this suggestion"
 msgstr "Ignora questo suggerimento"
 
@@ -4323,9 +4323,9 @@ msgid "Find my friends"
 msgstr "Trova i miei amici"
 
 #. Starter packs suggested to the user for them to follow
-#: src/components/ProgressGuide/FollowDialog.tsx:74
-#: src/components/ProgressGuide/FollowDialog.tsx:82
-#: src/components/ProgressGuide/FollowDialog.tsx:427
+#: src/components/ProgressGuide/FollowDialog.tsx:72
+#: src/components/ProgressGuide/FollowDialog.tsx:80
+#: src/components/ProgressGuide/FollowDialog.tsx:431
 #: src/screens/Onboarding/StepSuggestedStarterpacks/index.tsx:43
 msgid "Find people to follow"
 msgstr "Trova persone da seguire"
@@ -6641,7 +6641,7 @@ msgid "No result"
 msgstr "Nessun risultato"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:224
-#: src/components/ProgressGuide/FollowDialog.tsx:211
+#: src/components/ProgressGuide/FollowDialog.tsx:209
 msgid "No results"
 msgstr "Nessun risultato"
 
@@ -8701,7 +8701,7 @@ msgstr "Cerca"
 msgid "Search @{0}'s posts"
 msgstr "Cerca post di @{0}"
 
-#: src/components/ProgressGuide/FollowDialog.tsx:658
+#: src/components/ProgressGuide/FollowDialog.tsx:685
 msgid "Search by name or interest"
 msgstr "Cerca per nome o interesse"
 
@@ -8714,12 +8714,12 @@ msgid "Search feeds"
 msgstr "Cerca feed"
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:487
+#: src/components/ProgressGuide/FollowDialog.tsx:488
 msgid "Search for \"{interestsDisplayName}\""
 msgstr "Cerca \"{interestsDisplayName}\""
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:480
+#: src/components/ProgressGuide/FollowDialog.tsx:483
 msgid "Search for \"{interestsDisplayName}\" (active)"
 msgstr "Cerca \"{interestsDisplayName}\" (attivo)"
 
@@ -8771,7 +8771,7 @@ msgid "Search posts"
 msgstr "Cerca post"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:535
-#: src/components/ProgressGuide/FollowDialog.tsx:677
+#: src/components/ProgressGuide/FollowDialog.tsx:704
 msgid "Search profiles"
 msgstr "Cerca profili"
 
@@ -8784,7 +8784,7 @@ msgid "Search..."
 msgstr "Cerca..."
 
 #: src/components/dialogs/SearchablePeopleList.tsx:536
-#: src/components/ProgressGuide/FollowDialog.tsx:678
+#: src/components/ProgressGuide/FollowDialog.tsx:705
 msgid "Searches for profiles"
 msgstr "Cerca profili"
 
@@ -8822,12 +8822,12 @@ msgstr "Vedi post dell'utente su #{tag}"
 msgid "See jobs at Bluesky"
 msgstr "Vedi offerte di lavoro in Bluesky"
 
-#: src/components/FeedInterstitials.tsx:592
-#: src/components/FeedInterstitials.tsx:655
+#: src/components/FeedInterstitials.tsx:584
+#: src/components/FeedInterstitials.tsx:645
 msgid "See more"
 msgstr "Vedi di più"
 
-#: src/components/FeedInterstitials.tsx:573
+#: src/components/FeedInterstitials.tsx:565
 msgid "See more suggested profiles"
 msgstr "Vedi altri profili consigliati"
 
@@ -9519,7 +9519,7 @@ msgstr "Alcuni servizi di moderazione nella tua lista non sono più disponibili.
 msgid "Some of your verifications are invalid."
 msgstr "Alcune delle tue verifiche non sono valide."
 
-#: src/components/FeedInterstitials.tsx:734
+#: src/components/FeedInterstitials.tsx:724
 msgid "Some other feeds you might like"
 msgstr "Altri feed che potrebbero piacerti"
 
@@ -9777,7 +9777,7 @@ msgid "Suggested accounts"
 msgstr "Account suggeriti"
 
 #. Accounts suggested to the user for them to follow
-#: src/components/FeedInterstitials.tsx:569
+#: src/components/FeedInterstitials.tsx:561
 #: src/screens/Onboarding/StepSuggestedAccounts/index.tsx:180
 msgid "Suggested for you"
 msgstr "Suggerito per te"
@@ -11604,7 +11604,7 @@ msgid "We're having issues initializing the age assurance process for your accou
 msgstr "Stiamo riscontrando problemi nell'inizializzazione del processo di verifica dell'età per il tuo account. <0>Contatta il supporto</0> per ricevere assistenza."
 
 #: src/components/dialogs/SearchablePeopleList.tsx:108
-#: src/components/ProgressGuide/FollowDialog.tsx:185
+#: src/components/ProgressGuide/FollowDialog.tsx:183
 msgid "We're having network issues, try again"
 msgstr "Stiamo riscontrando problemi di rete, riprova"
 

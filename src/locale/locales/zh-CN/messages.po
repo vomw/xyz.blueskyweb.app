@@ -1823,20 +1823,20 @@ msgstr "违反站点规则"
 msgid "Browse custom feeds"
 msgstr "浏览自定义动态源"
 
-#: src/components/FeedInterstitials.tsx:641
+#: src/components/FeedInterstitials.tsx:631
 msgid "Browse more accounts"
 msgstr "浏览更多账户"
 
-#: src/components/FeedInterstitials.tsx:771
+#: src/components/FeedInterstitials.tsx:761
 msgid "Browse more feeds on the Explore page"
 msgstr "在探索页面浏览更多动态源"
 
-#: src/components/FeedInterstitials.tsx:752
-#: src/components/FeedInterstitials.tsx:755
+#: src/components/FeedInterstitials.tsx:742
+#: src/components/FeedInterstitials.tsx:745
 msgid "Browse more suggestions"
 msgstr "浏览更多建议"
 
-#: src/components/FeedInterstitials.tsx:780
+#: src/components/FeedInterstitials.tsx:770
 msgid "Browse more suggestions on the Explore page"
 msgstr "在探索页面浏览更多建议"
 
@@ -2288,7 +2288,7 @@ msgstr "哒哒🐴哒哒🐴"
 #: src/components/NewskieDialog.tsx:169
 #: src/components/NewskieDialog.tsx:175
 #: src/components/Post/Embed/VideoEmbed/GifPresentationControls.tsx:107
-#: src/components/ProgressGuide/FollowDialog.tsx:441
+#: src/components/ProgressGuide/FollowDialog.tsx:445
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:122
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:128
 #: src/components/verification/VerificationsDialog.tsx:146
@@ -3274,7 +3274,7 @@ msgstr "关闭直播活动横幅"
 msgid "Dismiss this section"
 msgstr "忽略此部分"
 
-#: src/components/FeedInterstitials.tsx:445
+#: src/components/FeedInterstitials.tsx:441
 msgid "Dismiss this suggestion"
 msgstr "忽略此建议"
 
@@ -4323,9 +4323,9 @@ msgid "Find my friends"
 msgstr "寻找我的朋友"
 
 #. Starter packs suggested to the user for them to follow
-#: src/components/ProgressGuide/FollowDialog.tsx:74
-#: src/components/ProgressGuide/FollowDialog.tsx:82
-#: src/components/ProgressGuide/FollowDialog.tsx:427
+#: src/components/ProgressGuide/FollowDialog.tsx:72
+#: src/components/ProgressGuide/FollowDialog.tsx:80
+#: src/components/ProgressGuide/FollowDialog.tsx:431
 #: src/screens/Onboarding/StepSuggestedStarterpacks/index.tsx:43
 msgid "Find people to follow"
 msgstr "寻找一些人来关注"
@@ -6641,7 +6641,7 @@ msgid "No result"
 msgstr "没有结果"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:224
-#: src/components/ProgressGuide/FollowDialog.tsx:211
+#: src/components/ProgressGuide/FollowDialog.tsx:209
 msgid "No results"
 msgstr "没有结果"
 
@@ -8701,7 +8701,7 @@ msgstr "搜索"
 msgid "Search @{0}'s posts"
 msgstr "搜索 @{0} 的帖文"
 
-#: src/components/ProgressGuide/FollowDialog.tsx:658
+#: src/components/ProgressGuide/FollowDialog.tsx:685
 msgid "Search by name or interest"
 msgstr "按名称或兴趣搜索"
 
@@ -8714,12 +8714,12 @@ msgid "Search feeds"
 msgstr "搜索动态源"
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:487
+#: src/components/ProgressGuide/FollowDialog.tsx:488
 msgid "Search for \"{interestsDisplayName}\""
 msgstr "搜索“{interestsDisplayName}”"
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:480
+#: src/components/ProgressGuide/FollowDialog.tsx:483
 msgid "Search for \"{interestsDisplayName}\" (active)"
 msgstr "搜索“{interestsDisplayName}“（已选中）"
 
@@ -8771,7 +8771,7 @@ msgid "Search posts"
 msgstr "搜索帖文"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:535
-#: src/components/ProgressGuide/FollowDialog.tsx:677
+#: src/components/ProgressGuide/FollowDialog.tsx:704
 msgid "Search profiles"
 msgstr "搜索个人资料"
 
@@ -8784,7 +8784,7 @@ msgid "Search..."
 msgstr "搜索……"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:536
-#: src/components/ProgressGuide/FollowDialog.tsx:678
+#: src/components/ProgressGuide/FollowDialog.tsx:705
 msgid "Searches for profiles"
 msgstr "搜索个人资料"
 
@@ -8822,12 +8822,12 @@ msgstr "查看该用户包含 #{tag} 的帖文"
 msgid "See jobs at Bluesky"
 msgstr "查看 Bluesky 的工作职缺"
 
-#: src/components/FeedInterstitials.tsx:592
-#: src/components/FeedInterstitials.tsx:655
+#: src/components/FeedInterstitials.tsx:584
+#: src/components/FeedInterstitials.tsx:645
 msgid "See more"
 msgstr "浏览更多"
 
-#: src/components/FeedInterstitials.tsx:573
+#: src/components/FeedInterstitials.tsx:565
 msgid "See more suggested profiles"
 msgstr "查看更多建议的个人资料"
 
@@ -9519,7 +9519,7 @@ msgstr "列表中的部分内容审核服务不再可用。"
 msgid "Some of your verifications are invalid."
 msgstr "你当前被授予的部分认证无效。"
 
-#: src/components/FeedInterstitials.tsx:734
+#: src/components/FeedInterstitials.tsx:724
 msgid "Some other feeds you might like"
 msgstr "其他你可能喜欢的动态源"
 
@@ -9777,7 +9777,7 @@ msgid "Suggested accounts"
 msgstr "建议账户"
 
 #. Accounts suggested to the user for them to follow
-#: src/components/FeedInterstitials.tsx:569
+#: src/components/FeedInterstitials.tsx:561
 #: src/screens/Onboarding/StepSuggestedAccounts/index.tsx:180
 msgid "Suggested for you"
 msgstr "为你推荐"
@@ -11604,7 +11604,7 @@ msgid "We're having issues initializing the age assurance process for your accou
 msgstr "我们在初始化年龄验证流程时遇到了问题，请<0>联系支持</0>以获取帮助。"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:108
-#: src/components/ProgressGuide/FollowDialog.tsx:185
+#: src/components/ProgressGuide/FollowDialog.tsx:183
 msgid "We're having network issues, try again"
 msgstr "我们遇到了网络问题，请再试一次"
 

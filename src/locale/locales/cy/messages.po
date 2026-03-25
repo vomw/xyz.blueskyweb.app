@@ -1823,20 +1823,20 @@ msgstr "Torri rheolau gwefan"
 msgid "Browse custom feeds"
 msgstr "Pori'r ffrydiau cyfaddas"
 
-#: src/components/FeedInterstitials.tsx:641
+#: src/components/FeedInterstitials.tsx:631
 msgid "Browse more accounts"
 msgstr "Porwch ragor o gyfrifon"
 
-#: src/components/FeedInterstitials.tsx:771
+#: src/components/FeedInterstitials.tsx:761
 msgid "Browse more feeds on the Explore page"
 msgstr "Porwch ragor o ffrydiau ar y dudalen Archwilio"
 
-#: src/components/FeedInterstitials.tsx:752
-#: src/components/FeedInterstitials.tsx:755
+#: src/components/FeedInterstitials.tsx:742
+#: src/components/FeedInterstitials.tsx:745
 msgid "Browse more suggestions"
 msgstr "Pori ragor o awgrymiadau"
 
-#: src/components/FeedInterstitials.tsx:780
+#: src/components/FeedInterstitials.tsx:770
 msgid "Browse more suggestions on the Explore page"
 msgstr "Porwch ragor o awgrymiadau ar y dudalen Archwilio"
 
@@ -2288,7 +2288,7 @@ msgstr "Clip 🐴 clop 🐴"
 #: src/components/NewskieDialog.tsx:169
 #: src/components/NewskieDialog.tsx:175
 #: src/components/Post/Embed/VideoEmbed/GifPresentationControls.tsx:107
-#: src/components/ProgressGuide/FollowDialog.tsx:441
+#: src/components/ProgressGuide/FollowDialog.tsx:445
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:122
 #: src/components/StarterPack/Wizard/WizardEditListDialog.tsx:128
 #: src/components/verification/VerificationsDialog.tsx:146
@@ -3274,7 +3274,7 @@ msgstr "Cau baner digwyddiad byw"
 msgid "Dismiss this section"
 msgstr "Cau'r adran hon"
 
-#: src/components/FeedInterstitials.tsx:445
+#: src/components/FeedInterstitials.tsx:441
 msgid "Dismiss this suggestion"
 msgstr "Cau'r awgrym hwn"
 
@@ -4323,9 +4323,9 @@ msgid "Find my friends"
 msgstr "Chwilio am fy ffrindiau"
 
 #. Starter packs suggested to the user for them to follow
-#: src/components/ProgressGuide/FollowDialog.tsx:74
-#: src/components/ProgressGuide/FollowDialog.tsx:82
-#: src/components/ProgressGuide/FollowDialog.tsx:427
+#: src/components/ProgressGuide/FollowDialog.tsx:72
+#: src/components/ProgressGuide/FollowDialog.tsx:80
+#: src/components/ProgressGuide/FollowDialog.tsx:431
 #: src/screens/Onboarding/StepSuggestedStarterpacks/index.tsx:43
 msgid "Find people to follow"
 msgstr "Chwilio am bobl i'w dilyn"
@@ -6641,7 +6641,7 @@ msgid "No result"
 msgstr "Dim canlyniad"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:224
-#: src/components/ProgressGuide/FollowDialog.tsx:211
+#: src/components/ProgressGuide/FollowDialog.tsx:209
 msgid "No results"
 msgstr "Dim canlyniadau"
 
@@ -8701,7 +8701,7 @@ msgstr "Chwilio"
 msgid "Search @{0}'s posts"
 msgstr "Chwilio postiadau @{0}"
 
-#: src/components/ProgressGuide/FollowDialog.tsx:658
+#: src/components/ProgressGuide/FollowDialog.tsx:685
 msgid "Search by name or interest"
 msgstr "Chwiliwch yn ôl enw neu ddiddordeb"
 
@@ -8714,12 +8714,12 @@ msgid "Search feeds"
 msgstr "Chwilo'r ffrydiau"
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:487
+#: src/components/ProgressGuide/FollowDialog.tsx:488
 msgid "Search for \"{interestsDisplayName}\""
 msgstr "Chwiliwch am \"{interestsDisplayName}\""
 
 #. Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.
-#: src/components/ProgressGuide/FollowDialog.tsx:480
+#: src/components/ProgressGuide/FollowDialog.tsx:483
 msgid "Search for \"{interestsDisplayName}\" (active)"
 msgstr "Chwiliwch am \"{interestsDisplayName}\" (gweithredol)"
 
@@ -8771,7 +8771,7 @@ msgid "Search posts"
 msgstr "Chwiliwch am bostiadau"
 
 #: src/components/dialogs/SearchablePeopleList.tsx:535
-#: src/components/ProgressGuide/FollowDialog.tsx:677
+#: src/components/ProgressGuide/FollowDialog.tsx:704
 msgid "Search profiles"
 msgstr "Chwilio proffiliau"
 
@@ -8784,7 +8784,7 @@ msgid "Search..."
 msgstr "Chwilio..."
 
 #: src/components/dialogs/SearchablePeopleList.tsx:536
-#: src/components/ProgressGuide/FollowDialog.tsx:678
+#: src/components/ProgressGuide/FollowDialog.tsx:705
 msgid "Searches for profiles"
 msgstr "Chwilio am broffiliau"
 
@@ -8822,12 +8822,12 @@ msgstr "Gweld #{tag} postiad yn ôl defnyddiwr"
 msgid "See jobs at Bluesky"
 msgstr "Gweld swyddi yn Bluesky"
 
-#: src/components/FeedInterstitials.tsx:592
-#: src/components/FeedInterstitials.tsx:655
+#: src/components/FeedInterstitials.tsx:584
+#: src/components/FeedInterstitials.tsx:645
 msgid "See more"
 msgstr "Gweld rhagor"
 
-#: src/components/FeedInterstitials.tsx:573
+#: src/components/FeedInterstitials.tsx:565
 msgid "See more suggested profiles"
 msgstr "Gweld rhagor o broffiliau diddorol"
 
@@ -9519,7 +9519,7 @@ msgstr "Dyw rhai gwasanaethau cymedroli sydd ar eich rhestr ddim ar gael bellach
 msgid "Some of your verifications are invalid."
 msgstr "Mae rhai o'ch dilysiadau'n annilys."
 
-#: src/components/FeedInterstitials.tsx:734
+#: src/components/FeedInterstitials.tsx:724
 msgid "Some other feeds you might like"
 msgstr "Rhai ffrydiau eraill efallai y byddwch yn eu hoffi"
 
@@ -9777,7 +9777,7 @@ msgid "Suggested accounts"
 msgstr "Cyfrifon wedi'u hawgrymu"
 
 #. Accounts suggested to the user for them to follow
-#: src/components/FeedInterstitials.tsx:569
+#: src/components/FeedInterstitials.tsx:561
 #: src/screens/Onboarding/StepSuggestedAccounts/index.tsx:180
 msgid "Suggested for you"
 msgstr "Awgrymiadau i chi"
@@ -11604,7 +11604,7 @@ msgid "We're having issues initializing the age assurance process for your accou
 msgstr "Rydym yn cael anawsterau cychwyn y broses sicrhau oed ar gyfer eich cyfrif. Cysylltwch â'n <0>cefnogaeth</0> am gymorth."
 
 #: src/components/dialogs/SearchablePeopleList.tsx:108
-#: src/components/ProgressGuide/FollowDialog.tsx:185
+#: src/components/ProgressGuide/FollowDialog.tsx:183
 msgid "We're having network issues, try again"
 msgstr "Rydym yn cael problemau rhwydwaith, ceisiwch eto"
 
