@@ -34,6 +34,23 @@ export function LanguageSettingsScreen({}: Props) {
   const langPrefs = useLanguagePrefs()
   const setLangPrefs = useLanguagePrefsApi()
 
+  // changing langPrefs causes a slow re-render, so we use a local state copy
+  // and update that first to drive the UI on this screen to keep it snappy
+  const [contentLanguages, _setContentLanguages] = useState(
+    langPrefs.contentLanguages,
+  )
+  const setContentLanguages = useCallback(
+    (languages: string[]) => {
+      _setContentLanguages(languages)
+      // TODO: try using startTransition/useOptimistic when we switch to New Arch
+      // Old arch doesn't support concurrent react features so use rAF instead
+      requestAnimationFrame(() => {
+        setLangPrefs.setContentLanguages(languages)
+      })
+    },
+    [setLangPrefs],
+  )
+
   const contentLanguagePrefsControl = useDialogControl()
 
   const onChangePrimaryLanguage = useCallback(
@@ -167,7 +184,7 @@ export function LanguageSettingsScreen({}: Props) {
                 </Trans>
               </Text>
 
-              {langPrefs.contentLanguages.length === 0 && (
+              {contentLanguages.length === 0 && (
                 <Admonition type="info">
                   <Trans>All languages will be shown in your feeds.</Trans>
                 </Admonition>
@@ -176,8 +193,8 @@ export function LanguageSettingsScreen({}: Props) {
               <View style={[a.w_full, web({maxWidth: 400})]}>
                 <Toggle.Group
                   label={_(msg`Select content languages`)}
-                  values={langPrefs.contentLanguages}
-                  onChange={setLangPrefs.setContentLanguages}>
+                  values={contentLanguages}
+                  onChange={setContentLanguages}>
                   <Toggle.PanelGroup>
                     {possibleLanguages.map((language, index) => {
                       const name = languageName(language, langPrefs.appLanguage)
@@ -222,7 +239,7 @@ export function LanguageSettingsScreen({}: Props) {
                 }
                 currentLanguages={langPrefs.contentLanguages}
                 onSelectLanguages={languages => {
-                  setLangPrefs.setContentLanguages(languages)
+                  setContentLanguages(languages)
                   setRecentLanguages(recent => [
                     ...new Set([...recent, ...languages]),
                   ])
