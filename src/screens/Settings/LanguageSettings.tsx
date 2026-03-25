@@ -81,13 +81,13 @@ export function LanguageSettingsScreen({}: Props) {
     return [
       ...new Set([
         ...recentLanguages,
-        ...langPrefs.contentLanguages,
+        ...contentLanguages,
         ...langPrefs.primaryLanguage,
       ]),
     ]
       .map(lang => LANGUAGES.find(l => l.code2 === lang))
       .filter(x => !!x)
-  }, [recentLanguages, langPrefs.contentLanguages, langPrefs.primaryLanguage])
+  }, [recentLanguages, contentLanguages, langPrefs.primaryLanguage])
 
   return (
     <Layout.Screen testID="PreferencesLanguagesScreen">
