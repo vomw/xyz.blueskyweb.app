@@ -9,6 +9,7 @@ import {
   RichText,
 } from '@atproto/api'
 import {t} from '@lingui/core/macro'
+import {useIsFocused} from '@react-navigation/native'
 import {
   type InfiniteData,
   keepPreviousData,
@@ -176,10 +177,12 @@ export function getAvatarTypeFromUri(uri: string) {
 export function useFeedSourceInfoQuery({uri}: {uri: string}) {
   const type = getFeedTypeFromUri(uri)
   const agent = useAgent()
+  const isFocused = useIsFocused()
 
   return useQuery({
     staleTime: STALE.INFINITY,
     queryKey: feedSourceInfoQueryKey({uri}),
+    subscribed: isFocused,
     queryFn: async () => {
       let view: FeedSourceInfo
 

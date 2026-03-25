@@ -1,0 +1,39 @@
+diff --git a/node_modules/@react-navigation/core/lib/module/index.js b/node_modules/@react-navigation/core/lib/module/index.js
+index dc83d8c..b707811 100644
+--- a/node_modules/@react-navigation/core/lib/module/index.js
++++ b/node_modules/@react-navigation/core/lib/module/index.js
+@@ -23,7 +23,7 @@ export { ThemeProvider } from "./theming/ThemeProvider.js";
+ export { useTheme } from "./theming/useTheme.js";
+ export * from "./types.js";
+ export { useFocusEffect } from "./useFocusEffect.js";
+-export { useIsFocused } from "./useIsFocused.js";
++export { IsFocusedContext, useIsFocused } from "./useIsFocused.js";
+ export { useNavigation } from "./useNavigation.js";
+ export { useNavigationBuilder } from "./useNavigationBuilder.js";
+ export { useNavigationContainerRef } from "./useNavigationContainerRef.js";
+diff --git a/node_modules/@react-navigation/core/lib/typescript/src/index.d.ts b/node_modules/@react-navigation/core/lib/typescript/src/index.d.ts
+index 220e113..1b406cf 100644
+--- a/node_modules/@react-navigation/core/lib/typescript/src/index.d.ts
++++ b/node_modules/@react-navigation/core/lib/typescript/src/index.d.ts
+@@ -21,7 +21,7 @@ export { ThemeProvider } from './theming/ThemeProvider';
+ export { useTheme } from './theming/useTheme';
+ export * from './types';
+ export { useFocusEffect } from './useFocusEffect';
+-export { useIsFocused } from './useIsFocused';
++export { IsFocusedContext, useIsFocused } from './useIsFocused';
+ export { useNavigation } from './useNavigation';
+ export { useNavigationBuilder } from './useNavigationBuilder';
+ export { useNavigationContainerRef } from './useNavigationContainerRef';
+diff --git a/node_modules/@react-navigation/core/src/index.tsx b/node_modules/@react-navigation/core/src/index.tsx
+index 6f5175f..211d585 100644
+--- a/node_modules/@react-navigation/core/src/index.tsx
++++ b/node_modules/@react-navigation/core/src/index.tsx
+@@ -33,7 +33,7 @@ export { ThemeProvider } from './theming/ThemeProvider';
+ export { useTheme } from './theming/useTheme';
+ export * from './types';
+ export { useFocusEffect } from './useFocusEffect';
+-export { useIsFocused } from './useIsFocused';
++export { IsFocusedContext, useIsFocused } from './useIsFocused';
+ export { useNavigation } from './useNavigation';
+ export { useNavigationBuilder } from './useNavigationBuilder';
+ export { useNavigationContainerRef } from './useNavigationContainerRef';

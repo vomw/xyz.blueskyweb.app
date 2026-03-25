@@ -1,9 +1,10 @@
-import {useCallback} from 'react'
+import {useCallback, useContext} from 'react'
 import {
   type AppBskyActorDefs,
   type BskyFeedViewPreference,
   type LabelPreference,
 } from '@atproto/api'
+import {IsFocusedContext} from '@react-navigation/native'
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 
 import {PROD_DEFAULT_FEED} from '#/lib/constants'
@@ -38,6 +39,7 @@ export const preferencesQueryKey = [PERSISTED_QUERY_ROOT, 'getPreferences']
 export function usePreferencesQuery() {
   const agent = useAgent()
   const aa = useAgeAssurance()
+  const isFocused = useOptionalIsFocused()
 
   const query = useQuery({
     staleTime: STALE.SECONDS.FIFTEEN,
@@ -45,6 +47,7 @@ export function usePreferencesQuery() {
     refetchOnWindowFocus: true,
     queryKey: preferencesQueryKey,
     gcTime: PERSISTED_QUERY_GCTIME,
+    subscribed: isFocused,
     queryFn: async () => {
       if (!agent.did) {
         return DEFAULT_LOGGED_OUT_PREFERENCES
@@ -105,6 +108,11 @@ export function usePreferencesQuery() {
   }
 
   return query
+}
+
+// same as useIsFocused, but returns true if not in context (i.e. not in a navigator)
+function useOptionalIsFocused() {
+  return useContext(IsFocusedContext) ?? true
 }
 
 export function useClearPreferencesMutation() {

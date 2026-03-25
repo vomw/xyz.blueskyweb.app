@@ -10,6 +10,7 @@ import {
   type ModerationDecision,
   type ModerationPrefs,
 } from '@atproto/api'
+import {useIsFocused} from '@react-navigation/native'
 import {
   type InfiniteData,
   type QueryClient,
@@ -134,6 +135,7 @@ export function usePostFeedQuery(
   const feedTuners = useFeedTuners(feedDesc)
   const moderationOpts = useModerationOpts()
   const {data: preferences} = usePreferencesQuery()
+  const isFocused = useIsFocused()
   /**
    * Load bearing: we need to await AA state or risk FOUC. This marginally
    * delays feeds, but AA state is fetched immediately on load and is then
@@ -183,6 +185,7 @@ export function usePostFeedQuery(
   >({
     enabled,
     staleTime: STALE.INFINITY,
+    subscribed: isFocused,
     queryKey: RQKEY(feedDesc, params),
     async queryFn({pageParam}: {pageParam: RQPageParam}) {
       logger.debug('usePostFeedQuery', {feedDesc, cursor: pageParam?.cursor})
