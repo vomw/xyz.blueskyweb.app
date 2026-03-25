@@ -32,6 +32,7 @@ export type ListProps<ItemT = any> = Omit<
   | 'refreshControl' // Pass refreshing and/or onRefresh instead.
   | 'contentOffset' // Pass headerOffset instead.
   | 'progressViewOffset' // Can't be an animated value
+  | 'onLayout' // Can't be an animated value
 > & {
   onScrolledDownChange?: (isScrolledDown: boolean) => void
   headerOffset?: number
@@ -43,6 +44,7 @@ export type ListProps<ItemT = any> = Omit<
   disableFullWindowScroll?: boolean
   sideBorders?: boolean
   progressViewOffset?: number
+  onLayout?: (event: LayoutChangeEvent) => void
 }
 export type ListRef = React.RefObject<FlatList_INTERNAL | null>
 
@@ -159,7 +161,7 @@ let List = forwardRef<ListMethods, ListProps>(
     }
 
     const handleLayout = (e: LayoutChangeEvent) => {
-      updateActiveVideoViewAsync()
+      void updateActiveVideoViewAsync()
       onLayout?.(e)
     }
 
