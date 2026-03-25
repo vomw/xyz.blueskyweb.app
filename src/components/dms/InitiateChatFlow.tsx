@@ -1,4 +1,11 @@
-import {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react'
+import {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import {LayoutAnimation, TextInput, View} from 'react-native'
 import {moderateProfile, type ModerationOpts} from '@atproto/api'
 import {Trans, useLingui} from '@lingui/react/macro'
@@ -11,18 +18,23 @@ import {useProfileFollowsQuery} from '#/state/queries/profile-follows'
 import {useSession} from '#/state/session'
 import {type ListMethods} from '#/view/com/util/List'
 import {android, atoms as a, native, useTheme, web} from '#/alf'
-import {Button, ButtonIcon} from '#/components/Button'
+import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import * as Dialog from '#/components/Dialog'
 import {canBeMessaged} from '#/components/dms/util'
+import * as TextField from '#/components/forms/TextField'
 import * as Toggle from '#/components/forms/Toggle'
 import {useInteractionState} from '#/components/hooks/useInteractionState'
-import {ArrowLeft_Stroke2_Corner0_Rounded as ArrowLeft} from '#/components/icons/Arrow'
-import {ChevronRight_Stroke2_Corner0_Rounded as ChevronRight} from '#/components/icons/Chevron'
-import {MagnifyingGlass_Stroke2_Corner0_Rounded as Search} from '#/components/icons/MagnifyingGlass'
-import {PersonGroup_Stroke2_Corner2_Rounded as PersonGroup} from '#/components/icons/Person'
+import {
+  ArrowLeft_Stroke2_Corner0_Rounded as ArrowLeftIcon,
+  ArrowRight_Stroke2_Corner0_Rounded as ArrowRightIcon,
+} from '#/components/icons/Arrow'
+import {ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon} from '#/components/icons/Chevron'
+import {MagnifyingGlass_Stroke2_Corner0_Rounded as SearchIcon} from '#/components/icons/MagnifyingGlass'
+import {PersonGroup_Stroke2_Corner2_Rounded as PersonGroupIcon} from '#/components/icons/Person'
+import {TimesLarge_Stroke2_Corner0_Rounded as XIcon} from '#/components/icons/Times'
 import * as ProfileCard from '#/components/ProfileCard'
 import {Text} from '#/components/Typography'
-import {IS_WEB} from '#/env'
+import {IS_NATIVE, IS_WEB} from '#/env'
 import type * as bsky from '#/types/bsky'
 import {ChatProfileTabs} from './ChatProfileTabs'
 
@@ -73,18 +85,120 @@ enum ChatState {
   GROUP_NAME,
 }
 
+export type State = {
+  chatState: ChatState
+  screenTitle: string
+  groupChatDids: string[]
+  groupChatProfiles: bsky.profile.AnyProfileView[]
+  groupName: string
+}
+
+export type Action =
+  | {
+      type: 'startNewGroupChat'
+      screenTitle: string
+    }
+  | {
+      type: 'setDids'
+      groupChatDids: string[]
+      groupChatProfiles: bsky.profile.AnyProfileView[]
+    }
+  | {
+      type: 'removeDids'
+      groupChatDids: string[]
+      groupChatProfiles: bsky.profile.AnyProfileView[]
+    }
+  | {
+      type: 'startNameGroup'
+      screenTitle: string
+    }
+  | {
+      type: 'nameGroup'
+      groupName: string
+    }
+  | {
+      type: 'goBackFromNewGroupChat'
+      screenTitle: string
+    }
+  | {
+      type: 'goBackFromGroupName'
+      screenTitle: string
+    }
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'startNewGroupChat': {
+      return {
+        ...state,
+        chatState: ChatState.NEW_GROUP_CHAT,
+        screenTitle: action.screenTitle,
+        groupChatDids: [],
+        groupChatProfiles: [],
+        groupName: '',
+      }
+    }
+    case 'setDids': {
+      return {
+        ...state,
+        groupChatDids: action.groupChatDids,
+        groupChatProfiles: action.groupChatProfiles,
+      }
+    }
+    case 'removeDids': {
+      return {
+        ...state,
+        groupChatDids: action.groupChatDids,
+        groupChatProfiles: action.groupChatProfiles,
+      }
+    }
+    case 'startNameGroup': {
+      return {
+        ...state,
+        chatState: ChatState.GROUP_NAME,
+        screenTitle: action.screenTitle,
+      }
+    }
+    case 'nameGroup': {
+      return {
+        ...state,
+        groupName: action.groupName,
+      }
+    }
+    case 'goBackFromNewGroupChat': {
+      return {
+        ...state,
+        chatState: ChatState.NEW_CHAT,
+        screenTitle: action.screenTitle,
+        groupChatDids: [],
+        groupChatProfiles: [],
+        groupName: '',
+      }
+    }
+    case 'goBackFromGroupName': {
+      return {
+        ...state,
+        chatState: ChatState.NEW_GROUP_CHAT,
+        screenTitle: action.screenTitle,
+        groupName: '',
+      }
+    }
+  }
+}
 export function InitiateChatFlow({
   title,
   onSelectChat,
+  onSelectGroupChat,
 }: {
   title: string
   onSelectChat: (did: string) => void
+  onSelectGroupChat: (dids: string[], groupName: string) => void
 }) {
   const t = useTheme()
   const {t: l} = useLingui()
   const moderationOpts = useModerationOpts()
   const control = Dialog.useDialogContext()
   const [headerHeight, setHeaderHeight] = useState(0)
+  const [footerHeight, setFooterHeight] = useState(0)
   const listRef = useRef<ListMethods>(null)
   const {currentAccount} = useSession()
   const inputRef = useRef<TextInput>(null)
@@ -98,20 +212,33 @@ export function InitiateChatFlow({
   } = useActorAutocompleteQuery(searchText, true, 12)
   const {data: follows} = useProfileFollowsQuery(currentAccount?.did)
 
-  const [chatState, setChatState] = useState(ChatState.NEW_CHAT)
-  const [chatTitle, setChatTitle] = useState(title)
-  const [groupChatDids, setGroupChatDids] = useState<string[]>([])
-  const [groupChatProfiles, setGroupChatProfiles] = useState<
-    bsky.profile.AnyProfileView[]
-  >([])
+  const [
+    {chatState, screenTitle, groupChatDids, groupChatProfiles, groupName},
+    dispatch,
+  ] = useReducer(reducer, {
+    chatState: ChatState.NEW_CHAT,
+    screenTitle: title,
+    groupChatDids: [],
+    groupChatProfiles: [],
+    groupName: '',
+  })
 
-  const onRemoveDid = (did: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setGroupChatDids(prev => [...prev].filter(d => d !== did))
-    setGroupChatProfiles(prev =>
-      [...prev].filter(profile => profile.did !== did),
-    )
-  }
+  const newGroupChatTitle = l`New group chat`
+  const groupNameTitle = l`Group name`
+
+  const onRemoveDid = useCallback(
+    (did: string) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+      dispatch({
+        type: 'removeDids',
+        groupChatDids: groupChatDids.filter(d => d !== did),
+        groupChatProfiles: groupChatProfiles.filter(
+          profile => profile.did !== did,
+        ),
+      })
+    },
+    [groupChatDids, groupChatProfiles],
+  )
 
   const items = useMemo(() => {
     let _items: Item[] = []
@@ -121,6 +248,17 @@ export function InitiateChatFlow({
         type: 'empty',
         key: 'empty',
         message: l`We’re having network issues, try again`,
+      })
+    } else if (chatState === ChatState.GROUP_NAME) {
+      _items = groupChatProfiles.map(profile => ({
+        type: 'profile',
+        key: profile.did,
+        profile,
+      }))
+      _items.unshift({
+        type: 'label',
+        key: 'members',
+        message: l`New group chat with:`,
       })
     } else if (searchText.length) {
       if (results?.length) {
@@ -181,7 +319,16 @@ export function InitiateChatFlow({
     }
 
     return _items
-  }, [l, chatState, searchText, results, isError, currentAccount?.did, follows])
+  }, [
+    isError,
+    chatState,
+    searchText,
+    l,
+    groupChatProfiles,
+    results,
+    currentAccount?.did,
+    follows,
+  ])
 
   if (searchText && !isFetching && !items.length && !isError) {
     items.push({type: 'empty', key: 'empty', message: l`No results`})
@@ -193,21 +340,35 @@ export function InitiateChatFlow({
         control.close()
         break
       case ChatState.NEW_GROUP_CHAT:
-        setChatTitle(title)
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        setChatState(ChatState.NEW_CHAT)
-        setGroupChatDids([])
-        setGroupChatProfiles([])
+        dispatch({type: 'goBackFromNewGroupChat', screenTitle: title})
         setSearchText('')
         break
+      case ChatState.GROUP_NAME:
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+        dispatch({type: 'goBackFromGroupName', screenTitle: newGroupChatTitle})
+        break
     }
-  }, [chatState, control, title])
+  }, [chatState, control, newGroupChatTitle, title])
 
   const handlePressNewGroupChat = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setChatState(ChatState.NEW_GROUP_CHAT)
-    setChatTitle(l`New group chat`)
-  }, [l])
+    dispatch({type: 'startNewGroupChat', screenTitle: newGroupChatTitle})
+  }, [newGroupChatTitle])
+
+  const handlePressNext = useCallback(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+    dispatch({type: 'startNameGroup', screenTitle: groupNameTitle})
+    setSearchText('')
+  }, [groupNameTitle])
+
+  const handlePressConfirm = useCallback(() => {
+    onSelectGroupChat(groupChatDids, groupName)
+  }, [groupChatDids, groupName, onSelectGroupChat])
+
+  const setGroupName = (newGroupName: string) => {
+    dispatch({type: 'nameGroup', groupName: newGroupName})
+  }
 
   const renderItems = useCallback(
     ({item}: {item: Item}) => {
@@ -224,20 +385,33 @@ export function InitiateChatFlow({
           return <Label key={item.key} message={item.message} />
         }
         case 'profile': {
-          return chatState === ChatState.NEW_GROUP_CHAT ? (
-            <GroupChatProfileCard
-              key={item.key}
-              profile={item.profile}
-              moderationOpts={moderationOpts!}
-            />
-          ) : (
-            <DefaultProfileCard
-              key={item.key}
-              profile={item.profile}
-              moderationOpts={moderationOpts!}
-              onPress={onSelectChat}
-            />
-          )
+          switch (chatState) {
+            case ChatState.NEW_CHAT:
+              return (
+                <DefaultProfileCard
+                  key={item.key}
+                  profile={item.profile}
+                  moderationOpts={moderationOpts!}
+                  onPress={onSelectChat}
+                />
+              )
+            case ChatState.NEW_GROUP_CHAT:
+              return (
+                <GroupChatProfileCard
+                  key={item.key}
+                  profile={item.profile}
+                  moderationOpts={moderationOpts!}
+                />
+              )
+            case ChatState.GROUP_NAME:
+              return (
+                <GroupChatMemberProfileCard
+                  key={item.key}
+                  profile={item.profile}
+                  moderationOpts={moderationOpts!}
+                />
+              )
+          }
         }
         case 'placeholder': {
           return <ProfileCardSkeleton key={item.key} />
@@ -260,8 +434,27 @@ export function InitiateChatFlow({
     }
   }, [])
 
-  const listHeader = useMemo(() => {
-    return (
+  let buttonLabel = l`Continue to group name`
+  let buttonText = l`Next`
+  let handleButtonPress = handlePressNext
+  let showButton =
+    chatState === ChatState.NEW_GROUP_CHAT && groupChatProfiles.length > 0
+  let isButtonDisabled = !showButton
+  switch (chatState) {
+    case ChatState.GROUP_NAME:
+      buttonLabel = l`Create group chat`
+      buttonText = l`Create`
+      handleButtonPress = handlePressConfirm
+      showButton = true
+      isButtonDisabled = groupName === ''
+      break
+  }
+
+  const showChatProfileTabs =
+    chatState === ChatState.NEW_GROUP_CHAT && groupChatProfiles.length > 0
+
+  const listHeader = useMemo(
+    () => (
       <View onLayout={evt => setHeaderHeight(evt.nativeEvent.layout.height)}>
         <View
           style={[
@@ -272,9 +465,9 @@ export function InitiateChatFlow({
               borderTopLeftRadius: a.rounded_md.borderRadius,
               borderTopRightRadius: a.rounded_md.borderRadius,
             }),
-            a.pb_xs,
             a.px_lg,
-            a.border_b,
+            chatState !== ChatState.GROUP_NAME ? a.pb_xs : a.pb_lg,
+            chatState !== ChatState.GROUP_NAME && a.border_b,
             t.atoms.border_contrast_low,
             t.atoms.bg,
           ]}>
@@ -285,17 +478,20 @@ export function InitiateChatFlow({
               a.relative,
               a.align_center,
               a.justify_between,
+              web(a.pb_lg),
             ]}>
-            <Button
-              label={l`Back`}
-              size="large"
-              shape="round"
-              variant="ghost"
-              color="secondary"
-              style={[native([a.absolute, a.z_20])]}
-              onPress={handlePressBack}>
-              <ButtonIcon icon={ArrowLeft} size="lg" />
-            </Button>
+            {IS_NATIVE ? (
+              <Button
+                label={l`Back`}
+                size="large"
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                style={[native([a.absolute, a.z_20])]}
+                onPress={handlePressBack}>
+                <ButtonIcon icon={ArrowLeftIcon} size="lg" />
+              </Button>
+            ) : null}
             <Text
               style={[
                 a.flex_grow,
@@ -304,25 +500,79 @@ export function InitiateChatFlow({
                 a.font_bold,
                 a.leading_tight,
                 t.atoms.text_contrast_high,
-                native(a.text_center),
-                native(a.px_5xl),
+                a.text_center,
+                a.px_5xl,
               ]}>
-              {chatTitle}
+              {screenTitle}
             </Text>
+            {IS_WEB ? (
+              <Button
+                label={l`Close`}
+                size="small"
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                style={[a.absolute, a.z_20, {right: -4}]}
+                onPress={() => control.close()}>
+                <ButtonIcon icon={XIcon} size="lg" />
+              </Button>
+            ) : showButton ? (
+              <Button
+                label={buttonLabel}
+                size="small"
+                color="primary"
+                style={[
+                  native([
+                    a.absolute,
+                    a.z_20,
+                    {
+                      right: 8,
+                    },
+                  ]),
+                ]}
+                disabled={isButtonDisabled}
+                onPress={handleButtonPress}>
+                <ButtonText>{buttonText}</ButtonText>
+              </Button>
+            ) : null}
           </View>
           <View style={[web(a.pt_xs), native(a.pt_md)]}>
-            <SearchInput
-              inputRef={inputRef}
-              value={searchText}
-              onChangeText={text => {
-                setSearchText(text)
-                listRef.current?.scrollToOffset({offset: 0, animated: false})
-              }}
-              onEscape={control.close}
-            />
+            {chatState === ChatState.GROUP_NAME ? (
+              <View
+                style={[a.w_full, a.relative, web(a.pt_md), native(a.pt_xl)]}>
+                <TextField.Root>
+                  <TextField.Input
+                    label={l`Group name`}
+                    value={groupName}
+                    returnKeyType="next"
+                    keyboardAppearance={t.scheme}
+                    selectTextOnFocus={IS_NATIVE}
+                    autoFocus={false}
+                    accessibilityRole="text"
+                    autoCorrect={false}
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    onChangeText={setGroupName}
+                    onSubmitEditing={
+                      isButtonDisabled ? undefined : handleButtonPress
+                    }
+                  />
+                </TextField.Root>
+              </View>
+            ) : (
+              <SearchInput
+                inputRef={inputRef}
+                value={searchText}
+                onChangeText={text => {
+                  setSearchText(text)
+                  listRef.current?.scrollToOffset({offset: 0, animated: false})
+                }}
+                onEscape={control.close}
+              />
+            )}
           </View>
         </View>
-        {groupChatProfiles.length > 0 ? (
+        {showChatProfileTabs ? (
           <View style={[a.pb_sm, a.pt_md, t.atoms.bg]}>
             <ChatProfileTabs
               testID="newGroupChatMembers"
@@ -332,39 +582,56 @@ export function InitiateChatFlow({
           </View>
         ) : null}
       </View>
-    )
-  }, [
-    t.atoms.border_contrast_low,
-    t.atoms.bg,
-    t.atoms.text_contrast_high,
-    l,
-    handlePressBack,
-    chatTitle,
-    searchText,
-    control.close,
-    groupChatProfiles,
-  ])
+    ),
+    [
+      chatState,
+      t.atoms.border_contrast_low,
+      t.atoms.bg,
+      t.atoms.text_contrast_high,
+      t.scheme,
+      l,
+      handlePressBack,
+      screenTitle,
+      showButton,
+      buttonLabel,
+      isButtonDisabled,
+      handleButtonPress,
+      buttonText,
+      groupName,
+      searchText,
+      control,
+      showChatProfileTabs,
+      groupChatProfiles,
+      onRemoveDid,
+    ],
+  )
 
   const setGroupChatMembers = (dids: string[]) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setGroupChatDids(prev => {
-      const added = dids.filter(d => !prev.includes(d))
-      const removed = prev.filter(d => !dids.includes(d))
-      return [...prev.filter(d => !removed.includes(d)), ...added]
-    })
-    setGroupChatProfiles(prev => {
-      const kept = prev.filter(p => dids.includes(p.did))
-      const keptDids = new Set(kept.map(p => p.did))
-      const added = items
-        .filter(
-          (item): item is ProfileItem =>
-            item.type === 'profile' &&
-            dids.includes(item.profile.did) &&
-            !keptDids.has(item.profile.did),
-        )
-        .map(item => item.profile)
-        .sort((a, b) => dids.indexOf(a.did) - dids.indexOf(b.did))
-      return [...kept, ...added]
+
+    const added = dids.filter(d => !groupChatDids.includes(d))
+    const removed = groupChatDids.filter(d => !dids.includes(d))
+    const newDids = [
+      ...groupChatDids.filter(d => !removed.includes(d)),
+      ...added,
+    ]
+
+    const kept = groupChatProfiles.filter(p => dids.includes(p.did))
+    const keptDids = new Set(kept.map(p => p.did))
+    const addedProfiles = items
+      .filter(
+        (item): item is ProfileItem =>
+          item.type === 'profile' &&
+          dids.includes(item.profile.did) &&
+          !keptDids.has(item.profile.did),
+      )
+      .map(item => item.profile)
+      .sort((a, b) => dids.indexOf(a.did) - dids.indexOf(b.did))
+
+    dispatch({
+      type: 'setDids',
+      groupChatDids: newDids,
+      groupChatProfiles: [...kept, ...addedProfiles],
     })
   }
 
@@ -390,10 +657,41 @@ export function InitiateChatFlow({
           web([a.py_0, {height: '100vh', maxHeight: 600}, a.px_0]),
           native({height: '100%'}),
         ]}
-        webInnerContentContainerStyle={a.py_0}
+        webInnerContentContainerStyle={[a.py_0, {paddingBottom: footerHeight}]}
         webInnerStyle={[a.py_0, {maxWidth: 500, minWidth: 200}]}
-        scrollIndicatorInsets={{top: headerHeight}}
+        scrollIndicatorInsets={{top: headerHeight, bottom: footerHeight}}
         keyboardDismissMode="on-drag"
+        footer={
+          IS_WEB && chatState !== ChatState.NEW_CHAT ? (
+            <Dialog.FlatListFooter
+              onLayout={evt => setFooterHeight(evt.nativeEvent.layout.height)}>
+              <View style={[a.flex_row, a.align_center, a.justify_between]}>
+                <Button
+                  label={l`Back`}
+                  size="small"
+                  color="secondary"
+                  onPress={handlePressBack}>
+                  <ButtonIcon icon={ArrowLeftIcon} size="md" />
+                  <ButtonText>
+                    {' '}
+                    <Trans>Back</Trans>
+                  </ButtonText>
+                </Button>
+                <Button
+                  label={buttonLabel}
+                  size="small"
+                  color="primary"
+                  disabled={isButtonDisabled}
+                  onPress={handleButtonPress}>
+                  <ButtonText>{buttonText} </ButtonText>
+                  {chatState !== ChatState.GROUP_NAME ? (
+                    <ButtonIcon icon={ArrowRightIcon} size="md" />
+                  ) : null}
+                </Button>
+              </View>
+            </Dialog.FlatListFooter>
+          ) : null
+        }
       />
     </Toggle.Group>
   )
@@ -431,7 +729,7 @@ function NewGroupChatButton({onPress}: {onPress: () => void}) {
                 padding: 12,
               },
             ]}>
-            <PersonGroup size="md" fill={t.palette.contrast_1000} />
+            <PersonGroupIcon size="md" fill={t.palette.contrast_1000} />
           </View>
           <View style={[a.flex_grow]}>
             <Text
@@ -439,7 +737,7 @@ function NewGroupChatButton({onPress}: {onPress: () => void}) {
               <Trans>New group chat</Trans>
             </Text>
           </View>
-          <ChevronRight size="md" fill={t.palette.contrast_1000} />
+          <ChevronRightIcon size="md" fill={t.palette.contrast_1000} />
         </View>
       )}
     </Button>
@@ -568,6 +866,43 @@ function GroupChatProfileCard({
   )
 }
 
+function GroupChatMemberProfileCard({
+  profile,
+  moderationOpts,
+}: {
+  profile: bsky.profile.AnyProfileView
+  moderationOpts: ModerationOpts
+}) {
+  const t = useTheme()
+  const enabled = canBeMessaged(profile)
+  const handle = sanitizeHandle(profile.handle, '@')
+
+  return (
+    <View style={[a.flex_1, a.py_sm, a.px_lg, t.atoms.bg]}>
+      <ProfileCard.Header>
+        <ProfileCard.Avatar
+          profile={profile}
+          moderationOpts={moderationOpts}
+          size={44}
+          disabledPreview
+        />
+        <View style={[a.flex_1]}>
+          <ProfileCard.Name profile={profile} moderationOpts={moderationOpts} />
+          {enabled ? (
+            <ProfileCard.Handle profile={profile} />
+          ) : (
+            <Text
+              style={[a.leading_snug, t.atoms.text_contrast_high]}
+              numberOfLines={2}>
+              <Trans>{handle} can’t be messaged</Trans>
+            </Text>
+          )}
+        </View>
+      </ProfileCard.Header>
+    </View>
+  )
+}
+
 function ProfileCardSkeleton() {
   return (
     <View
@@ -637,7 +972,7 @@ function SearchInput({
         onMouseLeave,
       })}
       style={[a.flex_row, a.align_center, a.gap_sm]}>
-      <Search
+      <SearchIcon
         size="md"
         fill={interacted ? t.palette.primary_500 : t.palette.contrast_300}
       />
