@@ -24,10 +24,14 @@ import {canBeMessaged} from '#/components/dms/util'
 import * as TextField from '#/components/forms/TextField'
 import * as Toggle from '#/components/forms/Toggle'
 import {useInteractionState} from '#/components/hooks/useInteractionState'
-import {ArrowLeft_Stroke2_Corner0_Rounded as ArrowLeft} from '#/components/icons/Arrow'
-import {ChevronRight_Stroke2_Corner0_Rounded as ChevronRight} from '#/components/icons/Chevron'
-import {MagnifyingGlass_Stroke2_Corner0_Rounded as Search} from '#/components/icons/MagnifyingGlass'
-import {PersonGroup_Stroke2_Corner2_Rounded as PersonGroup} from '#/components/icons/Person'
+import {
+  ArrowLeft_Stroke2_Corner0_Rounded as ArrowLeftIcon,
+  ArrowRight_Stroke2_Corner0_Rounded as ArrowRightIcon,
+} from '#/components/icons/Arrow'
+import {ChevronRight_Stroke2_Corner0_Rounded as ChevronRightIcon} from '#/components/icons/Chevron'
+import {MagnifyingGlass_Stroke2_Corner0_Rounded as SearchIcon} from '#/components/icons/MagnifyingGlass'
+import {PersonGroup_Stroke2_Corner2_Rounded as PersonGroupIcon} from '#/components/icons/Person'
+import {TimesLarge_Stroke2_Corner0_Rounded as XIcon} from '#/components/icons/Times'
 import * as ProfileCard from '#/components/ProfileCard'
 import {Text} from '#/components/Typography'
 import {IS_NATIVE, IS_WEB} from '#/env'
@@ -194,6 +198,7 @@ export function InitiateChatFlow({
   const moderationOpts = useModerationOpts()
   const control = Dialog.useDialogContext()
   const [headerHeight, setHeaderHeight] = useState(0)
+  const [footerHeight, setFooterHeight] = useState(0)
   const listRef = useRef<ListMethods>(null)
   const {currentAccount} = useSession()
   const inputRef = useRef<TextInput>(null)
@@ -434,7 +439,7 @@ export function InitiateChatFlow({
   let handleButtonPress = handlePressNext
   let showButton =
     chatState === ChatState.NEW_GROUP_CHAT && groupChatProfiles.length > 0
-  let isButtonDisabled = false
+  let isButtonDisabled = !showButton
   switch (chatState) {
     case ChatState.GROUP_NAME:
       buttonLabel = l`Create group chat`
@@ -448,8 +453,8 @@ export function InitiateChatFlow({
   const showChatProfileTabs =
     chatState === ChatState.NEW_GROUP_CHAT && groupChatProfiles.length > 0
 
-  const listHeader = useMemo(() => {
-    return (
+  const listHeader = useMemo(
+    () => (
       <View onLayout={evt => setHeaderHeight(evt.nativeEvent.layout.height)}>
         <View
           style={[
@@ -473,17 +478,20 @@ export function InitiateChatFlow({
               a.relative,
               a.align_center,
               a.justify_between,
+              web(a.pb_lg),
             ]}>
-            <Button
-              label={l`Back`}
-              size="large"
-              shape="round"
-              variant="ghost"
-              color="secondary"
-              style={[native([a.absolute, a.z_20])]}
-              onPress={handlePressBack}>
-              <ButtonIcon icon={ArrowLeft} size="lg" />
-            </Button>
+            {IS_NATIVE ? (
+              <Button
+                label={l`Back`}
+                size="large"
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                style={[native([a.absolute, a.z_20])]}
+                onPress={handlePressBack}>
+                <ButtonIcon icon={ArrowLeftIcon} size="lg" />
+              </Button>
+            ) : null}
             <Text
               style={[
                 a.flex_grow,
@@ -492,12 +500,23 @@ export function InitiateChatFlow({
                 a.font_bold,
                 a.leading_tight,
                 t.atoms.text_contrast_high,
-                native(a.text_center),
-                native(a.px_5xl),
+                a.text_center,
+                a.px_5xl,
               ]}>
               {screenTitle}
             </Text>
-            {showButton ? (
+            {IS_WEB ? (
+              <Button
+                label={l`Close`}
+                size="small"
+                shape="round"
+                variant="ghost"
+                color="secondary"
+                style={[a.absolute, a.z_20, {right: -4}]}
+                onPress={() => control.close()}>
+                <ButtonIcon icon={XIcon} size="lg" />
+              </Button>
+            ) : showButton ? (
               <Button
                 label={buttonLabel}
                 size="small"
@@ -563,28 +582,29 @@ export function InitiateChatFlow({
           </View>
         ) : null}
       </View>
-    )
-  }, [
-    chatState,
-    t.atoms.border_contrast_low,
-    t.atoms.bg,
-    t.atoms.text_contrast_high,
-    t.scheme,
-    l,
-    handlePressBack,
-    screenTitle,
-    showButton,
-    buttonLabel,
-    isButtonDisabled,
-    handleButtonPress,
-    buttonText,
-    groupName,
-    searchText,
-    control.close,
-    showChatProfileTabs,
-    groupChatProfiles,
-    onRemoveDid,
-  ])
+    ),
+    [
+      chatState,
+      t.atoms.border_contrast_low,
+      t.atoms.bg,
+      t.atoms.text_contrast_high,
+      t.scheme,
+      l,
+      handlePressBack,
+      screenTitle,
+      showButton,
+      buttonLabel,
+      isButtonDisabled,
+      handleButtonPress,
+      buttonText,
+      groupName,
+      searchText,
+      control,
+      showChatProfileTabs,
+      groupChatProfiles,
+      onRemoveDid,
+    ],
+  )
 
   const setGroupChatMembers = (dids: string[]) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
@@ -637,10 +657,41 @@ export function InitiateChatFlow({
           web([a.py_0, {height: '100vh', maxHeight: 600}, a.px_0]),
           native({height: '100%'}),
         ]}
-        webInnerContentContainerStyle={a.py_0}
+        webInnerContentContainerStyle={[a.py_0, {paddingBottom: footerHeight}]}
         webInnerStyle={[a.py_0, {maxWidth: 500, minWidth: 200}]}
-        scrollIndicatorInsets={{top: headerHeight}}
+        scrollIndicatorInsets={{top: headerHeight, bottom: footerHeight}}
         keyboardDismissMode="on-drag"
+        footer={
+          IS_WEB && chatState !== ChatState.NEW_CHAT ? (
+            <Dialog.FlatListFooter
+              onLayout={evt => setFooterHeight(evt.nativeEvent.layout.height)}>
+              <View style={[a.flex_row, a.align_center, a.justify_between]}>
+                <Button
+                  label={l`Back`}
+                  size="small"
+                  color="secondary"
+                  onPress={handlePressBack}>
+                  <ButtonIcon icon={ArrowLeftIcon} size="md" />
+                  <ButtonText>
+                    {' '}
+                    <Trans>Back</Trans>
+                  </ButtonText>
+                </Button>
+                <Button
+                  label={buttonLabel}
+                  size="small"
+                  color="primary"
+                  disabled={isButtonDisabled}
+                  onPress={handleButtonPress}>
+                  <ButtonText>{buttonText} </ButtonText>
+                  {chatState !== ChatState.GROUP_NAME ? (
+                    <ButtonIcon icon={ArrowRightIcon} size="md" />
+                  ) : null}
+                </Button>
+              </View>
+            </Dialog.FlatListFooter>
+          ) : null
+        }
       />
     </Toggle.Group>
   )
@@ -678,7 +729,7 @@ function NewGroupChatButton({onPress}: {onPress: () => void}) {
                 padding: 12,
               },
             ]}>
-            <PersonGroup size="md" fill={t.palette.contrast_1000} />
+            <PersonGroupIcon size="md" fill={t.palette.contrast_1000} />
           </View>
           <View style={[a.flex_grow]}>
             <Text
@@ -686,7 +737,7 @@ function NewGroupChatButton({onPress}: {onPress: () => void}) {
               <Trans>New group chat</Trans>
             </Text>
           </View>
-          <ChevronRight size="md" fill={t.palette.contrast_1000} />
+          <ChevronRightIcon size="md" fill={t.palette.contrast_1000} />
         </View>
       )}
     </Button>
@@ -921,7 +972,7 @@ function SearchInput({
         onMouseLeave,
       })}
       style={[a.flex_row, a.align_center, a.gap_sm]}>
-      <Search
+      <SearchIcon
         size="md"
         fill={interacted ? t.palette.primary_500 : t.palette.contrast_300}
       />
