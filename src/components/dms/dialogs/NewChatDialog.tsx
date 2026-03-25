@@ -51,6 +51,13 @@ export function NewChat({
     [control, createChat],
   )
 
+  const onCreateGroupChat = useCallback(
+    (_dids: string[], _groupName: string) => {
+      control.close()
+    },
+    [control],
+  )
+
   const onPress = useCallback(() => {
     control.open()
   }, [control])
@@ -78,7 +85,11 @@ export function NewChat({
         nativeOptions={{fullHeight: true}}>
         <Dialog.Handle />
         {isGroupChatEnabled ? (
-          <InitiateChatFlow title={l`New chat`} onSelectChat={onCreateChat} />
+          <InitiateChatFlow
+            title={l`New chat`}
+            onSelectChat={onCreateChat}
+            onSelectGroupChat={onCreateGroupChat}
+          />
         ) : (
           <SearchablePeopleList
             title={l`Start a new chat`}
