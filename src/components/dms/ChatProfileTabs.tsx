@@ -1,4 +1,4 @@
-import {useCallback} from 'react'
+import {useCallback, useEffect} from 'react'
 import {type ScrollView, View} from 'react-native'
 import Animated, {useAnimatedRef, useSharedValue} from 'react-native-reanimated'
 import {moderateProfile} from '@atproto/api'
@@ -27,6 +27,13 @@ export function ChatProfileTabs({testID, profiles, onRemove}: Props) {
   const scrollElRef = useAnimatedRef<ScrollView>()
   const contentSize = useSharedValue(0)
   const scrollX = useSharedValue(0)
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      // Scroll to the end of the list when `profiles` changes.
+      scrollElRef.current?.scrollToEnd({animated: true})
+    })
+  }, [profiles, scrollElRef])
 
   return (
     <View testID={testID} accessibilityRole="list" style={[t.atoms.bg]}>
