@@ -8,9 +8,7 @@ import Animated, {
   LinearTransition,
 } from 'react-native-reanimated'
 import {type AppBskyFeedDefs, AtUri} from '@atproto/api'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
-import {Trans} from '@lingui/react/macro'
+import {Trans, useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 
 import {type NavigationProp} from '#/lib/routes/types'
@@ -295,7 +293,7 @@ export function ProfileGrid({
 }) {
   const t = useTheme()
   const ax = useAnalytics()
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const moderationOpts = useModerationOpts()
   const {gtMobile} = useBreakpoints()
   const followDialogControl = useDialogControl()
@@ -312,10 +310,10 @@ export function ProfileGrid({
   const containerRef = useRef<View>(null)
   const hasTrackedRef = useRef(false)
   const logContext: Metrics['suggestedUser:seen']['logContext'] = isFeedContext
-    ? 'InterstitialDiscover'
+    ? 'DiscoverInterstitial'
     : isProfileHeaderContext
-      ? 'Profile'
-      : 'InterstitialProfile'
+      ? 'ProfileHeader'
+      : 'ProfileInterstitial'
 
   // Callback to fire seen events
   const fireSeen = useCallback(() => {
@@ -336,7 +334,7 @@ export function ProfileGrid({
         })
       }
     })
-  }, [ax, isLoading, error, profiles, maxLength, logContext])
+  }, [isLoading, error, profiles, maxLength, ax, logContext])
 
   // For profile header, fire when isVisible becomes true
   useEffect(() => {
@@ -424,9 +422,7 @@ export function ProfileGrid({
               profile={profile.actor}
               onPress={() => {
                 ax.metric('suggestedUser:press', {
-                  logContext: isFeedContext
-                    ? 'InterstitialDiscover'
-                    : 'InterstitialProfile',
+                  logContext,
                   recId: profile.recId,
                   position: index,
                   suggestedDid: profile.actor.did,
@@ -442,14 +438,12 @@ export function ProfileGrid({
                   <ProfileCard.Outer>
                     {onDismiss && (
                       <Button
-                        label={_(msg`Dismiss this suggestion`)}
+                        label={l`Dismiss this suggestion`}
                         onPress={e => {
                           e.preventDefault()
                           onDismiss(profile.actor.did)
                           ax.metric('suggestedUser:dismiss', {
-                            logContext: isFeedContext
-                              ? 'InterstitialDiscover'
-                              : 'InterstitialProfile',
+                            logContext,
                             position: index,
                             suggestedDid: profile.actor.did,
                             recId: profile.recId,
@@ -515,10 +509,8 @@ export function ProfileGrid({
                       style={[a.rounded_sm]}
                       onFollow={() => {
                         ax.metric('suggestedUser:follow', {
-                          logContext: isFeedContext
-                            ? 'InterstitialDiscover'
-                            : 'InterstitialProfile',
-                          location: 'Card',
+                          logContext,
+                          location: 'Profile',
                           recId: profile.recId,
                           position: index,
                           suggestedDid: profile.actor.did,
@@ -570,11 +562,11 @@ export function ProfileGrid({
         </Text>
         {!isProfileHeaderContext && (
           <Button
-            label={_(msg`See more suggested profiles`)}
+            label={l`See more suggested profiles`}
             onPress={() => {
               followDialogControl.open()
               ax.metric('suggestedUser:seeMore', {
-                logContext: isFeedContext ? 'Explore' : 'Profile',
+                logContext,
                 recId,
               })
             }}>
@@ -595,9 +587,7 @@ export function ProfileGrid({
           </Button>
         )}
       </View>
-
       <FollowDialogWithoutGuide control={followDialogControl} />
-
       <LayoutAnimationConfig skipExiting skipEntering>
         {gtMobile ? (
           <View style={[a.p_lg, a.pt_md]}>
@@ -620,7 +610,7 @@ export function ProfileGrid({
                   onPress={() => {
                     followDialogControl.open()
                     ax.metric('suggestedUser:seeMore', {
-                      logContext: 'Explore',
+                      logContext,
                     })
                   }}
                 />
@@ -634,11 +624,11 @@ export function ProfileGrid({
 }
 
 function SeeMoreSuggestedProfilesCard({onPress}: {onPress: () => void}) {
-  const {_} = useLingui()
+  const {t: l} = useLingui()
 
   return (
     <Button
-      label={_(msg`Browse more accounts`)}
+      label={l`Browse more accounts`}
       onPress={onPress}
       style={[
         a.flex_col,
@@ -662,7 +652,7 @@ const numFeedsToDisplay = 3
 export function SuggestedFeeds() {
   const t = useTheme()
   const ax = useAnalytics()
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const {data, isLoading, error} = useGetPopularFeedsQuery({
     limit: numFeedsToDisplay,
   })
@@ -749,7 +739,7 @@ export function SuggestedFeeds() {
               a.gap_md,
             ]}>
             <InlineLinkText
-              label={_(msg`Browse more suggestions`)}
+              label={l`Browse more suggestions`}
               to="/search"
               style={[t.atoms.text_contrast_medium]}>
               <Trans>Browse more suggestions</Trans>
@@ -768,7 +758,7 @@ export function SuggestedFeeds() {
               {content}
 
               <Button
-                label={_(msg`Browse more feeds on the Explore page`)}
+                label={l`Browse more feeds on the Explore page`}
                 onPress={() => {
                   navigation.navigate('SearchTab')
                 }}
