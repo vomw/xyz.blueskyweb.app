@@ -379,31 +379,29 @@ export function HeaderStandardButtons({
             </>
           )}
 
-          {(!minimal || !profile.viewer?.following) && (
-            <Button
-              testID={profile.viewer?.following ? 'unfollowBtn' : 'followBtn'}
-              size="small"
-              color={profile.viewer?.following ? 'secondary' : 'primary'}
-              label={
-                profile.viewer?.following
-                  ? _(msg`Unfollow ${profile.handle}`)
-                  : _(msg`Follow ${profile.handle}`)
-              }
-              onPress={
-                profile.viewer?.following ? onPressUnfollow : onPressFollow
-              }>
-              {!profile.viewer?.following && <ButtonIcon icon={Plus} />}
-              <ButtonText>
-                {profile.viewer?.following ? (
-                  <Trans>Following</Trans>
-                ) : profile.viewer?.followedBy ? (
-                  <Trans>Follow back</Trans>
-                ) : (
-                  <Trans>Follow</Trans>
-                )}
-              </ButtonText>
-            </Button>
-          )}
+          <Button
+            testID={profile.viewer?.following ? 'unfollowBtn' : 'followBtn'}
+            size="small"
+            color={profile.viewer?.following ? 'secondary' : 'primary'}
+            label={
+              profile.viewer?.following
+                ? _(msg`Unfollow ${profile.handle}`)
+                : _(msg`Follow ${profile.handle}`)
+            }
+            onPress={
+              profile.viewer?.following ? onPressUnfollow : onPressFollow
+            }>
+            {!profile.viewer?.following && <ButtonIcon icon={Plus} />}
+            <ButtonText>
+              {profile.viewer?.following ? (
+                <Trans>Following</Trans>
+              ) : profile.viewer?.followedBy ? (
+                <Trans>Follow back</Trans>
+              ) : (
+                <Trans>Follow</Trans>
+              )}
+            </ButtonText>
+          </Button>
         </>
       ) : null}
       <ProfileMenu profile={profile} />
