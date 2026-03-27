@@ -1,7 +1,7 @@
 import {memo, useCallback, useState} from 'react'
 import {
   ActivityIndicator,
-  StyleSheet,
+  type StyleProp,
   TouchableOpacity,
   View,
   type ViewStyle,
@@ -9,15 +9,16 @@ import {
 import {useLingui} from '@lingui/react/macro'
 import {StackActions, useNavigation} from '@react-navigation/native'
 
-import {usePalette} from '#/lib/hooks/usePalette'
 import {type NavigationProp} from '#/lib/routes/types'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useActorAutocompleteQuery} from '#/state/queries/actor-autocomplete'
-import {Link} from '#/view/com/util/Link'
-import {Text} from '#/view/com/util/text/Text'
 import {SearchProfileCard} from '#/screens/Search/components/SearchProfileCard'
-import {atoms as a} from '#/alf'
+import {atoms as a, useTheme} from '#/alf'
 import {SearchInput} from '#/components/forms/SearchInput'
+import {Link} from '#/components/Link'
+import {Text} from '#/components/Typography'
+
+const WHITESPACE_RE = /\s+/gu
 
 let SearchLinkCard = ({
   label,
@@ -28,20 +29,17 @@ let SearchLinkCard = ({
   label: string
   to?: string
   onPress?: () => void
-  style?: ViewStyle
+  style?: StyleProp<ViewStyle>
 }): React.ReactNode => {
-  const pal = usePalette('default')
+  const t = useTheme()
 
   const inner = (
-    <View
-      style={[pal.border, {paddingVertical: 16, paddingHorizontal: 12}, style]}>
-      <Text type="md" style={[pal.text]}>
-        {label}
-      </Text>
+    <View style={[a.py_lg, a.px_md, t.atoms.border_contrast_low, style]}>
+      <Text style={[a.text_md, t.atoms.text]}>{label}</Text>
     </View>
   )
 
-  if (onPress) {
+  if (onPress || !to) {
     return (
       <TouchableOpacity
         onPress={onPress}
@@ -53,17 +51,11 @@ let SearchLinkCard = ({
   }
 
   return (
-    <Link href={to} asAnchor anchorNoUnderline>
-      <View
-        style={[
-          pal.border,
-          {paddingVertical: 16, paddingHorizontal: 12},
-          style,
-        ]}>
-        <Text type="md" style={[pal.text]}>
-          {label}
-        </Text>
-      </View>
+    <Link
+      label={label}
+      to={to}
+      style={[a.py_lg, a.px_md, t.atoms.border_contrast_low, style]}>
+      <Text style={[a.text_md, t.atoms.text]}>{label}</Text>
     </Link>
   )
 }
@@ -71,8 +63,8 @@ SearchLinkCard = memo(SearchLinkCard)
 export {SearchLinkCard}
 
 export function DesktopSearch() {
+  const t = useTheme()
   const {t: l} = useLingui()
-  const pal = usePalette('default')
   const navigation = useNavigation<NavigationProp>()
   const [isActive, setIsActive] = useState<boolean>(false)
   const [query, setQuery] = useState<string>('')
@@ -80,6 +72,7 @@ export function DesktopSearch() {
     query,
     true,
   )
+  const tQuery = query.replace(WHITESPACE_RE, ' ').trim()
 
   const moderationOpts = useModerationOpts()
 
@@ -95,9 +88,9 @@ export function DesktopSearch() {
 
   const onSubmit = useCallback(() => {
     setIsActive(false)
-    if (!query.length) return
-    navigation.dispatch(StackActions.push('Search', {q: query}))
-  }, [query, navigation])
+    if (!tQuery.length) return
+    navigation.dispatch(StackActions.push('Search', {q: tQuery}))
+  }, [tQuery, navigation])
 
   const onSearchProfileCardPress = useCallback(() => {
     setQuery('')
@@ -105,34 +98,40 @@ export function DesktopSearch() {
   }, [])
 
   return (
-    <View style={[styles.container, pal.view]}>
+    <View style={[a.relative, a.w_full, t.atoms.bg, {zIndex: 1}]}>
       <SearchInput
         value={query}
         onChangeText={onChangeText}
         onClearText={onPressCancelSearch}
         onSubmitEditing={onSubmit}
       />
-      {query !== '' && isActive && moderationOpts && (
+      {tQuery !== '' && isActive && moderationOpts && (
         <View
           style={[
-            pal.view,
-            pal.borderDark,
-            styles.resultsContainer,
-            a.overflow_hidden,
+            a.mt_sm,
+            a.flex_col,
+            a.w_full,
+            a.border,
+            a.rounded_sm,
+            t.atoms.bg,
+            t.atoms.border_contrast_low,
+            {
+              overflow: 'hidden',
+              position: 'absolute',
+              top: '100%',
+            },
           ]}>
           {isFetching && !autocompleteData?.length ? (
-            <View style={{padding: 8}}>
+            <View style={[a.p_sm]}>
               <ActivityIndicator />
             </View>
           ) : (
             <>
               <SearchLinkCard
-                label={l`Search for "${query}"`}
-                to={`/search?q=${encodeURIComponent(query)}`}
+                label={l`Search for “${tQuery}”`}
+                to={`/search?q=${encodeURIComponent(tQuery)}`}
                 style={
-                  (autocompleteData?.length ?? 0) > 0
-                    ? {borderBottomWidth: 1}
-                    : undefined
+                  (autocompleteData?.length ?? 0) > 0 ? a.border_b : undefined
                 }
               />
               {autocompleteData?.map(item => (
@@ -150,17 +149,3 @@ export function DesktopSearch() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'relative',
-    width: '100%',
-  },
-  resultsContainer: {
-    marginTop: 10,
-    flexDirection: 'column',
-    width: '100%',
-    borderWidth: 1,
-    borderRadius: 6,
-  },
-})
