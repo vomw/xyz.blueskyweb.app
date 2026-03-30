@@ -71,7 +71,7 @@ export function JerrifiedBadgeButton({
               <JerrifiedBadge width={64} />
             </View>
           </View>
-          <Text style={[a.text_2xl, a.font_bold, a.leading_snug]}>
+          <Text style={[a.text_2xl, a.font_semi_bold, a.leading_snug]}>
             <Trans>Jerry is unverified</Trans>
           </Text>
           <Text style={[a.text_md, a.leading_snug]}>
