@@ -1043,4 +1043,6 @@ export type Events = {
   'profile:associated:germ:click-self-info': {}
   'profile:associated:germ:self-disconnect': {}
   'profile:associated:germ:self-reconnect': {}
+
+  'jerry:no': {}
 }

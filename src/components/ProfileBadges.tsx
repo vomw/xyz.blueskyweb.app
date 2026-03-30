@@ -7,6 +7,11 @@ import {useSimpleVerificationState} from '#/components/verification'
 import {VerificationCheck} from '#/components/verification/VerificationCheck'
 import {VerificationCheckButton} from '#/components/verification/VerificationCheckButton'
 import type * as bsky from '#/types/bsky'
+import {
+  isJerrifiedAccount,
+  JerrifiedBadge,
+} from './verification/aprilFools/JerrifiedBadge'
+import {JerrifiedBadgeButton} from './verification/aprilFools/JerrifiedBadgeButton'
 
 export type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
@@ -39,8 +44,11 @@ export function ProfileBadges({
   const shadowed = useProfileShadow(profile)
   const verification = useSimpleVerificationState({profile})
 
+  const isJerry = isJerrifiedAccount(profile)
+
   // if nothing to show, don't render the container at all
-  if (!verification.showBadge && !isBotAccount(shadowed)) return null
+  if (!verification.showBadge && !isBotAccount(shadowed) && !isJerry)
+    return null
 
   const isOnTheSmallSide = size === 'xs' || size === 'sm'
 
@@ -54,6 +62,12 @@ export function ProfileBadges({
       ]}>
       {interactive ? (
         <>
+          {isJerry && (
+            <JerrifiedBadgeButton
+              profile={profile}
+              width={verificationIconSizes[size]}
+            />
+          )}
           <VerificationCheckButton
             profile={shadowed}
             width={verificationIconSizes[size]}
@@ -62,6 +76,7 @@ export function ProfileBadges({
         </>
       ) : (
         <>
+          {isJerry && <JerrifiedBadge width={verificationIconSizes[size]} />}
           {verification.showBadge && (
             <VerificationCheck
               verifier={verification.role === 'verifier'}
