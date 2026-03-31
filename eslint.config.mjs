@@ -61,6 +61,7 @@ export default defineConfig(
       'react-native': reactNative,
       'react-native-a11y': reactNativeA11y,
       'simple-import-sort': simpleImportSort,
+      // @ts-expect-error - not sure why
       lingui,
       'react-compiler': reactCompiler,
       'bsky-internal': bskyInternal,
