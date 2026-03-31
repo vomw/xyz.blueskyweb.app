@@ -15,7 +15,6 @@ import {
 import {manipulateAsync, SaveFormat} from 'expo-image-manipulator'
 import * as MediaLibrary from 'expo-media-library'
 import * as Sharing from 'expo-sharing'
-import {Buffer} from 'buffer'
 
 import {POST_IMG_MAX} from '#/lib/constants'
 import {logger} from '#/logger'
