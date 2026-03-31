@@ -98,7 +98,7 @@ export function DesktopSearch() {
   }, [])
 
   return (
-    <View style={[a.relative, a.w_full, t.atoms.bg, {zIndex: 1}]}>
+    <View style={[a.relative, a.w_full, a.z_10, t.atoms.bg]}>
       <SearchInput
         value={query}
         onChangeText={onChangeText}
@@ -114,6 +114,7 @@ export function DesktopSearch() {
             a.border,
             a.rounded_sm,
             t.atoms.bg,
+            t.atoms.shadow_sm,
             t.atoms.border_contrast_low,
             {
               overflow: 'hidden',
