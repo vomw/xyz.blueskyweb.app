@@ -12,7 +12,7 @@ import {useLightboxControls} from '#/state/lightbox'
 import {type Dimensions} from '#/view/com/lightbox/ImageViewing/@types'
 import {atoms as a} from '#/alf'
 import {AutoSizedImage} from '#/components/images/AutoSizedImage'
-import {ImageLayoutGrid} from '#/components/images/ImageLayoutGrid'
+import {Gallery} from '#/components/images/Gallery'
 import {PostEmbedViewContext} from '#/components/Post/Embed/types'
 import {type EmbedType} from '#/types/bsky/post'
 import {type CommonProps} from './types'
@@ -97,7 +97,7 @@ export function ImageEmbed({
 
     return (
       <View style={[a.mt_sm, rest.style]}>
-        <ImageLayoutGrid
+        <Gallery
           images={images}
           onPress={onPress}
           onPressIn={onPressIn}
