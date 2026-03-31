@@ -54,7 +54,7 @@ module.exports = function (_config) {
       },
       icon: './assets/app-icons/ios_icon_default_next.png',
       userInterfaceStyle: 'automatic',
-      primaryColor: '#1083fe',
+      primaryColor: '#006AFF',
       newArchEnabled: false,
       ios: {
         supportsTablet: false,
@@ -296,7 +296,6 @@ module.exports = function (_config) {
         './plugins/withAndroidManifestFCMIconPlugin.js',
         './plugins/withAndroidManifestIntentQueriesPlugin.js',
         './plugins/withAndroidStylesAccentColorPlugin.js',
-        './plugins/withAndroidDayNightThemePlugin.js',
         './plugins/withAndroidNoJitpackPlugin.js',
         './plugins/shareExtension/withShareExtensions.js',
         './plugins/notificationsExtension/withNotificationsExtension.js',
