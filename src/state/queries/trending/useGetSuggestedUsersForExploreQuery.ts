@@ -20,26 +20,25 @@ export type QueryProps = {
   enabled?: boolean
 }
 
-export const getSuggestedUsersQueryKeyRoot = 'unspecced-suggested-users'
-export const createGetSuggestedUsersQueryKey = (props: QueryProps) => [
-  getSuggestedUsersQueryKeyRoot,
-  props.category,
-  props.limit,
-]
+export const getSuggestedUsersForExploreQueryKeyRoot =
+  'unspecced-suggested-users-for-explore'
+export const createGetSuggestedUsersForExploreQueryKey = (
+  props: QueryProps,
+) => [getSuggestedUsersForExploreQueryKeyRoot, props.category, props.limit]
 
-export function useGetSuggestedUsersQuery(props: QueryProps) {
+export function useGetSuggestedUsersForExploreQuery(props: QueryProps) {
   const agent = useAgent()
   const {data: preferences} = usePreferencesQuery()
 
   return useQuery({
     enabled: !!preferences && props.enabled !== false,
     staleTime: STALE.MINUTES.THREE,
-    queryKey: createGetSuggestedUsersQueryKey(props),
+    queryKey: createGetSuggestedUsersForExploreQueryKey(props),
     queryFn: async () => {
       const contentLangs = getContentLanguages().join(',')
       const userInterests = aggregateUserInterests(preferences)
 
-      const {data} = await agent.app.bsky.unspecced.getSuggestedUsers(
+      const {data} = await agent.app.bsky.unspecced.getSuggestedUsersForExplore(
         {
           category: props.category ?? undefined,
           limit: props.limit || 10,
@@ -57,9 +56,8 @@ export function useGetSuggestedUsersQuery(props: QueryProps) {
           `Did not get any suggested users, falling back - interests: ${userInterests}`,
         )
         const {data: fallbackData} =
-          await agent.app.bsky.unspecced.getSuggestedUsers(
+          await agent.app.bsky.unspecced.getSuggestedUsersForExplore(
             {
-              category: props.category ?? undefined,
               limit: props.limit || 10,
             },
             {
@@ -68,10 +66,13 @@ export function useGetSuggestedUsersQuery(props: QueryProps) {
               },
             },
           )
-        return fallbackData
+        return {
+          ...fallbackData,
+          recId: data.recIdStr,
+        }
       }
 
-      return data
+      return {...data, recId: data.recIdStr}
     },
   })
 }
@@ -82,7 +83,7 @@ export function* findAllProfilesInQueryData(
 ): Generator<AppBskyActorDefs.ProfileView, void> {
   const responses =
     queryClient.getQueriesData<AppBskyUnspeccedGetSuggestedUsers.OutputSchema>({
-      queryKey: [getSuggestedUsersQueryKeyRoot],
+      queryKey: [getSuggestedUsersForExploreQueryKeyRoot],
     })
   for (const [_key, response] of responses) {
     if (!response) {

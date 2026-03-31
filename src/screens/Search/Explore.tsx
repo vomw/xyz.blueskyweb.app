@@ -28,7 +28,7 @@ import {
   createGetSuggestedFeedsQueryKey,
   useGetSuggestedFeedsQuery,
 } from '#/state/queries/trending/useGetSuggestedFeedsQuery'
-import {getSuggestedUsersQueryKeyRoot} from '#/state/queries/trending/useGetSuggestedUsersQuery'
+import {getSuggestedUsersForExploreQueryKeyRoot} from '#/state/queries/trending/useGetSuggestedUsersForExploreQuery'
 import {createGetTrendsQueryKey} from '#/state/queries/trending/useGetTrendsQuery'
 import {
   createSuggestedStarterPacksQueryKey,
@@ -48,7 +48,6 @@ import {ExploreInterestsCard} from '#/screens/Search/modules/ExploreInterestsCar
 import {ExploreRecommendations} from '#/screens/Search/modules/ExploreRecommendations'
 import {ExploreTrendingTopics} from '#/screens/Search/modules/ExploreTrendingTopics'
 import {ExploreTrendingVideos} from '#/screens/Search/modules/ExploreTrendingVideos'
-import {useSuggestedUsers} from '#/screens/Search/util/useSuggestedUsers'
 import {atoms as a, native, platform, useTheme} from '#/alf'
 import {Admonition} from '#/components/Admonition'
 import {Button} from '#/components/Button'
@@ -74,6 +73,7 @@ import {
   SuggestedAccountsTabBar,
   SuggestedProfileCard,
 } from './modules/ExploreSuggestedAccounts'
+import {useSuggestedUsersForExplore} from './util/useSuggestedUsersForExplore'
 
 function LoadMore({item}: {item: ExploreScreenItems & {type: 'loadMore'}}) {
   const t = useTheme()
@@ -242,9 +242,8 @@ export function Explore({
     isLoading: suggestedUsersIsLoading,
     error: suggestedUsersError,
     isRefetching: suggestedUsersIsRefetching,
-  } = useSuggestedUsers({
+  } = useSuggestedUsersForExplore({
     category: selectedInterest || (useFullExperience ? null : interests[0]),
-    search: !useFullExperience,
   })
   /* End special language handling */
 
@@ -316,7 +315,7 @@ export function Explore({
         queryKey: createSuggestedStarterPacksQueryKey(),
       }),
       qc.resetQueries({
-        queryKey: [getSuggestedUsersQueryKeyRoot],
+        queryKey: [getSuggestedUsersForExploreQueryKeyRoot],
       }),
       qc.resetQueries({
         queryKey: [useActorSearchQueryKeyRoot],

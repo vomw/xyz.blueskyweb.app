@@ -20,14 +20,14 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@atproto/api@^0.19.5":
-  version "0.19.5"
-  resolved "https://registry.yarnpkg.com/@atproto/api/-/api-0.19.5.tgz#6388e5d6d3a1693fe04b5f37c705682bac8601d3"
-  integrity sha512-u6R5TecYJDO8l8QFN09AMuJASYnUkJ4HhYE5hg4/dha/z14a+OAil2/dli/208uM5AHPFLtlnB8kIK9XU5GgQQ==
+"@atproto/api@^0.19.6":
+  version "0.19.6"
+  resolved "https://registry.yarnpkg.com/@atproto/api/-/api-0.19.6.tgz#c8fae3d792fe429c900ac0ba2609d60b9a89e28b"
+  integrity sha512-8L5dZvGaclB52b8msjtgDNx3uLWUY4PELA7KbFyAWBFVasCceE1txdrscCqDCLN+Fff9+Sm07OIjnjHYJXdETA==
   dependencies:
     "@atproto/common-web" "^0.4.19"
     "@atproto/lexicon" "^0.6.2"
-    "@atproto/syntax" "^0.5.2"
+    "@atproto/syntax" "^0.5.3"
     "@atproto/xrpc" "^0.7.7"
     await-lock "^2.2.2"
     multiformats "^9.9.0"
@@ -73,10 +73,17 @@
     multiformats "^9.9.0"
     zod "^3.23.8"
 
-"@atproto/syntax@^0.5.0", "@atproto/syntax@^0.5.1", "@atproto/syntax@^0.5.2":
+"@atproto/syntax@^0.5.0", "@atproto/syntax@^0.5.1":
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/@atproto/syntax/-/syntax-0.5.2.tgz#d4b32c9feb421ceeb5ade1fa80bc42764d51e52e"
   integrity sha512-W41szOnkppoHr0iCUrzL8gy3OD6qmDyp1UvUgmTx2oFQfgbudpz51T/gznesiCcqiUT5obfHdx4PJ+WdlEOE7Q==
+  dependencies:
+    tslib "^2.8.1"
+
+"@atproto/syntax@^0.5.3":
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/@atproto/syntax/-/syntax-0.5.3.tgz#4331d01f63fe56c374dcf95d4432a22b62271a17"
+  integrity sha512-gzhlHOJHm5KXdCc17fXi1fXM81ccs5jJfNgCui84ay9JGvczxegpYHNqdMlv+iBuhtBzFIjgx6ChjRxN/kO8kQ==
   dependencies:
     tslib "^2.8.1"
 
