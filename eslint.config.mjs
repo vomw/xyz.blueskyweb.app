@@ -189,6 +189,18 @@ export default defineConfig(
          */
         ignore: ['^#\/locale\/locales\/.+\/messages'],
       }],
+      'import-x/no-extraneous-dependencies': ['error', {
+        'whitelist': [
+          // test files only
+          '@jest/globals',
+          // we only use a really simple util from this, and we know it will be present
+          'expo-modules-core',
+          // this is a dep for @atproto/api, but we absolutely need them in sync, so just
+          // rely on the transient version
+          '@atproto/common-web',
+        ]
+      }],
+      'import-x/no-nodejs-modules': 'error',
 
       /**
        * TypeScript-specific rules
