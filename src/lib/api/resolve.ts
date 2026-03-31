@@ -86,15 +86,11 @@ export async function resolveLink(
   if (isShortLink(uri)) {
     uri = await resolveShortLink(uri)
   }
-  console.log('triggered!', isThirdPartyFrontend(uri))
   if (isBskyPostUrl(uri) || isThirdPartyFrontend(uri)) {
     uri = convertBskyAppUrlIfNeeded(uri)
     const [_0, user, _1, rkey] = uri.split('/').filter(Boolean)
-    console.log('user', user)
     const recordUri = makeRecordUri(user, 'app.bsky.feed.post', rkey)
-    console.log('recordUri', recordUri)
     const post = await getPost({uri: recordUri})
-    console.log('post', post)
     if (post.viewer?.embeddingDisabled) {
       throw new EmbeddingDisabledError()
     }
