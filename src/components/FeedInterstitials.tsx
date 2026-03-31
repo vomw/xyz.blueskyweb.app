@@ -603,16 +603,14 @@ export function ProfileGrid({
               decelerationRate="fast">
               {content}
 
-              {!isProfileHeaderContext && (
-                <SeeMoreSuggestedProfilesCard
-                  onPress={() => {
-                    followDialogControl.open()
-                    ax.metric('suggestedUser:seeMore', {
-                      logContext,
-                    })
-                  }}
-                />
-              )}
+              <SeeMoreSuggestedProfilesCard
+                onPress={() => {
+                  followDialogControl.open()
+                  ax.metric('suggestedUser:seeMore', {
+                    logContext,
+                  })
+                }}
+              />
             </ScrollView>
           </BlockDrawerGesture>
         )}
