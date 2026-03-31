@@ -1,12 +1,3 @@
-/**
- * All
- * - look at Text as children option to preserve lineHeight
- *
- * Native
- *
- * Web
- */
-
 import {
   useCallback,
   useEffect,
@@ -255,14 +246,17 @@ function Composer({
           height: (textStyle.lineHeight || 20) + p.paddingTop + p.paddingBottom,
         }
       : {minHeight, maxHeight}
+
     /*
      * On iOS especially, TextInput and Text line height does not render the
      * same way, but setting this to undefined and using the default font
      * metrics works fine.
      */
     if (!IS_WEB) {
-      delete textStyle.lineHeight
+      // disabled for now to eval the text as children
+      // delete textStyle.lineHeight
     }
+
     return {
       textStyle,
       textAreaStyle,
@@ -354,45 +348,50 @@ function Composer({
     [onRequestSubmit],
   )
 
+  const textContent = (
+    <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
+      {tapper.state.nodes.map((node, i) => {
+        switch (node.type) {
+          case 'text': {
+            return <Span key={i}>{node.value}</Span>
+          }
+          case 'trigger':
+          case 'facet': {
+            return (
+              <Span
+                key={i}
+                ref={IS_WEB ? sift.refs.setAnchor : undefined}
+                style={
+                  node.type === 'facet' && {
+                    color: t.palette.primary_500,
+                  }
+                }>
+                {node.raw}
+              </Span>
+            )
+          }
+        }
+      })}
+    </Text>
+  )
+
   return (
     <>
       <View style={[a.relative, style]}>
-        {/* PREVIEW */}
-        <View
-          pointerEvents="none"
-          style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
-          <Animated.View
-            style={[
-              padding,
-              {position: 'absolute', left: 0, right: 0},
-              previewScrollStyle,
-            ]}>
-            <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
-              {tapper.state.nodes.map((node, i) => {
-                switch (node.type) {
-                  case 'text': {
-                    return <Span key={i}>{node.value}</Span>
-                  }
-                  case 'trigger':
-                  case 'facet': {
-                    return (
-                      <Span
-                        key={i}
-                        ref={IS_WEB ? sift.refs.setAnchor : undefined}
-                        style={
-                          node.type === 'facet' && {
-                            color: t.palette.primary_500,
-                          }
-                        }>
-                        {node.raw}
-                      </Span>
-                    )
-                  }
-                }
-              })}
-            </Text>
-          </Animated.View>
-        </View>
+        {IS_WEB && (
+          <View
+            pointerEvents="none"
+            style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
+            <Animated.View
+              style={[
+                padding,
+                {position: 'absolute', left: 0, right: 0},
+                previewScrollStyle,
+              ]}>
+              {textContent}
+            </Animated.View>
+          </View>
+        )}
         <TextInput
           dirName="ltr"
           autoCapitalize="none"
@@ -434,6 +433,7 @@ function Composer({
           ]}
           {...rest}
           {...tapper.inputProps}
+          value={undefined}
           {...sift.targetProps}
           ref={mergeRefs([
             textInputRef,
@@ -448,7 +448,6 @@ function Composer({
           onKeyPress={IS_WEB ? onKeyPressWeb : undefined}
           onScroll={e => {
             if (IS_WEB) {
-              // TODO why does compiler not like this?
               scrollY.value = (e.target as any).scrollTop
             } else {
               scrollY.value = e.nativeEvent.contentOffset.y
@@ -461,8 +460,9 @@ function Composer({
           // @ts-ignore web only
           onCompositionEnd={() => {
             isComposing.current = false
-          }}
-        />
+          }}>
+          {IS_WEB ? null : textContent}
+        </TextInput>
 
         {children}
       </View>
