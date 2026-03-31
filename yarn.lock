@@ -2413,6 +2413,16 @@
   resolved "https://registry.yarnpkg.com/@bsky.app/react-native-mmkv/-/react-native-mmkv-2.12.5.tgz#eb17d31a6158c74393f617a1763ac223ff3f83a6"
   integrity sha512-3vUz1nQY1DiKIPAWRkpp5ZGxH5f2G6Ui0UuQuEYjYv81xx1qFcSzS9KQ2sHcOKYdkOM9amWV2Q8TQCxt1lrAHg==
 
+"@bsky.app/sift@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@bsky.app/sift/-/sift-0.2.4.tgz#cfdc67d5236b3fb4d26b9b5d482420d3f804cfe1"
+  integrity sha512-2tUoKhTjULMPgqhIUiNaNPyyTh2vPhOMRT/2S1HWhalEsBNeMeoNqUs7KWgOtgcDtT4breGkHmR1XOo2tzYmgA==
+
+"@bsky.app/tapper@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@bsky.app/tapper/-/tapper-0.4.0.tgz#46c004eb9b6a2d842b4fd4b80d69bb4f2bdd4c5b"
+  integrity sha512-5w9kRIrIFiXVdQrbYyJPvim/H3Ujhy/EPUx1M7AwcPmfq9fOJY+gqI8uXSb50ZKdr//qWnf7eMuxBHsOGbCizw==
+
 "@crowdin/cli@^4.14.1":
   version "4.14.1"
   resolved "https://registry.yarnpkg.com/@crowdin/cli/-/cli-4.14.1.tgz#1239922681235b6b14bcacd4fd622bc2217dd6c5"
@@ -14569,10 +14579,10 @@ react-test-renderer@19.1.0:
     react-is "^19.1.0"
     scheduler "^0.26.0"
 
-react-textarea-autosize@^8.5.3:
-  version "8.5.3"
-  resolved "https://registry.yarnpkg.com/react-textarea-autosize/-/react-textarea-autosize-8.5.3.tgz#d1e9fe760178413891484847d3378706052dd409"
-  integrity sha512-XT1024o2pqCuZSuBt9FwHlaDeNtVrtCXu0Rnz88t1jUGheCLa3PhjE1GH8Ctm2axEtvdCl5SUHYschyQ0L5QHQ==
+react-textarea-autosize@^8.5.9:
+  version "8.5.9"
+  resolved "https://registry.yarnpkg.com/react-textarea-autosize/-/react-textarea-autosize-8.5.9.tgz#ab8627b09aa04d8a2f45d5b5cd94c84d1d4a8893"
+  integrity sha512-U1DGlIQN5AwgjTyOEnI1oCcMuEr1pv1qOtklB2l4nyMGbHzWrI0eFsYK0zos2YWqAolJyG0IWJaqWmWj5ETh0A==
   dependencies:
     "@babel/runtime" "^7.20.13"
     use-composed-ref "^1.3.0"

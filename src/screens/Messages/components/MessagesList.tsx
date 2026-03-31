@@ -37,21 +37,16 @@ import {
 import {useGetPost} from '#/state/queries/post'
 import {useAgent} from '#/state/session'
 import {useShellLayout} from '#/state/shell/shell-layout'
-import {
-  EmojiPicker,
-  type EmojiPickerState,
-} from '#/view/com/composer/text-input/web/EmojiPicker'
 import {List, type ListMethods} from '#/view/com/util/List'
 import {ChatDisabled} from '#/screens/Messages/components/ChatDisabled'
-import {MessageInput} from '#/screens/Messages/components/MessageInput'
+import {MessageComposer} from '#/screens/Messages/components/MessageComposer'
 import {MessageListError} from '#/screens/Messages/components/MessageListError'
 import {ChatEmptyPill} from '#/components/dms/ChatEmptyPill'
 import {MessageItem} from '#/components/dms/MessageItem'
 import {NewMessagesPill} from '#/components/dms/NewMessagesPill'
 import {Loader} from '#/components/Loader'
 import {Text} from '#/components/Typography'
-import {IS_NATIVE} from '#/env'
-import {IS_WEB} from '#/env'
+import {IS_NATIVE, IS_WEB} from '#/env'
 import {ChatStatusInfo} from './ChatStatusInfo'
 import {MessageInputEmbed, useMessageEmbed} from './MessageInputEmbed'
 
@@ -114,11 +109,6 @@ export function MessagesList({
   const [newMessagesPill, setNewMessagesPill] = useState({
     show: false,
     startContentOffset: 0,
-  })
-
-  const [emojiPickerState, setEmojiPickerState] = useState<EmojiPickerState>({
-    isOpen: false,
-    pos: {top: 0, left: 0, right: 0, bottom: 0, nextFocusRef: null},
   })
 
   // We need to keep track of when the scroll offset is at the bottom of the list to know when to scroll as new items
@@ -412,10 +402,6 @@ export function MessagesList({
     })
   }, [flatListRef])
 
-  const onOpenEmojiPicker = useCallback((pos: any) => {
-    setEmojiPickerState({isOpen: true, pos})
-  }, [])
-
   return (
     <>
       {/* Custom scroll provider so that we can use the `onScroll` event in our custom List implementation */}
@@ -457,24 +443,15 @@ export function MessagesList({
           <ConversationFooter
             convoState={convoState}
             hasAcceptOverride={hasAcceptOverride}>
-            <MessageInput
+            <MessageComposer
               onSendMessage={onSendMessage}
               hasEmbed={!!embedUri}
-              setEmbed={setEmbed}
-              openEmojiPicker={onOpenEmojiPicker}>
+              setEmbed={setEmbed}>
               <MessageInputEmbed embedUri={embedUri} setEmbed={setEmbed} />
-            </MessageInput>
+            </MessageComposer>
           </ConversationFooter>
         )}
       </Animated.View>
-
-      {IS_WEB && (
-        <EmojiPicker
-          pinToTop
-          state={emojiPickerState}
-          close={() => setEmojiPickerState(prev => ({...prev, isOpen: false}))}
-        />
-      )}
 
       {newMessagesPill.show && <NewMessagesPill onPress={scrollToEndOnPress} />}
     </>
