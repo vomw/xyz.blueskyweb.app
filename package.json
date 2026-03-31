@@ -246,7 +246,6 @@
     "@lingui/cli": "^5.9.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
     "@react-native/babel-preset": "0.81.5",
-    "@react-native/eslint-config": "^0.81.5",
     "@react-native/typescript-config": "^0.81.5",
     "@sentry/webpack-plugin": "^3.2.2",
     "@testing-library/react-native": "^13.2.0",
@@ -264,8 +263,8 @@
     "eslint": "^9.39.2",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-bsky-internal": "link:./eslint",
-    "eslint-plugin-import-x": "^4.16.1",
-    "eslint-plugin-lingui": "^0.11.0",
+    "eslint-plugin-import-x": "^4.16.2",
+    "eslint-plugin-lingui": "^0.12.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -287,7 +286,7 @@
     "svgo": "^3.3.2",
     "ts-plugin-sort-import-suggestions": "^1.0.4",
     "typescript": "^6.0.2",
-    "typescript-eslint": "^8.57.2",
+    "typescript-eslint": "^8.58.0",
     "webpack-bundle-analyzer": "^4.10.1"
   },
   "resolutions": {

@@ -47,7 +47,6 @@ export default defineConfig(
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   reactHooks.configs.flat.recommended,
-  // @ts-expect-error https://github.com/un-ts/eslint-plugin-import-x/issues/439
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
   importX.flatConfigs['react-native'],
