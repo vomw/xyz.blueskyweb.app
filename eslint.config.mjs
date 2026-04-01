@@ -47,7 +47,6 @@ export default defineConfig(
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   reactHooks.configs.flat.recommended,
-  // @ts-expect-error https://github.com/un-ts/eslint-plugin-import-x/issues/439
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
   importX.flatConfigs['react-native'],
@@ -62,6 +61,7 @@ export default defineConfig(
       'react-native': reactNative,
       'react-native-a11y': reactNativeA11y,
       'simple-import-sort': simpleImportSort,
+      // @ts-expect-error - not sure why
       lingui,
       'react-compiler': reactCompiler,
       'bsky-internal': bskyInternal,

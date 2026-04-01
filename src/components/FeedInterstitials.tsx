@@ -560,32 +560,30 @@ export function ProfileGrid({
         <Text style={[a.text_sm, a.font_semi_bold, t.atoms.text]}>
           <Trans>Suggested for you</Trans>
         </Text>
-        {!isProfileHeaderContext && (
-          <Button
-            label={l`See more suggested profiles`}
-            onPress={() => {
-              followDialogControl.open()
-              ax.metric('suggestedUser:seeMore', {
-                logContext,
-                recId,
-              })
-            }}>
-            {({hovered}) => (
-              <Text
-                style={[
-                  a.text_sm,
-                  {color: t.palette.primary_500},
-                  hovered &&
-                    web({
-                      textDecorationLine: 'underline',
-                      textDecorationColor: t.palette.primary_500,
-                    }),
-                ]}>
-                <Trans>See more</Trans>
-              </Text>
-            )}
-          </Button>
-        )}
+        <Button
+          label={l`See more suggested profiles`}
+          onPress={() => {
+            followDialogControl.open()
+            ax.metric('suggestedUser:seeMore', {
+              logContext,
+              recId,
+            })
+          }}>
+          {({hovered}) => (
+            <Text
+              style={[
+                a.text_sm,
+                {color: t.palette.primary_500},
+                hovered &&
+                  web({
+                    textDecorationLine: 'underline',
+                    textDecorationColor: t.palette.primary_500,
+                  }),
+              ]}>
+              <Trans>See more</Trans>
+            </Text>
+          )}
+        </Button>
       </View>
       <FollowDialogWithoutGuide control={followDialogControl} />
       <LayoutAnimationConfig skipExiting skipEntering>
@@ -605,16 +603,14 @@ export function ProfileGrid({
               decelerationRate="fast">
               {content}
 
-              {!isProfileHeaderContext && (
-                <SeeMoreSuggestedProfilesCard
-                  onPress={() => {
-                    followDialogControl.open()
-                    ax.metric('suggestedUser:seeMore', {
-                      logContext,
-                    })
-                  }}
-                />
-              )}
+              <SeeMoreSuggestedProfilesCard
+                onPress={() => {
+                  followDialogControl.open()
+                  ax.metric('suggestedUser:seeMore', {
+                    logContext,
+                  })
+                }}
+              />
             </ScrollView>
           </BlockDrawerGesture>
         )}
