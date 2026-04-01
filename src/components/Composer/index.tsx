@@ -1,3 +1,9 @@
+/**
+ * TODO
+ *
+ * Native
+ * - make sure we limit the height of autocomplete so it doesn't go off screen
+ */
 import {
   useCallback,
   useEffect,
@@ -36,6 +42,7 @@ import {
 import {normalizeTextStyles} from '#/alf/typography'
 import {
   Autocomplete as AutocompleteBase,
+  AutocompleteItemEmoji,
   AutocompleteItemProfile,
   parseAutocompleteItemType,
   useAutocomplete,
@@ -371,6 +378,7 @@ export function Composer({
           ])}
           onBlur={e => {
             rest.onBlur?.(e)
+            setActiveFacet(null)
           }}
           onKeyPress={IS_WEB ? onKeyPressWeb : undefined}
           onScroll={e => {
@@ -429,6 +437,15 @@ function AutocompleteInner({
   useOnKeyboard('keyboardDidShow', updatePosition)
   useOnKeyboard('keyboardDidHide', updatePosition)
 
+  useEffect(() => {
+    if (activeFacet?.type === 'emoji' && activeFacet.raw.endsWith(':')) {
+      if (data?.[0]) {
+        activeFacet.replace(data[0].value, {noTrailingSpace: true})
+        onDismiss()
+      }
+    }
+  }, [data, activeFacet])
+
   return data && data.length ? (
     <AutocompleteBase
       sift={sift}
@@ -436,6 +453,9 @@ function AutocompleteInner({
       render={props => {
         if (props.item.type === 'profile') {
           return <AutocompleteItemProfile {...props} />
+        }
+        if (props.item.type === 'emoji') {
+          return <AutocompleteItemEmoji {...props} />
         }
         return <View />
       }}

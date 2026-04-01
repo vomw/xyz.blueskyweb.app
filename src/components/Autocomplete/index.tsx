@@ -1,4 +1,5 @@
 export * from './Autocomplete'
+export * from './AutocompleteItemEmoji'
 export * from './AutocompleteItemProfile'
 export * from './useAutocomplete'
 export * from './util'
