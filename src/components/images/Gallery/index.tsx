@@ -134,9 +134,9 @@ export function Gallery({
             horizontal
             pagingEnabled={false}
             showsHorizontalScrollIndicator={false}
-            snapToInterval={snapInterval}
-            snapToAlignment="start"
-            decelerationRate="fast"
+            snapToOffsets={images.map((_, i) => i * snapInterval)}
+            decelerationRate="normal"
+            disableIntervalMomentum
             contentContainerStyle={{gap: ITEM_GAP}}
             onScroll={e => {
               const offsetX = e.nativeEvent.contentOffset.x
