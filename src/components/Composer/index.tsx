@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -15,7 +13,6 @@ import {
   View,
 } from 'react-native'
 import Animated, {
-  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
@@ -23,7 +20,6 @@ import {useSift, type UseSiftReturn} from '@bsky.app/sift'
 import {
   type TapperActiveFacet,
   type TapperFacet,
-  type TapperSnapshot,
   useTapper,
 } from '@bsky.app/tapper'
 
@@ -80,57 +76,27 @@ export function useComposerInternalApiRef() {
 }
 
 /*
- * ─── Contexts ─────────────────────────────────────────────────────────────────
+ * ─── Composer ─────────────────────────────────────────────────────────────────
  */
 
-type ComposerContextValue = {
-  tapper: {
-    on: ReturnType<typeof useTapper>['on']
-    insert: ReturnType<typeof useTapper>['insert']
-    input: ReturnType<typeof useTapper>['input']
-    inputProps: ReturnType<typeof useTapper>['inputProps']
-  }
-  sift: UseSiftReturn
-  inputScrollSharedValue: SharedValue<number>
-  onRequestSubmit?: (request: SubmitRequest) => void
-}
-
-const ComposerContext = createContext<ComposerContextValue | null>(null)
-ComposerContext.displayName = 'ComposerContext'
-
-export function useComposerContext() {
-  const ctx = useContext(ComposerContext)
-  if (!ctx) {
-    throw new Error('useComposerContext must be used within a Composer.Root')
-  }
-  return ctx
-}
-
-type ComposerStateContextValue = {
-  state: TapperSnapshot
-}
-
-const ComposerStateContext = createContext<ComposerStateContextValue | null>(
-  null,
-)
-ComposerStateContext.displayName = 'ComposerStateContext'
-
-export function useComposerStateContext() {
-  const ctx = useContext(ComposerStateContext)
-  if (!ctx) {
-    throw new Error(
-      'useComposerStateContext must be used within a Composer.Root',
-    )
-  }
-  return ctx
-}
-
-/*
- * ─── Root ─────────────────────────────────────────────────────────────────────
- */
-
-export type RootProps = {
-  children: React.ReactNode
+export type ComposerProps = Omit<
+  TextInputProps,
+  | 'value'
+  | 'onChange'
+  | 'onChangeText'
+  | 'onSelectionChange'
+  | 'selection'
+  | 'style'
+  | 'onSubmitEditing'
+> & {
+  children?: React.ReactNode
+  label: string
+  ref?: React.Ref<TextInput>
+  style?: ViewStyleProp['style']
+  padding?: Parameters<typeof extractPadding>[0]
+  textStyle?: TextStyleProp['style']
+  initialNumberOfLines?: number
+  maxNumberOfLines?: number
   initialText?: string
   onChange?: (text: string) => void
   onActiveFacet?: (activeFacet: TapperActiveFacet | null) => void
@@ -139,34 +105,42 @@ export type RootProps = {
   internalApiRef?: React.Ref<ComposerInternalApi>
 }
 
-export function Root({
+export function Composer({
   children,
+  label,
+  placeholder,
+  style,
+  padding,
+  textStyle: rawTextStyle,
+  initialNumberOfLines = 1,
+  maxNumberOfLines,
   initialText,
   onChange: onChangeOuter,
   onActiveFacet: onActiveFacetOuter,
   onFacetCommitted: onFacetCommittedOuter,
   onRequestSubmit,
   internalApiRef,
-}: RootProps) {
-  const tapper = useTapper({
-    initialText,
-  })
+  ...rest
+}: ComposerProps) {
+  const {theme: t, fonts} = useAlf()
+  const textInputRef = useRef<TextInput>(null)
+
+  const tapper = useTapper({initialText})
   const sift = useSift({
     offset: a.p_sm.padding,
     placement: 'top-start',
     dynamicWidth: IS_WEB,
   })
   const inputScrollSharedValue = useSharedValue(0)
+  const [activeFacet, setActiveFacet] = useState<TapperActiveFacet | null>(null)
 
   const callbackRefs = useRef({
     onActiveFacetOuter,
     onFacetCommittedOuter,
-    focus: tapper.input.focus,
   })
   callbackRefs.current = {
     onActiveFacetOuter,
     onFacetCommittedOuter,
-    focus: tapper.input.focus,
   }
 
   useImperativeHandle(
@@ -197,95 +171,23 @@ export function Root({
 
   useEffect(() => {
     const offActiveFacet = tapper.on('activeFacet', facet => {
+      setActiveFacet(facet)
       callbackRefs.current.onActiveFacetOuter?.(facet)
     })
     const offFacetCommitted = tapper.on('facetCommitted', facet => {
       callbackRefs.current.onFacetCommittedOuter?.(facet)
     })
     const offAfterInsert = tapper.on('afterInsert', () => {
-      callbackRefs.current?.focus()
+      tapper.input.focus()
     })
     return () => {
       offActiveFacet()
       offFacetCommitted()
       offAfterInsert()
     }
-  }, [tapper.on])
+  }, [tapper.on, tapper.input])
 
-  const composerCtx = useMemo<ComposerContextValue>(
-    () => ({
-      tapper: {
-        on: tapper.on,
-        insert: tapper.insert,
-        input: tapper.input,
-        inputProps: tapper.inputProps,
-      },
-      sift,
-      inputScrollSharedValue,
-      onRequestSubmit,
-    }),
-    [
-      tapper.on,
-      tapper.insert,
-      tapper.input,
-      tapper.inputProps,
-      sift,
-      inputScrollSharedValue,
-      onRequestSubmit,
-    ],
-  )
-
-  const stateCtx = useMemo<ComposerStateContextValue>(
-    () => ({state: tapper.state}),
-    [tapper.state],
-  )
-
-  return (
-    <ComposerContext.Provider value={composerCtx}>
-      <ComposerStateContext.Provider value={stateCtx}>
-        {children}
-      </ComposerStateContext.Provider>
-    </ComposerContext.Provider>
-  )
-}
-
-/*
- * ─── Input ────────────────────────────────────────────────────────────────────
- */
-
-export type InputProps = Omit<
-  TextInputProps,
-  | 'value'
-  | 'onChangeText'
-  | 'onSelectionChange'
-  | 'selection'
-  | 'style'
-  | 'onSubmitEditing'
-> & {
-  label: string
-  ref?: React.Ref<TextInput>
-  style?: ViewStyleProp['style']
-  padding?: Parameters<typeof extractPadding>[0]
-  textStyle?: TextStyleProp['style']
-  initialNumberOfLines?: number
-  maxNumberOfLines?: number
-}
-
-export function Input({
-  label,
-  placeholder,
-  style,
-  padding,
-  textStyle: rawTextStyle,
-  initialNumberOfLines = 1,
-  maxNumberOfLines,
-  ...rest
-}: InputProps) {
-  const {theme: t, fonts} = useAlf()
-  const {tapper, sift, inputScrollSharedValue, onRequestSubmit} =
-    useComposerContext()
-  const {state} = useComposerStateContext()
-  const textInputRef = useRef<TextInput>(null)
+  // ─── Text style computation ───────────────────────────────────────────
 
   const {textStyle, textAreaStyle, minHeight, maxHeight} = useMemo(() => {
     const ts = normalizeTextStyles(
@@ -309,17 +211,21 @@ export function Input({
       ? {height: lineHeight + verticalSpace}
       : {minHeight: mh, maxHeight: xh}
 
-    /*
-     * On iOS especially, TextInput and Text line height does not render the
-     * same way, but setting this to undefined and using the default font
-     * metrics works fine.
-     */
     if (!IS_WEB) {
       delete ts.lineHeight
     }
 
     return {textStyle: ts, textAreaStyle: tas, minHeight: mh, maxHeight: xh}
   }, [t, fonts, padding, rawTextStyle, initialNumberOfLines, maxNumberOfLines])
+
+  // ─── Height auto-resize + sift positioning ────────────────────────────
+
+  const updateAutocompletePosition = useCallback(() => {
+    sift.updatePosition()
+  }, [sift])
+
+  useOnKeyboard('keyboardDidShow', updateAutocompletePosition)
+  useOnKeyboard('keyboardDidHide', updateAutocompletePosition)
 
   const prevHeight = useRef(0)
   useEffect(() => {
@@ -333,7 +239,7 @@ export function Input({
       el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
       if (nextHeight !== prevHeight.current) {
         prevHeight.current = nextHeight
-        sift.updatePosition()
+        updateAutocompletePosition()
       }
       return
     }
@@ -341,14 +247,18 @@ export function Input({
     textInputRef.current?.measure((_x, _y, _w, h) => {
       if (h !== prevHeight.current) {
         prevHeight.current = h
-        sift.updatePosition()
+        updateAutocompletePosition()
       }
     })
-  }, [state.text, minHeight, maxHeight, sift])
+  }, [tapper.state.text, minHeight, maxHeight, updateAutocompletePosition])
+
+  // ─── Scroll sync ──────────────────────────────────────────────────────
 
   const previewScrollStyle = useAnimatedStyle(() => ({
     transform: [{translateY: -inputScrollSharedValue.value}],
   }))
+
+  // ─── Web keyboard handling ────────────────────────────────────────────
 
   const isComposing = useRef(false)
   const onKeyPressWeb = useCallback(
@@ -377,137 +287,126 @@ export function Input({
   )
 
   return (
-    <View style={[a.relative, style]}>
-      <View
-        pointerEvents="none"
-        style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
-        <Animated.View
+    <>
+      <View style={[a.relative, style]}>
+        <View
+          pointerEvents="none"
+          style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
+          <Animated.View
+            style={[
+              padding,
+              {position: 'absolute', left: 0, right: 0},
+              previewScrollStyle,
+            ]}>
+            <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
+              {tapper.state.nodes.map((node, i) => {
+                switch (node.type) {
+                  case 'text':
+                    return <Span key={i}>{node.value}</Span>
+                  case 'trigger':
+                  case 'facet':
+                    return (
+                      <Span
+                        key={i}
+                        ref={IS_WEB ? sift.refs.setAnchor : undefined}
+                        style={
+                          node.type === 'facet' && {
+                            color: t.palette.primary_500,
+                          }
+                        }>
+                        {node.raw}
+                      </Span>
+                    )
+                }
+              })}
+            </Text>
+          </Animated.View>
+        </View>
+        <TextInput
+          dirName="ltr"
+          autoCapitalize="none"
+          autoCorrect={false}
+          multiline={true}
+          hitSlop={HITSLOP_10}
+          placeholder={placeholder}
+          placeholderTextColor={t.palette.contrast_500}
+          accessibilityLabel={label}
+          accessibilityHint={label}
+          keyboardAppearance={t.scheme}
+          submitBehavior="newline"
+          onSubmitEditing={e => {
+            onRequestSubmit?.({platform: 'native', nativeEvent: e})
+          }}
           style={[
+            textStyle,
             padding,
-            {position: 'absolute', left: 0, right: 0},
-            previewScrollStyle,
-          ]}>
-          <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
-            {state.nodes.map((node, i) => {
-              switch (node.type) {
-                case 'text':
-                  return <Span key={i}>{node.value}</Span>
-                case 'trigger':
-                case 'facet':
-                  return (
-                    <Span
-                      key={i}
-                      ref={IS_WEB ? sift.refs.setAnchor : undefined}
-                      style={
-                        node.type === 'facet' && {color: t.palette.primary_500}
-                      }>
-                      {node.raw}
-                    </Span>
-                  )
-              }
-            })}
-          </Text>
-        </Animated.View>
+            a.relative,
+            a.z_20,
+            a.border_0,
+            {
+              color: 'transparent',
+              background: 'transparent',
+              textAlignVertical: 'top',
+              includeFontPadding: false,
+            },
+            textAreaStyle,
+            web({
+              resize: 'none',
+              outline: 'none',
+              caretColor: textStyle.color ?? 'black',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              overscrollBehavior: 'none',
+              ...textAreaStyle,
+            }),
+          ]}
+          {...rest}
+          {...tapper.inputProps}
+          {...sift.targetProps}
+          ref={mergeRefs([
+            textInputRef,
+            rest.ref,
+            tapper.inputProps.ref,
+            sift.targetProps.ref,
+          ])}
+          onBlur={e => {
+            rest.onBlur?.(e)
+          }}
+          onKeyPress={IS_WEB ? onKeyPressWeb : undefined}
+          onScroll={e => {
+            if (IS_WEB) {
+              inputScrollSharedValue.value = (e.target as any).scrollTop
+            } else {
+              inputScrollSharedValue.value = e.nativeEvent.contentOffset.y
+            }
+          }}
+          // @ts-ignore web only
+          onCompositionStart={() => {
+            isComposing.current = true
+          }}
+          // @ts-ignore web only
+          onCompositionEnd={() => {
+            isComposing.current = false
+          }}
+        />
+
+        {children}
       </View>
-      <TextInput
-        dirName="ltr"
-        autoCapitalize="none"
-        autoCorrect={false}
-        multiline={true}
-        hitSlop={HITSLOP_10}
-        placeholder={placeholder}
-        placeholderTextColor={t.palette.contrast_500}
-        accessibilityLabel={label}
-        accessibilityHint={label}
-        keyboardAppearance={t.scheme}
-        submitBehavior="newline"
-        onSubmitEditing={e => {
-          onRequestSubmit?.({platform: 'native', nativeEvent: e})
-        }}
-        style={[
-          textStyle,
-          padding,
-          a.relative,
-          a.z_20,
-          a.border_0,
-          {
-            color: 'transparent',
-            background: 'transparent',
-            textAlignVertical: 'top',
-            includeFontPadding: false,
-          },
-          textAreaStyle,
-          web({
-            resize: 'none',
-            outline: 'none',
-            caretColor: textStyle.color ?? 'black',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-            overscrollBehavior: 'none',
-            ...textAreaStyle,
-          }),
-        ]}
-        {...rest}
-        {...tapper.inputProps}
-        {...sift.targetProps}
-        ref={mergeRefs([
-          textInputRef,
-          rest.ref,
-          tapper.inputProps.ref,
-          sift.targetProps.ref,
-        ])}
-        onBlur={e => {
-          rest.onBlur?.(e)
-        }}
-        onKeyPress={IS_WEB ? onKeyPressWeb : undefined}
-        onScroll={e => {
-          if (IS_WEB) {
-            inputScrollSharedValue.value = (e.target as any).scrollTop
-          } else {
-            inputScrollSharedValue.value = e.nativeEvent.contentOffset.y
-          }
-        }}
-        // @ts-ignore web only
-        onCompositionStart={() => {
-          isComposing.current = true
-        }}
-        // @ts-ignore web only
-        onCompositionEnd={() => {
-          isComposing.current = false
-        }}
-      />
-    </View>
+
+      {activeFacet && (
+        <AutocompleteInner
+          sift={sift}
+          activeFacet={activeFacet}
+          onDismiss={() => setActiveFacet(null)}
+        />
+      )}
+    </>
   )
 }
 
-export function Autocomplete() {
-  const {tapper, sift} = useComposerContext()
-  const [activeFacet, setActiveFacet] = useState<TapperActiveFacet | null>(null)
-
-  useEffect(() => {
-    const off = tapper.on('activeFacet', facet => {
-      setActiveFacet(facet)
-    })
-    return off
-  }, [tapper.on])
-
-  const updatePosition = useCallback(() => {
-    sift.updatePosition()
-  }, [sift])
-
-  useOnKeyboard('keyboardDidShow', updatePosition)
-  useOnKeyboard('keyboardDidHide', updatePosition)
-
-  if (!activeFacet) return null
-
-  return (
-    <AutocompleteInner
-      sift={sift}
-      activeFacet={activeFacet}
-      onDismiss={() => setActiveFacet(null)}
-    />
-  )
-}
+/*
+ * ─── Autocomplete (private) ───────────────────────────────────────────────────
+ */
 
 function AutocompleteInner({
   sift,
@@ -523,6 +422,13 @@ function AutocompleteInner({
     query: activeFacet.value,
   })
 
+  const updatePosition = useCallback(() => {
+    sift.updatePosition()
+  }, [sift])
+
+  useOnKeyboard('keyboardDidShow', updatePosition)
+  useOnKeyboard('keyboardDidHide', updatePosition)
+
   return data && data.length ? (
     <AutocompleteBase
       sift={sift}
@@ -535,6 +441,7 @@ function AutocompleteInner({
       }}
       onSelect={item => {
         activeFacet.replace(item.value)
+        onDismiss()
       }}
       onDismiss={onDismiss}
     />

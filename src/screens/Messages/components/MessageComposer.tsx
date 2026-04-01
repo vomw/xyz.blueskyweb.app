@@ -18,7 +18,7 @@ import {
   type EmojiPickerState,
 } from '#/view/com/composer/text-input/web/EmojiPicker'
 import {atoms as a, useTheme} from '#/alf'
-import * as Composer from '#/components/Composer'
+import {Composer, useComposerInternalApiRef} from '#/components/Composer'
 import {useInteractionState} from '#/components/hooks/useInteractionState'
 import {EmojiArc_Stroke2_Corner0_Rounded as EmojiSmile} from '#/components/icons/Emoji'
 import {PaperPlane_Stroke2_Corner0_Rounded as PaperPlane} from '#/components/icons/PaperPlane'
@@ -46,7 +46,7 @@ export function MessageComposer({
     isOpen: false,
     pos: {top: 0, left: 0, right: 0, bottom: 0, nextFocusRef: null},
   })
-  const composerInternalApiRef = Composer.useComposerInternalApiRef()
+  const composerInternalApiRef = useComposerInternalApiRef()
 
   const {state: focused, onIn: onFocus, onOut: onBlur} = useInteractionState()
   const {
@@ -107,62 +107,59 @@ export function MessageComposer({
     <>
       <View style={[a.px_md, a.pb_sm, a.pt_xs]}>
         {children}
-        <Composer.Root
-          internalApiRef={composerInternalApiRef}
-          initialText={text}
-          onChange={setText}
-          onFacetCommitted={facet => {
-            if (facet.type === 'url' && isBskyPostUrl(facet.value)) {
-              setEmbed(facet.value)
-            }
-          }}
-          onRequestSubmit={req => {
-            if (req.platform === 'web' && req.shiftKey) return
-            req.nativeEvent.preventDefault()
-            onSubmit()
-          }}>
-          <View
-            // @ts-expect-error web only
-            onMouseEnter={onHoverIn}
-            onMouseLeave={onHoverOut}>
-            <Composer.Input
-              editable={editable}
-              autoFocus={IS_WEB}
-              label={l`Message input field`}
-              placeholder={l`Write a message`}
-              maxNumberOfLines={12}
-              style={[
-                t.atoms.bg_contrast_25,
-                {
-                  borderWidth: 1,
-                  borderColor: 'transparent',
-                  borderRadius: 25,
+        <View
+          // @ts-expect-error web only
+          onMouseEnter={onHoverIn}
+          onMouseLeave={onHoverOut}>
+          <Composer
+            internalApiRef={composerInternalApiRef}
+            initialText={text}
+            onChange={setText}
+            editable={editable}
+            autoFocus={IS_WEB}
+            label={l`Message input field`}
+            placeholder={l`Write a message`}
+            maxNumberOfLines={12}
+            style={[
+              t.atoms.bg_contrast_25,
+              {
+                borderWidth: 1,
+                borderColor: 'transparent',
+                borderRadius: 25,
+              },
+              editable &&
+                hovered && {
+                  borderColor: t.atoms.border_contrast_medium.borderColor,
                 },
-                editable &&
-                  hovered && {
-                    borderColor: t.atoms.border_contrast_medium.borderColor,
-                  },
-                editable &&
-                  focused && {
-                    borderColor: t.palette.primary_500,
-                  },
-              ]}
-              padding={[
-                a.p_md,
-                {
-                  paddingRight: 35 + a.p_sm.padding,
+              editable &&
+                focused && {
+                  borderColor: t.palette.primary_500,
                 },
-                IS_WEB
-                  ? {
-                      paddingLeft: 30 + a.p_sm.padding,
-                    }
-                  : {},
-              ]}
-              textStyle={[a.text_md, a.leading_snug]}
-              onFocus={onFocus}
-              onBlur={onBlur}
-            />
-
+            ]}
+            padding={[
+              a.p_md,
+              {
+                paddingRight: 35 + a.p_sm.padding,
+              },
+              IS_WEB
+                ? {
+                    paddingLeft: 30 + a.p_sm.padding,
+                  }
+                : {},
+            ]}
+            textStyle={[a.text_md, a.leading_snug]}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onFacetCommitted={facet => {
+              if (facet.type === 'url' && isBskyPostUrl(facet.value)) {
+                setEmbed(facet.value)
+              }
+            }}
+            onRequestSubmit={req => {
+              if (req.platform === 'web' && req.shiftKey) return
+              req.nativeEvent.preventDefault()
+              onSubmit()
+            }}>
             {IS_WEB && (
               <Pressable
                 onPress={e => {
@@ -242,10 +239,8 @@ export function MessageComposer({
                 style={[a.relative, {left: 1}]}
               />
             </Pressable>
-          </View>
-
-          <Composer.Autocomplete />
-        </Composer.Root>
+          </Composer>
+        </View>
       </View>
 
       {IS_WEB && (
