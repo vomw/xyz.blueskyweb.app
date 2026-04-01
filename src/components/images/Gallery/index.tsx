@@ -171,16 +171,7 @@ export function Gallery({
             horizontal
             pagingEnabled={false}
             showsHorizontalScrollIndicator={false}
-            snapToOffsets={images.reduce<number[]>((offsets, image, i) => {
-              const prev =
-                i === 0
-                  ? 0
-                  : offsets[i - 1] + getItemWidth(images[i - 1]) + ITEM_GAP
-              offsets.push(prev)
-              return offsets
-            }, [])}
-            snapToAlignment="start"
-            decelerationRate={0.99}
+            decelerationRate={0.993}
             style={{
               width: bleed ? windowWidth : containerWidth + QUOTE_PADDING * 2,
               height: containerHeight,

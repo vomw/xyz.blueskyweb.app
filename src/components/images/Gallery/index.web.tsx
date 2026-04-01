@@ -1,5 +1,5 @@
 import {useRef, useState} from 'react'
-import {Pressable, ScrollView, useWindowDimensions, View} from 'react-native'
+import {Pressable, ScrollView, View} from 'react-native'
 import {type AnimatedRef, useAnimatedRef} from 'react-native-reanimated'
 import {Image} from 'expo-image'
 import {type AppBskyEmbedImages} from '@atproto/api'
@@ -41,7 +41,6 @@ export function Gallery({
   const largeAltBadge = useLargeAltBadgeEnabled()
   const currentPageRef = useRef(0)
   const scrollRef = useRef<ScrollView>(null)
-  const {width: windowWidth} = useWindowDimensions()
   const [containerWidth, setContainerWidth] = useState(0)
 
   const containerRefs = useRef<AnimatedRef<any>[]>([]).current
@@ -62,14 +61,6 @@ export function Gallery({
 
   const containerHeight =
     containerWidth > 0 ? containerWidth / CONTAINER_ASPECT_RATIO : 0
-  const QUOTE_PADDING = 12
-  const bleed = !isWithinQuote
-  const insetLeft = bleed
-    ? Math.max(windowWidth - containerWidth, 0)
-    : QUOTE_PADDING
-  const insetRight = bleed
-    ? Math.max(windowWidth - insetLeft - containerWidth, 0)
-    : QUOTE_PADDING
 
   const getItemWidth = (image: AppBskyEmbedImages.ViewImage) => {
     const ar = image.aspectRatio
@@ -81,25 +72,6 @@ export function Gallery({
     return containerWidth
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    const scrollEl = scrollRef.current as unknown as {
-      scrollTo: (opts: {x: number; animated: boolean}) => void
-    }
-    if (!scrollEl) return
-
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      scrollEl.scrollTo({
-        x: Math.max(0, currentScrollX.current - 200),
-        animated: true,
-      })
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      scrollEl.scrollTo({x: currentScrollX.current + 200, animated: true})
-    }
-  }
-  const currentScrollX = useRef(0)
-
   // Click-and-drag scrolling
   const isDragging = useRef(false)
   const dragStartX = useRef(0)
@@ -107,50 +79,63 @@ export function Gallery({
   const hasDragged = useRef(false)
   const scrollNodeRef = useRef<HTMLElement | null>(null)
 
-  const onMouseDown = (e: React.MouseEvent) => {
-    const node = scrollNodeRef.current
-    if (!node || e.button !== 0) return
-    isDragging.current = true
-    hasDragged.current = false
-    dragStartX.current = e.clientX
-    dragScrollStart.current = node.scrollLeft
-    node.style.scrollBehavior = 'auto'
-    node.style.scrollSnapType = 'none'
-    node.style.cursor = 'grabbing'
-    node.style.userSelect = 'none'
-  }
-
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current) return
-    const node = scrollNodeRef.current
-    if (!node) return
-    const dx = e.clientX - dragStartX.current
-    if (Math.abs(dx) > 3) {
-      hasDragged.current = true
-    }
-    node.scrollLeft = dragScrollStart.current - dx
-  }
-
-  const onMouseUp = () => {
-    if (!isDragging.current) return
-    isDragging.current = false
-    const node = scrollNodeRef.current
-    if (!node) return
-    node.style.scrollBehavior = 'smooth'
-    node.style.scrollSnapType = 'x proximity'
-    node.style.cursor = ''
-    node.style.userSelect = ''
-  }
-
   const onScrollViewRef = (ref: ScrollView | null) => {
     scrollRef.current = ref
-    // Get the underlying DOM scroll node from the RN web ScrollView
-    if (ref) {
-      const scrollable = ref as unknown as {
-        getScrollableNode?: () => HTMLElement
-      }
-      scrollNodeRef.current =
-        scrollable.getScrollableNode?.() ?? (ref as unknown as HTMLElement)
+    if (!ref) return
+
+    const scrollable = ref as unknown as {
+      getScrollableNode?: () => HTMLElement
+    }
+    const el =
+      scrollable.getScrollableNode?.() ?? (ref as unknown as HTMLElement)
+    scrollNodeRef.current = el
+    if (!el) return
+
+    // Attach click-and-drag listeners directly to the scroll DOM node
+    el.style.cursor = 'grab'
+
+    el.addEventListener('mousedown', (e: MouseEvent) => {
+      if (e.button !== 0) return
+      isDragging.current = true
+      hasDragged.current = false
+      dragStartX.current = e.clientX
+      dragScrollStart.current = el.scrollLeft
+      el.style.scrollBehavior = 'auto'
+      el.style.scrollSnapType = 'none'
+      el.style.cursor = 'grabbing'
+      el.style.userSelect = 'none'
+      e.preventDefault()
+    })
+
+    el.addEventListener('mousemove', (e: MouseEvent) => {
+      if (!isDragging.current) return
+      const dx = e.clientX - dragStartX.current
+      if (Math.abs(dx) > 3) hasDragged.current = true
+      el.scrollLeft = dragScrollStart.current - dx
+    })
+
+    const onUp = () => {
+      if (!isDragging.current) return
+      isDragging.current = false
+      el.style.scrollBehavior = 'smooth'
+      el.style.scrollSnapType = 'x proximity'
+      el.style.cursor = 'grab'
+      el.style.userSelect = ''
+    }
+
+    el.addEventListener('mouseup', onUp)
+    el.addEventListener('mouseleave', onUp)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const node = scrollNodeRef.current
+    if (!node) return
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      node.scrollLeft -= 200
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      node.scrollLeft += 200
     }
   }
 
@@ -158,7 +143,7 @@ export function Gallery({
     <View
       style={
         containerWidth > 0
-          ? {height: containerHeight, overflow: 'visible'}
+          ? {height: containerHeight}
           : {aspectRatio: CONTAINER_ASPECT_RATIO}
       }
       onLayout={e => {
@@ -179,33 +164,22 @@ export function Gallery({
           horizontal
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={16}
-          // @ts-expect-error web mouse events
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
           style={[
             {
-              width: bleed ? windowWidth : containerWidth + QUOTE_PADDING * 2,
               height: containerHeight,
-              marginLeft: -insetLeft,
             },
             web({
               scrollSnapType: 'x proximity',
               scrollBehavior: 'smooth',
               WebkitOverflowScrolling: 'touch',
-              cursor: 'grab',
             }),
           ]}
           contentContainerStyle={{
             gap: ITEM_GAP,
-            paddingLeft: insetLeft,
-            paddingRight: insetRight,
           }}
           onScroll={e => {
             const offsetX = e.nativeEvent.contentOffset.x
-            currentScrollX.current = offsetX
-            let accumulated = insetLeft
+            let accumulated = 0
             let page = 0
             for (let i = 0; i < images.length; i++) {
               const w = getItemWidth(images[i]) + ITEM_GAP
@@ -269,7 +243,7 @@ export function Gallery({
                   a.rounded_md,
                   a.overflow_hidden,
                   t.atoms.bg_contrast_25,
-                  web({cursor: 'pointer'}),
+                  web({cursor: 'grab'}),
                 ]}>
                 <Image
                   source={{uri: image.thumb}}
