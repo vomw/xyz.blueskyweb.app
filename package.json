@@ -109,7 +109,6 @@
     "@ipld/dag-cbor": "^9.2.0",
     "@lingui/core": "^5.9.2",
     "@lingui/react": "^5.9.2",
-    "@mattermost/react-native-paste-input": "mattermost/react-native-paste-input",
     "@miblanchard/react-native-slider": "^2.6.0",
     "@mozzius/expo-dynamic-app-icon": "^1.8.0",
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -167,6 +166,7 @@
     "expo-location": "~19.0.8",
     "expo-media-library": "~18.2.1",
     "expo-notifications": "~0.32.16",
+    "expo-paste-input": "^0.1.10",
     "expo-privacy-sensitive": "^0.1.0",
     "expo-screen-orientation": "~9.0.8",
     "expo-sharing": "~14.0.8",
@@ -380,8 +380,7 @@
     ],
     "allowedUrls": [
       "https://codeload.github.com/bluesky-social/react-native-bottom-sheet/tar.gz/28a87d1bb55e10fc355fa1455545a30734995908",
-      "https://codeload.github.com/bluesky-social/react-native-progress/tar.gz/5a372f4f2ce5feb26f4f47b6a4d187ab9b923ab4",
-      "https://codeload.github.com/mattermost/react-native-paste-input/tar.gz/f260447edc645a817ab1ba7b46d8341d84dba8e9"
+      "https://codeload.github.com/bluesky-social/react-native-progress/tar.gz/5a372f4f2ce5feb26f4f47b6a4d187ab9b923ab4"
     ],
     "emptyHostname": false,
     "validatePackageNames": true,

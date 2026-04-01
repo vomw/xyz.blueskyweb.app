@@ -8,16 +8,12 @@ import {
 import {
   type NativeSyntheticEvent,
   Text as RNText,
+  TextInput as RNTextInput,
   type TextInputSelectionChangeEventData,
   View,
 } from 'react-native'
+import {type PasteEventPayload, TextInputWrapper} from 'expo-paste-input'
 import {AppBskyRichtextFacet, RichText} from '@atproto/api'
-import PasteInput, {
-  type PastedFile,
-  type PasteInputRef,
-  // @ts-expect-error no types when installing from github
-  // eslint-disable-next-line import-x/no-unresolved
-} from '@mattermost/react-native-paste-input'
 
 import {POST_IMG_MAX} from '#/lib/constants'
 import {downloadAndResize} from '#/lib/media/manip'
@@ -52,7 +48,7 @@ export function TextInput({
   ...props
 }: TextInputProps) {
   const {theme: t, fonts} = useAlf()
-  const textInput = useRef<PasteInputRef>(null)
+  const textInput = useRef<RNTextInput>(null)
   const textInputSelection = useRef<Selection>({start: 0, end: 0})
   const theme = useTheme()
   const [autocompletePrefix, setAutocompletePrefix] = useState('')
@@ -129,16 +125,17 @@ export function TextInput({
   )
 
   const onPaste = useCallback(
-    async (err: string | undefined, files: PastedFile[]) => {
-      if (err) {
-        return onError(cleanError(err))
+    (payload: PasteEventPayload) => {
+      if (payload.type === 'unsupported') {
+        onError(cleanError('Unsupported clipboard content'))
+        return
       }
 
-      const uris = files.map(f => f.uri)
-      const uri = uris.find(isUriImage)
-
-      if (uri) {
-        onPhotoPasted(uri)
+      if (payload.type === 'images') {
+        const uri = payload.uris.find(isUriImage)
+        if (uri) {
+          onPhotoPasted(uri)
+        }
       }
     },
     [onError, onPhotoPasted],
@@ -217,41 +214,42 @@ export function TextInput({
 
   return (
     <View style={[a.flex_1, a.pl_md, hasRightPadding && a.pr_4xl]}>
-      <PasteInput
-        testID="composerTextInput"
-        ref={textInput}
-        onChangeText={onChangeText}
-        onPaste={onPaste}
-        onSelectionChange={onSelectionChange}
-        placeholder={placeholder}
-        placeholderTextColor={t.atoms.text_contrast_low.color}
-        keyboardAppearance={theme.colorScheme}
-        autoFocus={props.autoFocus !== undefined ? props.autoFocus : true}
-        allowFontScaling
-        multiline
-        scrollEnabled={false}
-        numberOfLines={2}
-        // Note: should be the default value, but as of v1.104
-        // it switched to "none" on Android
-        autoCapitalize="sentences"
-        {...props}
-        style={[
-          inputTextStyle,
-          a.w_full,
-          !autocompletePrefix && a.h_full,
-          {
-            textAlignVertical: 'top',
-            minHeight: 60,
-            includeFontPadding: false,
-          },
-          {
-            borderWidth: 1,
-            borderColor: 'transparent',
-          },
-          props.style,
-        ]}>
-        {textDecorated}
-      </PasteInput>
+      <TextInputWrapper onPaste={onPaste}>
+        <RNTextInput
+          testID="composerTextInput"
+          ref={textInput}
+          onChangeText={onChangeText}
+          onSelectionChange={onSelectionChange}
+          placeholder={placeholder}
+          placeholderTextColor={t.atoms.text_contrast_low.color}
+          keyboardAppearance={theme.colorScheme}
+          autoFocus={props.autoFocus !== undefined ? props.autoFocus : true}
+          allowFontScaling
+          multiline
+          scrollEnabled={false}
+          numberOfLines={2}
+          // Note: should be the default value, but as of v1.104
+          // it switched to "none" on Android
+          autoCapitalize="sentences"
+          {...props}
+          style={[
+            inputTextStyle,
+            a.w_full,
+            !autocompletePrefix && a.h_full,
+            {
+              textAlignVertical: 'top',
+              minHeight: 60,
+              includeFontPadding: false,
+            },
+            {
+              borderWidth: 1,
+              borderColor: 'transparent',
+            },
+            props.style,
+          ]}>
+          {textDecorated}
+        </RNTextInput>
+      </TextInputWrapper>
       <Autocomplete
         prefix={autocompletePrefix}
         onSelect={onSelectAutocompleteItem}
