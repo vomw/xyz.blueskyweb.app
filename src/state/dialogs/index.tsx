@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import {useHotkeysContext} from 'react-hotkeys-hook'
 
 import {type DialogControlRefProps} from '#/components/Dialog'
 import {Provider as GlobalDialogsProvider} from '#/components/dialogs/Context'
@@ -62,6 +63,7 @@ export function useDialogFullyExpandedCountContext() {
 
 export function Provider({children}: React.PropsWithChildren<{}>) {
   const [fullyExpandedCount, setFullyExpandedCount] = useState(0)
+  const {disableScope, enableScope} = useHotkeysContext()
 
   const activeDialogs = useRef<
     Map<string, React.MutableRefObject<DialogControlRefProps>>
@@ -77,18 +79,26 @@ export function Provider({children}: React.PropsWithChildren<{}>) {
 
       return openDialogs.current.size > 0
     } else {
-      BottomSheetNativeComponent.dismissAll()
+      void BottomSheetNativeComponent.dismissAll()
       return false
     }
   }, [])
 
-  const setDialogIsOpen = useCallback((id: string, isOpen: boolean) => {
-    if (isOpen) {
-      openDialogs.current.add(id)
-    } else {
-      openDialogs.current.delete(id)
-    }
-  }, [])
+  const setDialogIsOpen = useCallback(
+    (id: string, isOpen: boolean) => {
+      if (isOpen) {
+        openDialogs.current.add(id)
+      } else {
+        openDialogs.current.delete(id)
+      }
+      if (openDialogs.current.size > 0) {
+        disableScope('global')
+      } else {
+        enableScope('global')
+      }
+    },
+    [disableScope, enableScope],
+  )
 
   const context = useMemo<IDialogContext>(
     () => ({

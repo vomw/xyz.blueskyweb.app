@@ -7,7 +7,7 @@ import {RemoveScrollBar} from 'react-remove-scroll-bar'
 
 import {useIntentHandler} from '#/lib/hooks/useIntentHandler'
 import {type NavigationProp} from '#/lib/routes/types'
-import {useKeyboardShortcuts} from '#/lib/useKeyboardShortcuts'
+import {useGlobalKeyboardShortcuts} from '#/lib/useGlobalKeyboardShortcuts'
 import {useSession} from '#/state/session'
 import {useIsDrawerOpen, useSetDrawerOpen} from '#/state/shell'
 import {useCloseAllActiveElements} from '#/state/util'
@@ -45,7 +45,7 @@ function ShellInner() {
   const {state: policyUpdateState} = usePolicyUpdateContext()
   const welcomeModalControl = useWelcomeModal()
 
-  useKeyboardShortcuts()
+  useGlobalKeyboardShortcuts()
   useIntentHandler()
 
   useEffect(() => {

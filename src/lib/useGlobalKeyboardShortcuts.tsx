@@ -1,37 +1,22 @@
+import {useLingui} from '@lingui/react/macro'
 import {useHotkeys} from 'react-hotkeys-hook'
 
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
-import {useDialogStateContext} from '#/state/dialogs'
 import {emitFocusSearch} from '#/state/events'
-import {useLightbox} from '#/state/lightbox'
-import {useModals} from '#/state/modals'
 import {useSession} from '#/state/session'
-import {useIsDrawerOpen} from '#/state/shell/drawer-open'
 
 enum Hotkeys {
   OPEN_COMPOSER = 'n',
   FOCUS_SEARCH = 'slash',
 }
 
-export function useKeyboardShortcuts() {
+export function useGlobalKeyboardShortcuts() {
   const {openComposer} = useOpenComposer()
-  const {openDialogs} = useDialogStateContext()
-  const {isModalActive} = useModals()
-  const {activeLightbox} = useLightbox()
-  const isDrawerOpen = useIsDrawerOpen()
   const {hasSession} = useSession()
+  const {t: l} = useLingui()
 
   const shouldIgnore = (requiresSession?: boolean) => {
     if (requiresSession && !hasSession) {
-      return true
-    }
-
-    if (
-      openDialogs?.current.size > 0 ||
-      isModalActive ||
-      activeLightbox ||
-      isDrawerOpen
-    ) {
       return true
     }
 
@@ -59,11 +44,13 @@ export function useKeyboardShortcuts() {
           requiresSession: true,
         },
       ),
-    {scopes: ['composer']},
+    {scopes: ['global'], description: l`Compose new post`},
+    [openComposer],
   )
 
   useHotkeys(Hotkeys.FOCUS_SEARCH, () => handleKey(emitFocusSearch), {
-    scopes: ['search'],
+    scopes: ['global'],
     preventDefault: true,
+    description: l`Focus the search field`,
   })
 }

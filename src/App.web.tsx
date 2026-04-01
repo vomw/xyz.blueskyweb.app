@@ -159,8 +159,7 @@ function InnerApp() {
                                                               <TranslateOnDeviceProvider>
                                                                 <HotkeysProvider
                                                                   initiallyActiveScopes={[
-                                                                    'composer',
-                                                                    'search',
+                                                                    'global',
                                                                   ]}>
                                                                   <Shell />
                                                                   <ToastOutlet />

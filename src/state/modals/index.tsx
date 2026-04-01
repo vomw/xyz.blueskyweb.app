@@ -1,4 +1,5 @@
-import {createContext, useContext, useMemo, useState} from 'react'
+import {createContext, useContext, useEffect, useMemo, useState} from 'react'
+import {useHotkeysContext} from 'react-hotkeys-hook'
 
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 
@@ -47,6 +48,15 @@ ModalControlContext.displayName = 'ModalControlContext'
 
 export function Provider({children}: React.PropsWithChildren<{}>) {
   const [activeModals, setActiveModals] = useState<Modal[]>([])
+  const {disableScope, enableScope} = useHotkeysContext()
+
+  useEffect(() => {
+    if (activeModals.length > 0) {
+      disableScope('global')
+    } else {
+      enableScope('global')
+    }
+  }, [activeModals.length, disableScope, enableScope])
 
   const openModal = useNonReactiveCallback((modal: Modal) => {
     setActiveModals(modals => [...modals, modal])
