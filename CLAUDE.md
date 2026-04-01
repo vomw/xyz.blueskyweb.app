@@ -542,6 +542,19 @@ export function useDraftsQuery() {
 
 To get all items from pages: `data?.pages.flatMap(page => page.items) ?? []`
 
+**Persisted Queries**
+
+To persist query data across app restarts, `createQueryKey` supports a third
+parameter called `options`, which has a `persistedVersion` property. When this
+property is set to a number, the query will be persisted.
+
+When this property is updated (e.g. incremented), the persisted data will be cleared and replaced with the new data from the query function. This is useful for cases where the shape of the data has changed and old persisted data would no longer be valid.
+
+```tsx
+export const createProfileQueryKey = (args: {did: string}) =>
+  createQueryKey(profileQueryKeyRoot, args, {persistedVersion: 1})
+```
+
 ### Preferences (React Context)
 
 ```tsx
