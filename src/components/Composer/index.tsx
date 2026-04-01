@@ -33,7 +33,6 @@ import {HITSLOP_10} from '#/lib/constants'
 import {mergeRefs} from '#/lib/merge-refs'
 import {
   atoms as a,
-  extractPadding,
   type TextStyleProp,
   useAlf,
   type ViewStyleProp,
@@ -49,7 +48,7 @@ import {
 } from '#/components/Autocomplete'
 import {useOnKeyboard} from '#/components/hooks/useOnKeyboard'
 import {Span, Text} from '#/components/Typography'
-import {IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
+import {IS_IOS, IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
 
 /*
  * ─── Types ────────────────────────────────────────────────────────────────────
@@ -100,7 +99,12 @@ export type ComposerProps = Omit<
   label: string
   ref?: React.Ref<TextInput>
   style?: ViewStyleProp['style']
-  padding?: Parameters<typeof extractPadding>[0]
+  padding?: {
+    paddingTop?: number
+    paddingBottom?: number
+    paddingLeft?: number
+    paddingRight?: number
+  }
   textStyle?: TextStyleProp['style']
   initialNumberOfLines?: number
   maxNumberOfLines?: number
@@ -205,11 +209,9 @@ export function Composer({
         flags: {},
       },
     )
-    const p = padding
-      ? extractPadding(padding)
-      : {paddingTop: 0, paddingBottom: 0}
     const lineHeight = ts.lineHeight || 20
-    const verticalSpace = p.paddingTop + p.paddingBottom
+    const verticalSpace =
+      (padding?.paddingTop || 0) + (padding?.paddingBottom || 0)
     const mh = lineHeight * initialNumberOfLines + verticalSpace
     const xh = maxNumberOfLines
       ? lineHeight * maxNumberOfLines + verticalSpace
@@ -218,7 +220,7 @@ export function Composer({
       ? {height: lineHeight + verticalSpace}
       : {minHeight: mh, maxHeight: xh}
 
-    if (!IS_WEB) {
+    if (IS_IOS) {
       delete ts.lineHeight
     }
 

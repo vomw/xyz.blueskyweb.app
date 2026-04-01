@@ -23,7 +23,7 @@ import {useInteractionState} from '#/components/hooks/useInteractionState'
 import {EmojiArc_Stroke2_Corner0_Rounded as EmojiSmile} from '#/components/icons/Emoji'
 import {PaperPlane_Stroke2_Corner0_Rounded as PaperPlane} from '#/components/icons/PaperPlane'
 import * as Toast from '#/components/Toast'
-import {IS_WEB} from '#/env'
+import {IS_ANDROID, IS_WEB} from '#/env'
 
 export function MessageComposer({
   onSendMessage,
@@ -136,17 +136,12 @@ export function MessageComposer({
                   borderColor: t.palette.primary_500,
                 },
             ]}
-            padding={[
-              a.p_md,
-              {
-                paddingRight: 35 + a.p_sm.padding,
-              },
-              IS_WEB
-                ? {
-                    paddingLeft: 30 + a.p_sm.padding,
-                  }
-                : {},
-            ]}
+            padding={{
+              paddingLeft: IS_WEB ? 30 + 8 : 16,
+              paddingTop: 12,
+              paddingBottom: IS_ANDROID ? 4 : 12,
+              paddingRight: 35 + a.p_sm.padding,
+            }}
             textStyle={[a.text_md, a.leading_snug]}
             onFocus={onFocus}
             onBlur={onBlur}
