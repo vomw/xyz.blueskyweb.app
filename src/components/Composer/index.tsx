@@ -48,7 +48,7 @@ import {
 } from '#/components/Autocomplete'
 import {useOnKeyboard} from '#/components/hooks/useOnKeyboard'
 import {Span, Text} from '#/components/Typography'
-import {IS_IOS, IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
+import {IS_ANDROID, IS_IOS, IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
 
 /*
  * ─── Types ────────────────────────────────────────────────────────────────────
@@ -216,9 +216,17 @@ export function Composer({
     const xh = maxNumberOfLines
       ? lineHeight * maxNumberOfLines + verticalSpace
       : 999
+    /*
+     * On web, we set an initial height and auto-resize via DOM measurement.
+     * On Android, we drive height explicitly via onContentSizeChange to avoid
+     * sub-pixel oscillation that causes layout jumpiness.
+     * On iOS, minHeight/maxHeight works fine natively.
+     */
     const tas = IS_WEB
       ? {height: lineHeight + verticalSpace}
-      : {minHeight: mh, maxHeight: xh}
+      : IS_ANDROID
+        ? {height: mh}
+        : {minHeight: mh, maxHeight: xh}
 
     if (IS_IOS) {
       delete ts.lineHeight
@@ -226,6 +234,14 @@ export function Composer({
 
     return {textStyle: ts, textAreaStyle: tas, minHeight: mh, maxHeight: xh}
   }, [t, fonts, padding, rawTextStyle, initialNumberOfLines, maxNumberOfLines])
+
+  /*
+   * On Android, multiline TextInput oscillates between slightly different
+   * contentSize values on consecutive layout passes (sub-pixel rounding).
+   * This causes visible jumpiness when using minHeight/maxHeight. Instead,
+   * we drive the height explicitly and ceil the value to stabilize it.
+   */
+  const [androidInputHeight, setAndroidInputHeight] = useState(minHeight)
 
   // ─── Height auto-resize + sift positioning ────────────────────────────
 
@@ -253,13 +269,25 @@ export function Composer({
       return
     }
 
-    textInputRef.current?.measure((_x, _y, _w, h) => {
-      if (h !== prevHeight.current) {
-        prevHeight.current = h
-        updateAutocompletePosition()
-      }
-    })
+    if (IS_IOS) {
+      textInputRef.current?.measure((_x, _y, _w, h) => {
+        if (h !== prevHeight.current) {
+          prevHeight.current = h
+          updateAutocompletePosition()
+        }
+      })
+    }
   }, [tapper.state.text, minHeight, maxHeight, updateAutocompletePosition])
+
+  /*
+   * On Android, height is driven by onContentSizeChange (see the TextInput
+   * below), so we update the autocomplete position when that height changes.
+   */
+  useEffect(() => {
+    if (IS_ANDROID) {
+      updateAutocompletePosition()
+    }
+  }, [androidInputHeight, updateAutocompletePosition])
 
   // ─── Scroll sync ──────────────────────────────────────────────────────
 
@@ -356,7 +384,7 @@ export function Composer({
               textAlignVertical: 'top',
               includeFontPadding: false,
             },
-            textAreaStyle,
+            IS_ANDROID ? {height: androidInputHeight} : textAreaStyle,
             web({
               resize: 'none',
               outline: 'none',
@@ -388,6 +416,15 @@ export function Composer({
               inputScrollSharedValue.value = e.nativeEvent.contentOffset.y
             }
           }}
+          onContentSizeChange={
+            IS_ANDROID
+              ? e => {
+                  const h = Math.ceil(e.nativeEvent.contentSize.height)
+                  const clamped = Math.min(Math.max(h, minHeight), maxHeight)
+                  setAndroidInputHeight(clamped)
+                }
+              : undefined
+          }
           // @ts-ignore web only
           onCompositionStart={() => {
             isComposing.current = true

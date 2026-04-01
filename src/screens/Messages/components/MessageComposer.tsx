@@ -139,7 +139,7 @@ export function MessageComposer({
             padding={{
               paddingLeft: IS_WEB ? 30 + 8 : 16,
               paddingTop: 12,
-              paddingBottom: IS_ANDROID ? 4 : 12,
+              paddingBottom: 12,
               paddingRight: 35 + a.p_sm.padding,
             }}
             textStyle={[a.text_md, a.leading_snug]}
