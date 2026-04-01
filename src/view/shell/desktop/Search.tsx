@@ -113,6 +113,7 @@ export function DesktopSearch() {
             a.w_full,
             a.border,
             a.rounded_sm,
+            a.zoom_fade_in,
             t.atoms.bg,
             t.atoms.shadow_sm,
             t.atoms.border_contrast_low,
