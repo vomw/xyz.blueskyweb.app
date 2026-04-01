@@ -1,5 +1,5 @@
 import {useContext, useMemo, useRef, useState} from 'react'
-import {FlatList, Pressable, View} from 'react-native'
+import {FlatList, Pressable, useWindowDimensions, View} from 'react-native'
 import {DrawerGestureContext} from 'react-native-drawer-layout'
 import {Gesture, GestureDetector} from 'react-native-gesture-handler'
 import {type AnimatedRef, useAnimatedRef} from 'react-native-reanimated'
@@ -20,8 +20,7 @@ import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 
 const CONTAINER_ASPECT_RATIO = 4 / 3
-const PEEK_WIDTH = 40
-const ITEM_GAP = 6
+const ITEM_GAP = 8 // tokens.space.sm
 
 interface GalleryProps {
   images: AppBskyEmbedImages.ViewImage[]
@@ -45,8 +44,9 @@ export function Gallery({
   const ax = useAnalytics()
   const {screenReaderEnabled} = useA11y()
   const largeAltBadge = useLargeAltBadgeEnabled()
-  const [currentPage, setCurrentPage] = useState(0)
   const currentPageRef = useRef(0)
+  const {width: windowWidth} = useWindowDimensions()
+  const [leftOffset, setLeftOffset] = useState(0)
   const [containerWidth, setContainerWidth] = useState(0)
 
   const containerRefs = useRef<AnimatedRef<any>[]>([]).current
@@ -61,11 +61,34 @@ export function Gallery({
     containerRefs[i] = refs[i]
   }
 
-  const hideBadges =
+  const isWithinQuote =
     viewContext === PostEmbedViewContext.FeedEmbedRecordWithMedia
+  const hideBadges = isWithinQuote
 
-  const itemWidth = containerWidth > 0 ? containerWidth - PEEK_WIDTH : 0
-  const snapInterval = itemWidth + ITEM_GAP
+  const containerHeight =
+    containerWidth > 0 ? containerWidth / CONTAINER_ASPECT_RATIO : 0
+  // Bleed: full-width carousel that extends to screen edges
+  // In quotes: small bleed to the quote card border (p_md = 12px)
+  const QUOTE_PADDING = 12
+  const bleed = !isWithinQuote
+  const insetLeft = bleed
+    ? leftOffset || windowWidth - containerWidth
+    : QUOTE_PADDING
+  const insetRight = bleed
+    ? windowWidth - insetLeft - containerWidth
+    : QUOTE_PADDING
+
+  const getItemWidth = (image: AppBskyEmbedImages.ViewImage) => {
+    const ar = image.aspectRatio
+    if (ar && ar.width > 0 && ar.height > 0) {
+      const ratio = ar.width / ar.height
+      // Width derived from image's own aspect ratio at the fixed container height
+      const w = containerHeight * ratio
+      // Clamp: at least 40% of content width, at most the full content width
+      return Math.max(containerWidth * 0.4, Math.min(w, containerWidth))
+    }
+    return containerWidth
+  }
 
   if (screenReaderEnabled) {
     return (
@@ -125,8 +148,22 @@ export function Gallery({
 
   return (
     <View
-      style={[a.rounded_md, a.overflow_hidden]}
-      onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}>
+      style={
+        containerWidth > 0
+          ? {height: containerHeight, overflow: 'visible'}
+          : {aspectRatio: CONTAINER_ASPECT_RATIO}
+      }
+      onLayout={e => {
+        const w = e.nativeEvent.layout.width
+        if (w > 0) {
+          setContainerWidth(w)
+        }
+        e.target.measureInWindow((x: number) => {
+          if (x > 0) {
+            setLeftOffset(x)
+          }
+        })
+      }}>
       {containerWidth > 0 && (
         <DrawerGestureBlocker>
           <FlatList
@@ -134,23 +171,38 @@ export function Gallery({
             horizontal
             pagingEnabled={false}
             showsHorizontalScrollIndicator={false}
-            snapToOffsets={images.map((_, i) => i * snapInterval)}
             decelerationRate="normal"
-            disableIntervalMomentum
-            contentContainerStyle={{gap: ITEM_GAP}}
+            style={{
+              width: bleed ? windowWidth : containerWidth + QUOTE_PADDING * 2,
+              height: containerHeight,
+              marginLeft: -insetLeft,
+            }}
+            contentContainerStyle={{
+              gap: ITEM_GAP,
+              paddingLeft: insetLeft,
+              paddingRight: insetRight,
+            }}
             onScroll={e => {
               const offsetX = e.nativeEvent.contentOffset.x
-              if (snapInterval > 0) {
-                const page = Math.round(offsetX / snapInterval)
-                if (page !== currentPageRef.current) {
-                  ax.metric('post:gallery:swipe', {
-                    fromIndex: currentPageRef.current,
-                    toIndex: page,
-                    totalImages: images.length,
-                  })
-                  currentPageRef.current = page
-                  setCurrentPage(page)
+              // Determine which item is most visible based on scroll position
+              let accumulated = insetLeft // account for left content padding
+              let page = 0
+              for (let i = 0; i < images.length; i++) {
+                const w = getItemWidth(images[i]) + ITEM_GAP
+                if (offsetX < accumulated + w / 2) {
+                  page = i
+                  break
                 }
+                accumulated += w
+                page = i
+              }
+              if (page !== currentPageRef.current) {
+                ax.metric('post:gallery:swipe', {
+                  fromIndex: currentPageRef.current,
+                  toIndex: page,
+                  totalImages: images.length,
+                })
+                currentPageRef.current = page
               }
             }}
             scrollEventThrottle={16}
@@ -161,8 +213,8 @@ export function Gallery({
                 collapsable={false}
                 style={[
                   {
-                    width: itemWidth,
-                    aspectRatio: CONTAINER_ASPECT_RATIO,
+                    width: getItemWidth(image),
+                    height: containerHeight,
                   },
                 ]}>
                 <Pressable
@@ -249,30 +301,6 @@ export function Gallery({
             )}
           />
         </DrawerGestureBlocker>
-      )}
-      {images.length > 1 && (
-        <View
-          accessible={false}
-          style={[
-            a.absolute,
-            a.rounded_full,
-            t.atoms.bg_contrast_975,
-            {
-              bottom: a.p_xs.padding,
-              left: a.p_xs.padding,
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              opacity: 0.75,
-            },
-          ]}>
-          <Text
-            style={[
-              a.font_bold,
-              {fontSize: 11, color: t.atoms.text_inverted.color},
-            ]}>
-            {currentPage + 1}/{images.length}
-          </Text>
-        </View>
       )}
     </View>
   )
