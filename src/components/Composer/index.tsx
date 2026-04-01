@@ -331,8 +331,6 @@ export function Composer({
         </View>
         <TextInput
           dirName="ltr"
-          autoCapitalize="none"
-          autoCorrect={false}
           multiline={true}
           hitSlop={HITSLOP_10}
           placeholder={placeholder}
