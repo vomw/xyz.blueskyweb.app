@@ -180,7 +180,7 @@ export function Gallery({
               return offsets
             }, [])}
             snapToAlignment="start"
-            decelerationRate="normal"
+            decelerationRate={0.99}
             style={{
               width: bleed ? windowWidth : containerWidth + QUOTE_PADDING * 2,
               height: containerHeight,
