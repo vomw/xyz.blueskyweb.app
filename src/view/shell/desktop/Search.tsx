@@ -54,7 +54,8 @@ let SearchLinkCard = ({
     <Link
       label={label}
       to={to}
-      style={[a.py_lg, a.px_md, t.atoms.border_contrast_low, style]}>
+      style={[a.py_lg, a.px_md, t.atoms.border_contrast_low, style]}
+      hoverStyle={[t.atoms.bg_contrast_25]}>
       <Text style={[a.text_md, t.atoms.text]}>{label}</Text>
     </Link>
   )
