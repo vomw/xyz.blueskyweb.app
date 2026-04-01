@@ -11,7 +11,7 @@ export enum Features {
   LiveNowBetaDisable = 'live_now_beta:disable',
   ImageUploadsHighResolution = 'image_uploads:high_resolution',
   GroupChatsEnable = 'group_chats:enable',
-  NativeLanguageDetectionDisable = 'native_language_detection:disable',
+  NativeLanguageDetectionEnable = 'native_language_detection:enable',
 
   AATest = 'aa-test',
 }
