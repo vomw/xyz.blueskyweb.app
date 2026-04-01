@@ -1,5 +1,5 @@
 import {useRef, useState} from 'react'
-import {Pressable, ScrollView, View} from 'react-native'
+import {Pressable, ScrollView, useWindowDimensions, View} from 'react-native'
 import {type AnimatedRef, useAnimatedRef} from 'react-native-reanimated'
 import {Image} from 'expo-image'
 import {type AppBskyEmbedImages} from '@atproto/api'
@@ -16,8 +16,7 @@ import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 
 const CONTAINER_ASPECT_RATIO = 4 / 3
-const PEEK_WIDTH = 40
-const ITEM_GAP = 6
+const ITEM_GAP = 8 // tokens.space.sm
 
 interface GalleryProps {
   images: AppBskyEmbedImages.ViewImage[]
@@ -40,9 +39,9 @@ export function Gallery({
   const {_} = useLingui()
   const ax = useAnalytics()
   const largeAltBadge = useLargeAltBadgeEnabled()
-  const [currentPage, setCurrentPage] = useState(0)
   const currentPageRef = useRef(0)
   const scrollRef = useRef<ScrollView>(null)
+  const {width: windowWidth} = useWindowDimensions()
   const [containerWidth, setContainerWidth] = useState(0)
 
   const containerRefs = useRef<AnimatedRef<any>[]>([]).current
@@ -57,33 +56,63 @@ export function Gallery({
     containerRefs[i] = refs[i]
   }
 
-  const hideBadges =
+  const isWithinQuote =
     viewContext === PostEmbedViewContext.FeedEmbedRecordWithMedia
+  const hideBadges = isWithinQuote
 
-  const itemWidth = containerWidth > 0 ? containerWidth - PEEK_WIDTH : 0
-  const snapInterval = itemWidth + ITEM_GAP
+  const containerHeight =
+    containerWidth > 0 ? containerWidth / CONTAINER_ASPECT_RATIO : 0
+  const QUOTE_PADDING = 12
+  const bleed = !isWithinQuote
+  const insetLeft = bleed
+    ? Math.max(windowWidth - containerWidth, 0)
+    : QUOTE_PADDING
+  const insetRight = bleed
+    ? Math.max(windowWidth - insetLeft - containerWidth, 0)
+    : QUOTE_PADDING
 
-  const goToPage = (index: number) => {
-    scrollRef.current?.scrollTo({
-      x: index * snapInterval,
-      animated: true,
-    })
+  const getItemWidth = (image: AppBskyEmbedImages.ViewImage) => {
+    const ar = image.aspectRatio
+    if (ar && ar.width > 0 && ar.height > 0) {
+      const ratio = ar.width / ar.height
+      const w = containerHeight * ratio
+      return Math.max(containerWidth * 0.4, Math.min(w, containerWidth))
+    }
+    return containerWidth
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowLeft' && currentPage > 0) {
+    const scrollEl = scrollRef.current as unknown as {
+      scrollTo: (opts: {x: number; animated: boolean}) => void
+    }
+    if (!scrollEl) return
+
+    if (e.key === 'ArrowLeft') {
       e.preventDefault()
-      goToPage(currentPage - 1)
-    } else if (e.key === 'ArrowRight' && currentPage < images.length - 1) {
+      scrollEl.scrollTo({
+        x: Math.max(0, currentScrollX.current - 200),
+        animated: true,
+      })
+    } else if (e.key === 'ArrowRight') {
       e.preventDefault()
-      goToPage(currentPage + 1)
+      scrollEl.scrollTo({x: currentScrollX.current + 200, animated: true})
     }
   }
+  const currentScrollX = useRef(0)
 
   return (
     <View
-      style={[a.rounded_md, a.overflow_hidden]}
-      onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}
+      style={
+        containerWidth > 0
+          ? {height: containerHeight, overflow: 'visible'}
+          : {aspectRatio: CONTAINER_ASPECT_RATIO}
+      }
+      onLayout={e => {
+        const w = e.nativeEvent.layout.width
+        if (w > 0) {
+          setContainerWidth(w)
+        }
+      }}
       // @ts-expect-error web-only prop
       onKeyDown={handleKeyDown}
       tabIndex={0}
@@ -97,26 +126,42 @@ export function Gallery({
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={16}
           style={[
-            {aspectRatio: CONTAINER_ASPECT_RATIO},
+            {
+              width: bleed ? windowWidth : containerWidth + QUOTE_PADDING * 2,
+              height: containerHeight,
+              marginLeft: -insetLeft,
+            },
             web({
-              scrollSnapType: 'x mandatory',
+              scrollBehavior: 'smooth',
               WebkitOverflowScrolling: 'touch',
             }),
           ]}
-          contentContainerStyle={{gap: ITEM_GAP}}
+          contentContainerStyle={{
+            gap: ITEM_GAP,
+            paddingLeft: insetLeft,
+            paddingRight: insetRight,
+          }}
           onScroll={e => {
             const offsetX = e.nativeEvent.contentOffset.x
-            if (snapInterval > 0) {
-              const page = Math.round(offsetX / snapInterval)
-              if (page !== currentPageRef.current) {
-                ax.metric('post:gallery:swipe', {
-                  fromIndex: currentPageRef.current,
-                  toIndex: page,
-                  totalImages: images.length,
-                })
-                currentPageRef.current = page
-                setCurrentPage(page)
+            currentScrollX.current = offsetX
+            let accumulated = insetLeft
+            let page = 0
+            for (let i = 0; i < images.length; i++) {
+              const w = getItemWidth(images[i]) + ITEM_GAP
+              if (offsetX < accumulated + w / 2) {
+                page = i
+                break
               }
+              accumulated += w
+              page = i
+            }
+            if (page !== currentPageRef.current) {
+              ax.metric('post:gallery:swipe', {
+                fromIndex: currentPageRef.current,
+                toIndex: page,
+                totalImages: images.length,
+              })
+              currentPageRef.current = page
             }
           }}>
           {images.map((image, index) => (
@@ -126,10 +171,9 @@ export function Gallery({
               collapsable={false}
               style={[
                 {
-                  width: itemWidth,
-                  aspectRatio: CONTAINER_ASPECT_RATIO,
+                  width: getItemWidth(image),
+                  height: containerHeight,
                 },
-                web({scrollSnapAlign: 'start'}),
               ]}
               aria-roledescription="slide"
               aria-label={
@@ -215,96 +259,6 @@ export function Gallery({
             </View>
           ))}
         </ScrollView>
-      )}
-      {images.length > 1 && (
-        <>
-          <View
-            accessible={false}
-            style={[
-              a.absolute,
-              a.rounded_full,
-              t.atoms.bg_contrast_975,
-              {
-                bottom: a.p_xs.padding,
-                left: a.p_xs.padding,
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                opacity: 0.75,
-              },
-            ]}>
-            <Text
-              style={[
-                a.font_bold,
-                {fontSize: 11, color: t.atoms.text_inverted.color},
-              ]}>
-              {currentPage + 1}/{images.length}
-            </Text>
-          </View>
-          {currentPage > 0 && (
-            <Pressable
-              onPress={() => goToPage(currentPage - 1)}
-              accessibilityRole="button"
-              accessibilityLabel={_(msg`Previous image`)}
-              accessibilityHint=""
-              style={[
-                a.absolute,
-                a.align_center,
-                a.justify_center,
-                a.rounded_full,
-                t.atoms.bg_contrast_975,
-                {
-                  left: a.p_xs.padding,
-                  top: '50%',
-                  marginTop: -16,
-                  width: 32,
-                  height: 32,
-                  opacity: 0.75,
-                },
-                web({cursor: 'pointer'}),
-              ]}>
-              <Text
-                style={[
-                  a.font_bold,
-                  a.text_md,
-                  {color: t.atoms.text_inverted.color},
-                ]}>
-                {'<'}
-              </Text>
-            </Pressable>
-          )}
-          {currentPage < images.length - 1 && (
-            <Pressable
-              onPress={() => goToPage(currentPage + 1)}
-              accessibilityRole="button"
-              accessibilityLabel={_(msg`Next image`)}
-              accessibilityHint=""
-              style={[
-                a.absolute,
-                a.align_center,
-                a.justify_center,
-                a.rounded_full,
-                t.atoms.bg_contrast_975,
-                {
-                  right: a.p_xs.padding,
-                  top: '50%',
-                  marginTop: -16,
-                  width: 32,
-                  height: 32,
-                  opacity: 0.75,
-                },
-                web({cursor: 'pointer'}),
-              ]}>
-              <Text
-                style={[
-                  a.font_bold,
-                  a.text_md,
-                  {color: t.atoms.text_inverted.color},
-                ]}>
-                {'>'}
-              </Text>
-            </Pressable>
-          )}
-        </>
       )}
     </View>
   )
