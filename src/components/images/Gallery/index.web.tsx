@@ -93,15 +93,19 @@ export function Gallery({
 
     // Attach click-and-drag listeners directly to the scroll DOM node
     el.style.cursor = 'grab'
+    let lastMoveX = 0
+    let lastMoveTime = 0
 
     el.addEventListener('mousedown', (e: MouseEvent) => {
       if (e.button !== 0) return
       isDragging.current = true
-      hasDragged.current = false
+      hasDragged.current = true // assume drag; clear on mouseup if no movement
       dragStartX.current = e.clientX
       dragScrollStart.current = el.scrollLeft
-      el.style.scrollBehavior = 'auto'
+      lastMoveX = e.clientX
+      lastMoveTime = Date.now()
       el.style.scrollSnapType = 'none'
+      el.style.scrollBehavior = 'auto'
       el.style.cursor = 'grabbing'
       el.style.userSelect = 'none'
       e.preventDefault()
@@ -109,22 +113,50 @@ export function Gallery({
 
     el.addEventListener('mousemove', (e: MouseEvent) => {
       if (!isDragging.current) return
-      const dx = e.clientX - dragStartX.current
-      if (Math.abs(dx) > 3) hasDragged.current = true
-      el.scrollLeft = dragScrollStart.current - dx
+      lastMoveX = e.clientX
+      lastMoveTime = Date.now()
+      el.scrollLeft = dragScrollStart.current - (e.clientX - dragStartX.current)
     })
 
-    const onUp = () => {
+    const onUp = (e: MouseEvent) => {
       if (!isDragging.current) return
       isDragging.current = false
+      // Only allow click-through if mouse barely moved (true click)
+      if (Math.abs(e.clientX - dragStartX.current) <= 3) {
+        hasDragged.current = false
+      }
+
+      // Apply momentum: coast based on release velocity, then re-enable snap
+      const dt = Date.now() - lastMoveTime
+      const velocity =
+        dt < 100 ? (lastMoveX - dragStartX.current) / Math.max(dt, 1) : 0
+      const momentum = velocity * -800 // scale velocity to scroll distance
+
       el.style.scrollBehavior = 'smooth'
-      el.style.scrollSnapType = 'x proximity'
+      el.scrollLeft += momentum
+      // Re-enable snap after momentum scroll settles
+      requestAnimationFrame(() => {
+        el.style.scrollSnapType = 'x proximity'
+      })
+
       el.style.cursor = 'grab'
       el.style.userSelect = ''
     }
 
     el.addEventListener('mouseup', onUp)
-    el.addEventListener('mouseleave', onUp)
+    el.addEventListener('mouseleave', onUp as EventListener)
+
+    // Intercept click events during/after drag to prevent Pressable onPress
+    el.addEventListener(
+      'click',
+      (e: MouseEvent) => {
+        if (hasDragged.current) {
+          e.stopPropagation()
+          e.preventDefault()
+        }
+      },
+      true, // capture phase — runs before React's synthetic events
+    )
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
