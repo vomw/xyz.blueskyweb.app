@@ -14,11 +14,11 @@ import {
 } from 'react-native'
 import {type PasteEventPayload, TextInputWrapper} from 'expo-paste-input'
 import {AppBskyRichtextFacet, RichText} from '@atproto/api'
+import {useLingui} from '@lingui/react/macro'
 
 import {POST_IMG_MAX} from '#/lib/constants'
 import {downloadAndResize} from '#/lib/media/manip'
 import {isUriImage} from '#/lib/media/util'
-import {cleanError} from '#/lib/strings/errors'
 import {getMentionAt, insertMentionAt} from '#/lib/strings/mention-manip'
 import {useTheme} from '#/lib/ThemeContext'
 import {
@@ -47,6 +47,7 @@ export function TextInput({
   onError,
   ...props
 }: TextInputProps) {
+  const {t: l} = useLingui()
   const {theme: t, fonts} = useAlf()
   const textInput = useRef<RNTextInput>(null)
   const textInputSelection = useRef<Selection>({start: 0, end: 0})
@@ -127,18 +128,19 @@ export function TextInput({
   const onPaste = useCallback(
     (payload: PasteEventPayload) => {
       if (payload.type === 'unsupported') {
-        onError(cleanError('Unsupported clipboard content'))
+        onError(l`Unsupported clipboard content`)
         return
       }
 
       if (payload.type === 'images') {
-        const uri = payload.uris.find(isUriImage)
-        if (uri) {
-          onPhotoPasted(uri)
+        for (const uri of payload.uris) {
+          if (isUriImage(uri)) {
+            onPhotoPasted(uri)
+          }
         }
       }
     },
-    [onError, onPhotoPasted],
+    [l, onError, onPhotoPasted],
   )
 
   const onSelectionChange = useCallback(
