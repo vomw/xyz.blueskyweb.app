@@ -100,6 +100,60 @@ export function Gallery({
   }
   const currentScrollX = useRef(0)
 
+  // Click-and-drag scrolling
+  const isDragging = useRef(false)
+  const dragStartX = useRef(0)
+  const dragScrollStart = useRef(0)
+  const hasDragged = useRef(false)
+  const scrollNodeRef = useRef<HTMLElement | null>(null)
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    const node = scrollNodeRef.current
+    if (!node || e.button !== 0) return
+    isDragging.current = true
+    hasDragged.current = false
+    dragStartX.current = e.clientX
+    dragScrollStart.current = node.scrollLeft
+    node.style.scrollBehavior = 'auto'
+    node.style.scrollSnapType = 'none'
+    node.style.cursor = 'grabbing'
+    node.style.userSelect = 'none'
+  }
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current) return
+    const node = scrollNodeRef.current
+    if (!node) return
+    const dx = e.clientX - dragStartX.current
+    if (Math.abs(dx) > 3) {
+      hasDragged.current = true
+    }
+    node.scrollLeft = dragScrollStart.current - dx
+  }
+
+  const onMouseUp = () => {
+    if (!isDragging.current) return
+    isDragging.current = false
+    const node = scrollNodeRef.current
+    if (!node) return
+    node.style.scrollBehavior = 'smooth'
+    node.style.scrollSnapType = 'x proximity'
+    node.style.cursor = ''
+    node.style.userSelect = ''
+  }
+
+  const onScrollViewRef = (ref: ScrollView | null) => {
+    scrollRef.current = ref
+    // Get the underlying DOM scroll node from the RN web ScrollView
+    if (ref) {
+      const scrollable = ref as unknown as {
+        getScrollableNode?: () => HTMLElement
+      }
+      scrollNodeRef.current =
+        scrollable.getScrollableNode?.() ?? (ref as unknown as HTMLElement)
+    }
+  }
+
   return (
     <View
       style={
@@ -121,10 +175,15 @@ export function Gallery({
       aria-label={_(msg`Image gallery, ${images.length} images`)}>
       {containerWidth > 0 && (
         <ScrollView
-          ref={scrollRef}
+          ref={onScrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={16}
+          // @ts-expect-error web mouse events
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseUp}
           style={[
             {
               width: bleed ? windowWidth : containerWidth + QUOTE_PADDING * 2,
@@ -132,8 +191,10 @@ export function Gallery({
               marginLeft: -insetLeft,
             },
             web({
+              scrollSnapType: 'x proximity',
               scrollBehavior: 'smooth',
               WebkitOverflowScrolling: 'touch',
+              cursor: 'grab',
             }),
           ]}
           contentContainerStyle={{
@@ -174,6 +235,7 @@ export function Gallery({
                   width: getItemWidth(image),
                   height: containerHeight,
                 },
+                web({scrollSnapAlign: 'start'}),
               ]}
               aria-roledescription="slide"
               aria-label={
@@ -183,6 +245,7 @@ export function Gallery({
                 onPress={
                   onPress
                     ? () => {
+                        if (hasDragged.current) return
                         ax.metric('post:gallery:openLightbox', {
                           imageIndex: index,
                           totalImages: images.length,
