@@ -1,6 +1,5 @@
 import {memo, useCallback, useState} from 'react'
 import {
-  ActivityIndicator,
   type StyleProp,
   TouchableOpacity,
   View,
@@ -16,6 +15,7 @@ import {SearchProfileCard} from '#/screens/Search/components/SearchProfileCard'
 import {atoms as a, useTheme} from '#/alf'
 import {SearchInput} from '#/components/forms/SearchInput'
 import {Link} from '#/components/Link'
+import {Loader} from '#/components/Loader'
 import {Text} from '#/components/Typography'
 
 const WHITESPACE_RE = /\s+/gu
@@ -124,28 +124,30 @@ export function DesktopSearch() {
               top: '100%',
             },
           ]}>
+          <SearchLinkCard
+            label={l`Search for “${tQuery}”`}
+            to={`/search?q=${encodeURIComponent(tQuery)}`}
+            style={(autocompleteData?.length ?? 0) > 0 ? a.border_b : undefined}
+          />
           {isFetching && !autocompleteData?.length ? (
-            <View style={[a.p_sm]}>
-              <ActivityIndicator />
+            <View
+              style={[
+                a.py_lg,
+                a.align_center,
+                a.border_t,
+                t.atoms.border_contrast_low,
+              ]}>
+              <Loader size="lg" />
             </View>
           ) : (
-            <>
-              <SearchLinkCard
-                label={l`Search for “${tQuery}”`}
-                to={`/search?q=${encodeURIComponent(tQuery)}`}
-                style={
-                  (autocompleteData?.length ?? 0) > 0 ? a.border_b : undefined
-                }
+            autocompleteData?.map(item => (
+              <SearchProfileCard
+                key={item.did}
+                profile={item}
+                moderationOpts={moderationOpts}
+                onPress={onSearchProfileCardPress}
               />
-              {autocompleteData?.map(item => (
-                <SearchProfileCard
-                  key={item.did}
-                  profile={item}
-                  moderationOpts={moderationOpts}
-                  onPress={onSearchProfileCardPress}
-                />
-              ))}
-            </>
+            ))
           )}
         </View>
       )}
