@@ -161,10 +161,12 @@ export function Root({
   const callbackRefs = useRef({
     onActiveFacetOuter,
     onFacetCommittedOuter,
+    focus: tapper.input.focus,
   })
   callbackRefs.current = {
     onActiveFacetOuter,
     onFacetCommittedOuter,
+    focus: tapper.input.focus,
   }
 
   useImperativeHandle(
@@ -200,9 +202,13 @@ export function Root({
     const offFacetCommitted = tapper.on('facetCommitted', facet => {
       callbackRefs.current.onFacetCommittedOuter?.(facet)
     })
+    const offAfterInsert = tapper.on('afterInsert', () => {
+      callbackRefs.current?.focus()
+    })
     return () => {
       offActiveFacet()
       offFacetCommitted()
+      offAfterInsert()
     }
   }, [tapper.on])
 
@@ -303,6 +309,15 @@ export function Input({
       ? {height: lineHeight + verticalSpace}
       : {minHeight: mh, maxHeight: xh}
 
+    /*
+     * On iOS especially, TextInput and Text line height does not render the
+     * same way, but setting this to undefined and using the default font
+     * metrics works fine.
+     */
+    if (!IS_WEB) {
+      delete ts.lineHeight
+    }
+
     return {textStyle: ts, textAreaStyle: tas, minHeight: mh, maxHeight: xh}
   }, [t, fonts, padding, rawTextStyle, initialNumberOfLines, maxNumberOfLines])
 
@@ -361,43 +376,39 @@ export function Input({
     [onRequestSubmit],
   )
 
-  const textContent = (
-    <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
-      {state.nodes.map((node, i) => {
-        switch (node.type) {
-          case 'text':
-            return <Span key={i}>{node.value}</Span>
-          case 'trigger':
-          case 'facet':
-            return (
-              <Span
-                key={i}
-                ref={IS_WEB ? sift.refs.setAnchor : undefined}
-                style={node.type === 'facet' && {color: t.palette.primary_500}}>
-                {node.raw}
-              </Span>
-            )
-        }
-      })}
-    </Text>
-  )
-
   return (
     <View style={[a.relative, style]}>
-      {IS_WEB && (
-        <View
-          pointerEvents="none"
-          style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
-          <Animated.View
-            style={[
-              padding,
-              {position: 'absolute', left: 0, right: 0},
-              previewScrollStyle,
-            ]}>
-            {textContent}
-          </Animated.View>
-        </View>
-      )}
+      <View
+        pointerEvents="none"
+        style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
+        <Animated.View
+          style={[
+            padding,
+            {position: 'absolute', left: 0, right: 0},
+            previewScrollStyle,
+          ]}>
+          <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
+            {state.nodes.map((node, i) => {
+              switch (node.type) {
+                case 'text':
+                  return <Span key={i}>{node.value}</Span>
+                case 'trigger':
+                case 'facet':
+                  return (
+                    <Span
+                      key={i}
+                      ref={IS_WEB ? sift.refs.setAnchor : undefined}
+                      style={
+                        node.type === 'facet' && {color: t.palette.primary_500}
+                      }>
+                      {node.raw}
+                    </Span>
+                  )
+              }
+            })}
+          </Text>
+        </Animated.View>
+      </View>
       <TextInput
         dirName="ltr"
         autoCapitalize="none"
@@ -438,7 +449,6 @@ export function Input({
         ]}
         {...rest}
         {...tapper.inputProps}
-        value={undefined}
         {...sift.targetProps}
         ref={mergeRefs([
           textInputRef,
@@ -464,9 +474,8 @@ export function Input({
         // @ts-ignore web only
         onCompositionEnd={() => {
           isComposing.current = false
-        }}>
-        {IS_WEB ? null : textContent}
-      </TextInput>
+        }}
+      />
     </View>
   )
 }
@@ -514,7 +523,7 @@ function AutocompleteInner({
     query: activeFacet.value,
   })
 
-  return data ? (
+  return data && data.length ? (
     <AutocompleteBase
       sift={sift}
       data={data}

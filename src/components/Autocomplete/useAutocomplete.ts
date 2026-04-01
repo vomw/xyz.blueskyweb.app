@@ -44,6 +44,9 @@ export function useAutocomplete({
         // TODO return recents
         if (!query) return []
 
+        // Going from "foo" to "foo." should not clear matches.
+        query = query.toLowerCase().trim().replace(/\.$/, '')
+
         const res = await agent.searchActorsTypeahead({
           q: query,
           limit: limit || 8,

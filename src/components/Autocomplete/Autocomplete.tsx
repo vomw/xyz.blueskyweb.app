@@ -43,7 +43,12 @@ export function Autocomplete({
           a.border,
           t.atoms.border_contrast_low,
           t.atoms.bg,
-          !IS_WEB && a.w_full,
+          a.w_full,
+          IS_WEB
+            ? {
+                maxWidth: 300,
+              }
+            : {},
         ]}
         render={render}
       />
