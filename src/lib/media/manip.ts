@@ -321,7 +321,11 @@ export async function saveBytesToDisk(
   bytes: Uint8Array,
   type: string,
 ) {
-  const encoded = Buffer.from(bytes).toString('base64')
+  let binary = ''
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte)
+  }
+  const encoded = btoa(binary)
   return await saveToDevice(filename, encoded, type)
 }
 
