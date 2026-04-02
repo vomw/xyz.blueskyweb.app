@@ -6,9 +6,7 @@ import {type AnimatedRef, useAnimatedRef} from 'react-native-reanimated'
 import {Image} from 'expo-image'
 import {type AppBskyEmbedImages} from '@atproto/api'
 import {utils} from '@bsky.app/alf'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
-import {Trans} from '@lingui/react/macro'
+import {Trans, useLingui} from '@lingui/react/macro'
 
 import {type Dimensions} from '#/lib/media/types'
 import {useA11y} from '#/state/a11y'
@@ -40,7 +38,7 @@ export function Gallery({
   viewContext,
 }: GalleryProps) {
   const t = useTheme()
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const ax = useAnalytics()
   const {screenReaderEnabled} = useA11y()
   const largeAltBadge = useLargeAltBadgeEnabled()
@@ -118,9 +116,9 @@ export function Gallery({
               onPressIn={onPressIn ? () => onPressIn(index) : undefined}
               accessibilityRole="button"
               accessibilityLabel={
-                image.alt || _(msg`Image ${index + 1} of ${images.length}`)
+                image.alt || l`Image ${index + 1} of ${images.length}`
               }
-              accessibilityHint={_(msg`Opens full image`)}
+              accessibilityHint={l`Opens full image`}
               style={[a.flex_1]}>
               <Image
                 source={{uri: image.thumb}}
@@ -240,9 +238,9 @@ export function Gallery({
                   }}
                   accessibilityRole="button"
                   accessibilityLabel={
-                    image.alt || _(msg`Image ${index + 1} of ${images.length}`)
+                    image.alt || l`Image ${index + 1} of ${images.length}`
                   }
-                  accessibilityHint={_(msg`Opens full image`)}
+                  accessibilityHint={l`Opens full image`}
                   style={[
                     a.flex_1,
                     a.rounded_md,

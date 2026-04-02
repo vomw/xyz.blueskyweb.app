@@ -3,9 +3,7 @@ import {Pressable, ScrollView, View} from 'react-native'
 import {type AnimatedRef, useAnimatedRef} from 'react-native-reanimated'
 import {Image} from 'expo-image'
 import {type AppBskyEmbedImages} from '@atproto/api'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
-import {Trans} from '@lingui/react/macro'
+import {Trans, useLingui} from '@lingui/react/macro'
 
 import {type Dimensions} from '#/lib/media/types'
 import {useLargeAltBadgeEnabled} from '#/state/preferences/large-alt-badge'
@@ -36,7 +34,7 @@ export function Gallery({
   viewContext,
 }: GalleryProps) {
   const t = useTheme()
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const ax = useAnalytics()
   const largeAltBadge = useLargeAltBadgeEnabled()
   const currentPageRef = useRef(0)
@@ -199,7 +197,7 @@ export function Gallery({
       }}
       role="group"
       aria-roledescription="carousel"
-      aria-label={_(msg`Image gallery, ${images.length} images`)}>
+      aria-label={l`Image gallery, ${images.length} images`}>
       {containerWidth > 0 && (
         <ScrollView
           ref={scrollRef}
@@ -268,7 +266,7 @@ export function Gallery({
               ]}
               aria-roledescription="slide"
               aria-label={
-                image.alt || _(msg`Image ${index + 1} of ${images.length}`)
+                image.alt || l`Image ${index + 1} of ${images.length}`
               }>
               <Pressable
                 onPress={
@@ -290,9 +288,9 @@ export function Gallery({
                 onPressIn={onPressIn ? () => onPressIn(index) : undefined}
                 accessibilityRole="button"
                 accessibilityLabel={
-                  image.alt || _(msg`Image ${index + 1} of ${images.length}`)
+                  image.alt || l`Image ${index + 1} of ${images.length}`
                 }
-                accessibilityHint={_(msg`Opens full image`)}
+                accessibilityHint={l`Opens full image`}
                 style={[
                   a.flex_1,
                   a.rounded_md,
