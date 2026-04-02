@@ -44,7 +44,7 @@ export function useResolveUriQuery(uri: string | undefined) {
     ...resolvedDidQueryOptions(agent, getUnstableProfile, host),
     select: did => ({
       did,
-      uri: urip.toString(),
+      uri: AtUri.make(did, urip.collection, urip.rkey).toString(),
     }),
   })
 }
