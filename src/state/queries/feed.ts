@@ -226,6 +226,7 @@ export function createGetPopularFeedsQueryKey(
 export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
   const {hasSession} = useSession()
   const agent = useAgent()
+  const enabled = options?.enabled
   const limit = options?.limit || 10
   const {data: preferences} = usePreferencesQuery()
   const queryClient = useQueryClient()
@@ -243,8 +244,8 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
   const lastPageCountRef = useRef(0)
 
   const query = useInfiniteQuery({
-    enabled: Boolean(moderationOpts) && options?.enabled !== false,
-    queryKey: createGetPopularFeedsQueryKey(options),
+    enabled: Boolean(moderationOpts) && enabled !== false,
+    queryKey: createGetPopularFeedsQueryKey({enabled, limit}),
     queryFn: async ({pageParam}) => {
       const res = await agent.app.bsky.unspecced.getPopularFeedGenerators({
         limit,
@@ -298,8 +299,8 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
     ),
   })
 
+  const {isFetching, hasNextPage, data, fetchNextPage} = query
   useEffect(() => {
-    const {isFetching, hasNextPage, data} = query
     if (isFetching || !hasNextPage) {
       return
     }
@@ -318,10 +319,10 @@ export function useGetPopularFeedsQuery(options?: GetPopularFeedsOptions) {
       count += page.feeds.length
     }
     if (count < limit && (data?.pages.length || 0) < 6) {
-      query.fetchNextPage()
+      void fetchNextPage()
       lastPageCountRef.current = data?.pages?.length || 0
     }
-  }, [query, limit])
+  }, [isFetching, hasNextPage, data, fetchNextPage, limit])
 
   return query
 }
