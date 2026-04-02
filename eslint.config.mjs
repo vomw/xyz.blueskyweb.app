@@ -127,6 +127,7 @@ export default defineConfig(
        */
       ...react.configs.recommended.rules,
       ...react.configs['jsx-runtime'].rules,
+      'react/hook-use-state': 'warn',
       'react/no-unescaped-entities': 'off',
       'react/prop-types': 'off',
       'react-native/no-inline-styles': 'off',
