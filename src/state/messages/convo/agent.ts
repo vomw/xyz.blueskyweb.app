@@ -5,7 +5,7 @@ import {
   type ChatBskyConvoGetLog,
   type ChatBskyConvoSendMessage,
 } from '@atproto/api'
-import {XRPCError} from '@atproto/api'
+import {XRPCError} from '@atproto/xrpc'
 import {EventEmitter} from 'eventemitter3'
 import {nanoid} from 'nanoid/non-secure'
 

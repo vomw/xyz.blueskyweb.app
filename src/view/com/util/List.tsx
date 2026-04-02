@@ -186,8 +186,8 @@ let List = forwardRef<ListMethods, ListProps>(
         scrollEventThrottle={1}
         style={style}
         ref={node => {
-          localRef.current = node
-          if (typeof ref === 'function') ref(node)
+          localRef.current = node as FlatList_INTERNAL | null
+          if (typeof ref === 'function') ref(node as FlatList_INTERNAL | null)
           else if (ref) (ref as React.MutableRefObject<any>).current = node
         }}
       />
