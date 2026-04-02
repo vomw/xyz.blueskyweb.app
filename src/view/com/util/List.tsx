@@ -2,7 +2,7 @@ import {
   forwardRef,
   memo,
   useDeferredValue,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
 } from 'react'
@@ -216,16 +216,13 @@ function useSaveScrollOnLightbox(
   const {activeLightbox} = useLightbox()
   const savedOffset = useRef<number | null>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (activeLightbox) {
       savedOffset.current = scrollOffsetY.get()
     } else if (savedOffset.current !== null) {
       const offset = savedOffset.current
       savedOffset.current = null
-      // Restore after layout settles from any orientation change.
-      requestAnimationFrame(() => {
-        listRef.current?.scrollToOffset({offset, animated: false})
-      })
+      listRef.current?.scrollToOffset({offset, animated: false})
     }
   }, [activeLightbox, listRef, scrollOffsetY])
 }
