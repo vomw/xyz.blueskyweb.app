@@ -19,7 +19,7 @@ import {PostEmbedViewContext} from '#/components/Post/Embed/types'
 import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 
-const CONTAINER_ASPECT_RATIO = 4 / 3
+const CONTAINER_ASPECT_RATIO = 3 / 2
 const ITEM_GAP = 8 // tokens.space.sm
 
 interface GalleryProps {
@@ -83,11 +83,11 @@ export function Gallery({
     if (ar && ar.width > 0 && ar.height > 0) {
       const ratio = ar.width / ar.height
       // Width derived from image's own aspect ratio at the fixed container height
-      const w = containerHeight * ratio
-      // Clamp: at least 40% of content width, at most the full content width
-      return Math.max(containerWidth * 0.4, Math.min(w, containerWidth))
+      // Clamp aspect ratio between 2:3 (portrait) and 3:2 (landscape)
+      const clamped = Math.max(2 / 3, Math.min(ratio, 3 / 2))
+      return containerHeight * clamped
     }
-    return containerWidth
+    return containerHeight // default to square-ish
   }
 
   if (screenReaderEnabled) {

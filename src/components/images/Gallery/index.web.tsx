@@ -15,7 +15,7 @@ import {PostEmbedViewContext} from '#/components/Post/Embed/types'
 import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 
-const CONTAINER_ASPECT_RATIO = 4 / 3
+const CONTAINER_ASPECT_RATIO = 3 / 2
 const ITEM_GAP = 8 // tokens.space.sm
 
 interface GalleryProps {
@@ -41,7 +41,10 @@ export function Gallery({
   const largeAltBadge = useLargeAltBadgeEnabled()
   const currentPageRef = useRef(0)
   const scrollRef = useRef<ScrollView>(null)
+  const containerRef = useRef<View>(null)
   const [containerWidth, setContainerWidth] = useState(0)
+  const [insetLeft, setInsetLeft] = useState(0)
+  const [insetRight, setInsetRight] = useState(0)
 
   const containerRefs = useRef<AnimatedRef<any>[]>([]).current
   const thumbDimsRef = useRef<(Dimensions | null)[]>([])
@@ -59,17 +62,24 @@ export function Gallery({
     viewContext === PostEmbedViewContext.FeedEmbedRecordWithMedia
   const hideBadges = isWithinQuote
 
+  const QUOTE_PADDING = 12
   const containerHeight =
     containerWidth > 0 ? containerWidth / CONTAINER_ASPECT_RATIO : 0
+  const scrollWidth = isWithinQuote
+    ? containerWidth + QUOTE_PADDING * 2
+    : insetLeft + insetRight > 0
+      ? containerWidth + insetLeft + insetRight
+      : containerWidth
 
   const getItemWidth = (image: AppBskyEmbedImages.ViewImage) => {
     const ar = image.aspectRatio
     if (ar && ar.width > 0 && ar.height > 0) {
       const ratio = ar.width / ar.height
-      const w = containerHeight * ratio
-      return Math.max(containerWidth * 0.4, Math.min(w, containerWidth))
+      // Clamp aspect ratio between 2:3 (portrait) and 3:2 (landscape)
+      const clamped = Math.max(2 / 3, Math.min(ratio, 3 / 2))
+      return containerHeight * clamped
     }
-    return containerWidth
+    return containerHeight // default to square-ish
   }
 
   // Click-and-drag scrolling via DOM listeners
@@ -155,13 +165,36 @@ export function Gallery({
     <View
       style={
         containerWidth > 0
-          ? {height: containerHeight}
+          ? {height: containerHeight, overflow: 'visible'}
           : {aspectRatio: CONTAINER_ASPECT_RATIO}
       }
+      ref={containerRef}
       onLayout={e => {
         const w = e.nativeEvent.layout.width
         if (w > 0) {
           setContainerWidth(w)
+        }
+        // Measure distance to post edges for bleed
+        if (!isWithinQuote) {
+          requestAnimationFrame(() => {
+            const el = containerRef.current as unknown as HTMLElement
+            if (!el) return
+            const galleryRect = el.getBoundingClientRect()
+            // Walk up to find the post outer container (has paddingLeft/paddingRight)
+            let parent: HTMLElement | null = el.parentElement
+            while (parent) {
+              const ps = window.getComputedStyle(parent)
+              const pl = parseFloat(ps.paddingLeft)
+              const pr = parseFloat(ps.paddingRight)
+              if (pl >= 8 && pr >= 8 && ps.cursor === 'pointer') {
+                const parentRect = parent.getBoundingClientRect()
+                setInsetLeft(galleryRect.left - parentRect.left)
+                setInsetRight(parentRect.right - galleryRect.right)
+                break
+              }
+              parent = parent.parentElement
+            }
+          })
         }
       }}
       role="group"
@@ -176,6 +209,12 @@ export function Gallery({
           style={[
             {
               height: containerHeight,
+              width: scrollWidth,
+              marginLeft: isWithinQuote
+                ? -QUOTE_PADDING
+                : insetLeft > 0
+                  ? -insetLeft
+                  : 0,
             },
             web({
               WebkitOverflowScrolling: 'touch',
@@ -183,6 +222,16 @@ export function Gallery({
           ]}
           contentContainerStyle={{
             gap: ITEM_GAP,
+            paddingLeft: isWithinQuote
+              ? QUOTE_PADDING
+              : insetLeft > 0
+                ? insetLeft
+                : 0,
+            paddingRight: isWithinQuote
+              ? QUOTE_PADDING
+              : insetRight > 0
+                ? insetRight
+                : 0,
           }}
           onScroll={e => {
             const offsetX = e.nativeEvent.contentOffset.x
