@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {Pressable, ScrollView, View} from 'react-native'
 import {type AnimatedRef, useAnimatedRef} from 'react-native-reanimated'
 import {Image} from 'expo-image'
@@ -72,104 +72,84 @@ export function Gallery({
     return containerWidth
   }
 
-  // Click-and-drag scrolling
-  const isDragging = useRef(false)
-  const dragStartX = useRef(0)
-  const dragScrollStart = useRef(0)
+  // Click-and-drag scrolling via DOM listeners
   const hasDragged = useRef(false)
-  const scrollNodeRef = useRef<HTMLElement | null>(null)
 
-  const onScrollViewRef = (ref: ScrollView | null) => {
-    scrollRef.current = ref
-    if (!ref) return
-
-    const scrollable = ref as unknown as {
-      getScrollableNode?: () => HTMLElement
-    }
-    const el =
-      scrollable.getScrollableNode?.() ?? (ref as unknown as HTMLElement)
-    scrollNodeRef.current = el
+  useEffect(() => {
+    const el = scrollRef.current as unknown as HTMLElement
     if (!el) return
 
-    // Attach click-and-drag listeners directly to the scroll DOM node
+    let isDragging = false
+    let startX = 0
+    let scrollStart = 0
+    let prevX = 0
+    let prevTime = 0
+    let velocity = 0
+    let momentumId = 0
+
     el.style.cursor = 'grab'
-    let lastMoveX = 0
-    let lastMoveTime = 0
 
-    el.addEventListener('mousedown', (e: MouseEvent) => {
+    const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0) return
-      isDragging.current = true
-      hasDragged.current = true // assume drag; clear on mouseup if no movement
-      dragStartX.current = e.clientX
-      dragScrollStart.current = el.scrollLeft
-      lastMoveX = e.clientX
-      lastMoveTime = Date.now()
-      el.style.scrollSnapType = 'none'
-      el.style.scrollBehavior = 'auto'
+      cancelAnimationFrame(momentumId)
+      isDragging = true
+      hasDragged.current = false
+      startX = e.pageX - el.offsetLeft
+      scrollStart = el.scrollLeft
+      prevX = e.pageX
+      prevTime = Date.now()
+      velocity = 0
       el.style.cursor = 'grabbing'
-      el.style.userSelect = 'none'
-      e.preventDefault()
-    })
+      e.preventDefault() // prevents native image drag
+    }
 
-    el.addEventListener('mousemove', (e: MouseEvent) => {
-      if (!isDragging.current) return
-      lastMoveX = e.clientX
-      lastMoveTime = Date.now()
-      el.scrollLeft = dragScrollStart.current - (e.clientX - dragStartX.current)
-    })
-
-    const onUp = (e: MouseEvent) => {
-      if (!isDragging.current) return
-      isDragging.current = false
-      // Only allow click-through if mouse barely moved (true click)
-      if (Math.abs(e.clientX - dragStartX.current) <= 3) {
-        hasDragged.current = false
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return
+      const x = e.pageX - el.offsetLeft
+      if (Math.abs(x - startX) > 3) {
+        hasDragged.current = true
       }
+      // Track velocity from recent movement
+      const now = Date.now()
+      const dt = now - prevTime
+      if (dt > 0) {
+        velocity = (e.pageX - prevX) / dt
+      }
+      prevX = e.pageX
+      prevTime = now
+      el.scrollLeft = scrollStart - (x - startX)
+    }
 
-      // Apply momentum: coast based on release velocity, then re-enable snap
-      const dt = Date.now() - lastMoveTime
-      const velocity =
-        dt < 100 ? (lastMoveX - dragStartX.current) / Math.max(dt, 1) : 0
-      const momentum = velocity * -800 // scale velocity to scroll distance
-
-      el.style.scrollBehavior = 'smooth'
-      el.scrollLeft += momentum
-      // Re-enable snap after momentum scroll settles
-      requestAnimationFrame(() => {
-        el.style.scrollSnapType = 'x proximity'
-      })
-
+    const onMouseUp = () => {
+      if (!isDragging) return
+      if (hasDragged.current) {
+        el.addEventListener('click', e => e.stopPropagation(), {once: true})
+      }
+      isDragging = false
       el.style.cursor = 'grab'
-      el.style.userSelect = ''
+
+      // Apply momentum with friction
+      const friction = 0.95
+      let v = -velocity * 15 // scale velocity to px/frame
+      const coast = () => {
+        if (Math.abs(v) < 0.5) return
+        el.scrollLeft += v
+        v *= friction
+        momentumId = requestAnimationFrame(coast)
+      }
+      coast()
     }
 
-    el.addEventListener('mouseup', onUp)
-    el.addEventListener('mouseleave', onUp as EventListener)
+    el.addEventListener('mousedown', onMouseDown)
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
 
-    // Intercept click events during/after drag to prevent Pressable onPress
-    el.addEventListener(
-      'click',
-      (e: MouseEvent) => {
-        if (hasDragged.current) {
-          e.stopPropagation()
-          e.preventDefault()
-        }
-      },
-      true, // capture phase — runs before React's synthetic events
-    )
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    const node = scrollNodeRef.current
-    if (!node) return
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      node.scrollLeft -= 200
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      node.scrollLeft += 200
+    return () => {
+      el.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
     }
-  }
+  }, [containerWidth]) // re-attach when scroll view mounts
 
   return (
     <View
@@ -184,15 +164,12 @@ export function Gallery({
           setContainerWidth(w)
         }
       }}
-      // @ts-expect-error web-only prop
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
       role="group"
       aria-roledescription="carousel"
       aria-label={_(msg`Image gallery, ${images.length} images`)}>
       {containerWidth > 0 && (
         <ScrollView
-          ref={onScrollViewRef}
+          ref={scrollRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={16}
@@ -201,8 +178,6 @@ export function Gallery({
               height: containerHeight,
             },
             web({
-              scrollSnapType: 'x proximity',
-              scrollBehavior: 'smooth',
               WebkitOverflowScrolling: 'touch',
             }),
           ]}
@@ -241,7 +216,6 @@ export function Gallery({
                   width: getItemWidth(image),
                   height: containerHeight,
                 },
-                web({scrollSnapAlign: 'start'}),
               ]}
               aria-roledescription="slide"
               aria-label={
@@ -275,7 +249,6 @@ export function Gallery({
                   a.rounded_md,
                   a.overflow_hidden,
                   t.atoms.bg_contrast_25,
-                  web({cursor: 'grab'}),
                 ]}>
                 <Image
                   source={{uri: image.thumb}}
