@@ -1,6 +1,5 @@
 import {StyleSheet} from 'react-native'
 
-import {colors} from '#/lib/styles'
 import {atoms as a} from '#/alf'
 
 export const styles = StyleSheet.create({
@@ -38,7 +37,7 @@ export const styles = StyleSheet.create({
   notificationCountLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.white,
+    color: 'white',
     fontVariant: ['tabular-nums'],
     includeFontPadding: false,
   },
@@ -49,8 +48,7 @@ export const styles = StyleSheet.create({
     top: 10,
     width: 8,
     height: 8,
-    backgroundColor: colors.blue3,
-    borderRadius: 6,
+    borderRadius: 4,
     zIndex: 1,
   },
   ctrlIcon: {

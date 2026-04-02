@@ -407,7 +407,9 @@ function Btn({
           </Text>
         </View>
       ) : hasNew ? (
-        <View style={[styles.hasNewBadge, a.rounded_full]} />
+        <View
+          style={[styles.hasNewBadge, {backgroundColor: t.palette.primary_500}]}
+        />
       ) : null}
     </PressableScale>
   )
