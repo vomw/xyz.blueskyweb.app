@@ -321,6 +321,7 @@ export async function saveBytesToDisk(
   bytes: Uint8Array,
   type: string,
 ) {
+  // ideally we'd use `bytes.toBase64()`, but that's only baseline newly available
   let binary = ''
   for (const byte of bytes) {
     binary += String.fromCharCode(byte)
