@@ -99,12 +99,14 @@ const GalleryInner = ({images, dispatch}: GalleryInnerProps) => {
           )
         })}
       </ScrollView>
-      <Admonition type="tip" style={[a.mt_sm]}>
-        <Trans>
-          Alt text describes images for blind and low-vision users, and helps
-          give context to everyone.
-        </Trans>
-      </Admonition>
+      {images.some(image => !image.alt) && (
+        <Admonition type="info" style={[a.mt_sm]}>
+          <Trans>
+            Alt text describes images for blind and low-vision users, and helps
+            give context to everyone.
+          </Trans>
+        </Admonition>
+      )}
     </>
   ) : null
 }
