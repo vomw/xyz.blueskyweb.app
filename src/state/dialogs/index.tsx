@@ -6,8 +6,8 @@ import {
   useRef,
   useState,
 } from 'react'
-import {useHotkeysContext} from 'react-hotkeys-hook'
 
+import {useHotkeysContext} from '#/lib/hotkeys'
 import {type DialogControlRefProps} from '#/components/Dialog'
 import {Provider as GlobalDialogsProvider} from '#/components/dialogs/Context'
 import {IS_WEB} from '#/env'

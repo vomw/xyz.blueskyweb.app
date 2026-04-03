@@ -1,5 +1,10 @@
+import React from 'react'
 import {useLingui} from '@lingui/react/macro'
-import {useHotkeys} from 'react-hotkeys-hook'
+import {
+  HotkeysProvider,
+  useHotkeys,
+  useHotkeysContext,
+} from 'react-hotkeys-hook'
 
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
 import {emitFocusSearch} from '#/state/events'
@@ -10,12 +15,27 @@ enum Hotkeys {
   FOCUS_SEARCH = 'slash',
 }
 
-export function useGlobalKeyboardShortcuts() {
+export function Provider({children}: React.PropsWithChildren<unknown>) {
+  return (
+    <HotkeysProvider initiallyActiveScopes={['global']}>
+      <KeyboardShortcuts>{children}</KeyboardShortcuts>
+    </HotkeysProvider>
+  )
+}
+
+export {useHotkeysContext}
+
+function KeyboardShortcuts({children}: React.PropsWithChildren<unknown>) {
+  useKeyboardShortcuts()
+  return children
+}
+
+function useKeyboardShortcuts() {
   const {openComposer} = useOpenComposer()
   const {hasSession} = useSession()
   const {t: l} = useLingui()
 
-  const shouldIgnore = (requiresSession?: boolean) => {
+  const shouldIgnore = (requiresSession: boolean = false) => {
     if (requiresSession && !hasSession) {
       return true
     }

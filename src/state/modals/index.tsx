@@ -1,7 +1,7 @@
 import {createContext, useContext, useEffect, useMemo, useState} from 'react'
-import {useHotkeysContext} from 'react-hotkeys-hook'
 
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
+import {useHotkeysContext} from '#/lib/hotkeys'
 
 export interface UserAddRemoveListsModal {
   name: 'user-add-remove-lists'

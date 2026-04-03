@@ -1,8 +1,8 @@
 import {createContext, useContext, useEffect, useMemo, useState} from 'react'
 import {nanoid} from 'nanoid/non-secure'
-import {useHotkeysContext} from 'react-hotkeys-hook'
 
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
+import {useHotkeysContext} from '#/lib/hotkeys'
 import {type ImageSource} from '#/view/com/lightbox/ImageViewing/@types'
 
 export type Lightbox = {

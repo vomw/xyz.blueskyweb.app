@@ -1,5 +1,6 @@
 import {createContext, useContext, useState} from 'react'
-import {useHotkeysContext} from 'react-hotkeys-hook'
+
+import {useHotkeysContext} from '#/lib/hotkeys'
 
 type StateContext = boolean
 type SetContext = (v: boolean) => void
