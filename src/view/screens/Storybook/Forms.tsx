@@ -40,7 +40,7 @@ export function Forms() {
 
       <View style={[a.gap_md, a.align_start, a.w_full]}>
         <AutosizedTextarea
-          label="AutosizedTextarea minRows=1 maxRows=5"
+          label="minRows=1 maxRows=5"
           style={[
             a.w_full,
             a.p_md,
@@ -51,7 +51,19 @@ export function Forms() {
           maxRows={5}
         />
         <AutosizedTextarea
-          label="AutosizedTextarea minRows=3 maxRows=10"
+          label="defaultValue minRows=1 maxRows=2"
+          style={[
+            a.w_full,
+            a.p_md,
+            a.rounded_sm,
+            a.border,
+            t.atoms.border_contrast_medium,
+          ]}
+          maxRows={2}
+          defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies lacinia, nunc nisl aliquam nisl, eget aliquam nunc nisl eget nunc."
+        />
+        <AutosizedTextarea
+          label="minRows=3 maxRows=10"
           style={[
             a.w_full,
             a.p_md,

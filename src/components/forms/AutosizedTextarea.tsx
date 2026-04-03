@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useMemo, useRef, useState} from 'react'
 import {
   TextInput,
   type TextInputContentSizeChangeEvent,
@@ -46,16 +46,14 @@ export function AutosizedTextarea({
     const mh = lineHeight * minRows + verticalSpace
     const xh = maxRows ? lineHeight * maxRows + verticalSpace : Infinity
     /*
-     * On web, we set an initial height and auto-resize via DOM measurement.
-     * On Android, we drive height explicitly via onContentSizeChange to avoid
-     * sub-pixel oscillation that causes layout jumpiness.
-     * On iOS, minHeight/maxHeight works fine natively.
+     * iOS: minHeight/maxHeight works fine natively.
+     * Web + Android: we set an explicit initial height and resize dynamically
+     * (web via DOM measurement, Android via onContentSizeChange state).
+     *
+     * iOS also seems to need 1px headroom to actually expand to the correct
+     * maxHeight
      */
-    const tas = IS_WEB
-      ? {height: mh}
-      : IS_ANDROID
-        ? {height: mh}
-        : {minHeight: mh, maxHeight: xh}
+    const tas = IS_IOS ? {minHeight: mh, maxHeight: xh + 1} : {height: mh}
 
     return {
       processedStyle: {
@@ -76,56 +74,41 @@ export function AutosizedTextarea({
   const [androidInputHeight, setAndroidInputHeight] = useState(minHeight)
 
   const prevHeight = useRef(0)
-  const onChangeText = (text: string) => {
-    if (IS_WEB) {
-      const el = textInputRef.current as unknown as HTMLTextAreaElement
-      if (el) {
-        el.style.height = '0px'
-        const scrollHeight = el.scrollHeight
-        const nextHeight = Math.min(
-          Math.max(scrollHeight, minHeight),
-          maxHeight,
-        )
-        el.style.height = `${nextHeight}px`
-        el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
-        if (nextHeight !== prevHeight.current) {
-          prevHeight.current = nextHeight
-          onUpdateHeight?.(nextHeight)
-        }
-      }
-    } else if (IS_IOS) {
-      textInputRef.current?.measure((_x, _y, _w, h) => {
-        if (h !== prevHeight.current) {
-          prevHeight.current = h
-          onUpdateHeight?.(h)
-        }
-      })
+  const resizeWeb = () => {
+    const el = textInputRef.current as unknown as HTMLTextAreaElement
+    if (!el) return
+    el.style.height = '0px'
+    const scrollHeight = el.scrollHeight
+    const nextHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight)
+    el.style.height = `${nextHeight}px`
+    el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
+    if (nextHeight !== prevHeight.current) {
+      prevHeight.current = nextHeight
+      onUpdateHeight?.(nextHeight)
     }
+  }
 
+  const onChangeText = (text: string) => {
+    if (IS_WEB) resizeWeb()
     onChangeTextOuter?.(text)
   }
 
+  /*
+   * Native height tracking: on Android we ceil to stabilize sub-pixel
+   * oscillation and drive height via state; on iOS we just notify.
+   */
   const onContentSizeChange = (e: TextInputContentSizeChangeEvent) => {
-    if (IS_ANDROID) {
-      const h = Math.ceil(e.nativeEvent.contentSize.height)
-      const nextHeight = Math.min(Math.max(h, minHeight), maxHeight)
-      if (nextHeight !== androidInputHeight) {
-        setAndroidInputHeight(nextHeight)
-      }
+    const h = Math.ceil(e.nativeEvent.contentSize.height)
+    const nextHeight = Math.min(Math.max(h, minHeight), maxHeight)
+
+    if (nextHeight !== prevHeight.current) {
+      prevHeight.current = nextHeight
+      if (IS_ANDROID) setAndroidInputHeight(nextHeight)
+      onUpdateHeight?.(nextHeight)
     }
 
     onContentSizeChangeOuter?.(e)
   }
-
-  /*
-   * On Android, height is driven by onContentSizeChange (see the TextInput
-   * below), so we update the autocomplete position when that height changes.
-   */
-  useEffect(() => {
-    if (IS_ANDROID) {
-      onUpdateHeight?.(androidInputHeight)
-    }
-  }, [androidInputHeight, onUpdateHeight])
 
   return (
     <TextInput
@@ -149,12 +132,18 @@ export function AutosizedTextarea({
           outline: 'none',
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
-          overscrollBehavior: 'none',
         }),
         processedStyle,
       ]}
       {...rest}
-      ref={mergeRefs([textInputRef, ref])}
+      ref={mergeRefs([
+        (node: TextInput | null) => {
+          textInputRef.current = node
+          // bop resize on first render
+          if (IS_WEB && node) resizeWeb()
+        },
+        ref,
+      ])}
       onChangeText={onChangeText}
       onContentSizeChange={onContentSizeChange}
     />
