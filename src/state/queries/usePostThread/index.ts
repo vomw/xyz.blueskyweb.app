@@ -167,25 +167,30 @@ export function usePostThread({anchor}: {anchor?: string}) {
       return data
     },
   })
+  const {
+    data: additionalItemsData,
+    isLoading: additionalItemsIsLoading,
+    isError: additionalItemsIsError,
+  } = additionalItemsQuery
   const serverOtherThreadItems: ThreadItem[] = useMemo(() => {
     if (!additionalQueryEnabled) return []
-    if (additionalItemsQuery.isLoading) {
+    if (additionalItemsIsLoading) {
       return Array.from({length: 2}).map((_, i) =>
         views.skeleton({
           key: `other-reply-${i}`,
           item: 'reply',
         }),
       )
-    } else if (additionalItemsQuery.isError) {
+    } else if (additionalItemsIsError) {
       /*
        * We could insert an special error component in here, but since these
        * are optional additional replies, it's not critical that they're shown
        * atm.
        */
       return []
-    } else if (additionalItemsQuery.data?.thread) {
+    } else if (additionalItemsData?.thread) {
       const {threadItems} = sortAndAnnotateThreadItems(
-        additionalItemsQuery.data.thread,
+        additionalItemsData?.thread,
         {
           view,
           skipModerationHandling: true,
@@ -202,10 +207,12 @@ export function usePostThread({anchor}: {anchor?: string}) {
   }, [
     view,
     additionalQueryEnabled,
-    additionalItemsQuery,
     mergeThreadgateHiddenReplies,
     moderationOpts,
     threadgate?.record,
+    additionalItemsData,
+    additionalItemsIsLoading,
+    additionalItemsIsError,
   ])
 
   /**
@@ -248,6 +255,8 @@ export function usePostThread({anchor}: {anchor?: string}) {
     view,
   ])
 
+  const {isFetching, isPlaceholderData, error, refetch} = query
+
   /*
    * Take all three sets of thread items and combine them into a single thread,
    * along with any other thread items required for rendering e.g. "Show more
@@ -258,7 +267,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
       threadItems,
       otherThreadItems,
       serverOtherThreadItems,
-      isLoading: query.isPlaceholderData,
+      isLoading: isPlaceholderData,
       hasSession,
       hasOtherThreadItems,
       otherItemsVisible,
@@ -268,7 +277,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
     threadItems,
     otherThreadItems,
     serverOtherThreadItems,
-    query.isPlaceholderData,
+    isPlaceholderData,
     hasSession,
     hasOtherThreadItems,
     otherItemsVisible,
@@ -286,9 +295,9 @@ export function usePostThread({anchor}: {anchor?: string}) {
         /*
          * Copy in any query state that is useful
          */
-        isFetching: query.isFetching,
-        isPlaceholderData: query.isPlaceholderData,
-        error: query.error,
+        isFetching: isFetching,
+        isPlaceholderData: isPlaceholderData,
+        error: error,
         /*
          * Other state
          */
@@ -305,7 +314,7 @@ export function usePostThread({anchor}: {anchor?: string}) {
          * Copy in any query actions that are useful
          */
         insertReplies: mutator.insertReplies,
-        refetch: query.refetch,
+        refetch: refetch,
         /*
          * Other actions
          */
@@ -314,7 +323,10 @@ export function usePostThread({anchor}: {anchor?: string}) {
       },
     }
   }, [
-    query,
+    isFetching,
+    isPlaceholderData,
+    error,
+    refetch,
     mutator.insertReplies,
     otherItemsVisible,
     sort,

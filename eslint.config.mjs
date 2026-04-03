@@ -14,6 +14,7 @@ import lingui from 'eslint-plugin-lingui'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import bskyInternal from 'eslint-plugin-bsky-internal'
 import globals from 'globals'
+import pluginQuery from '@tanstack/eslint-plugin-query'
 import tsParser from '@typescript-eslint/parser'
 
 export default defineConfig(
@@ -65,6 +66,9 @@ export default defineConfig(
       lingui,
       'react-compiler': reactCompiler,
       'bsky-internal': bskyInternal,
+      // @ts-expect-error - not sure why
+      '@tanstack/query': pluginQuery,
+
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -268,6 +272,25 @@ export default defineConfig(
       'no-sparse-arrays': 'off',
       'no-fallthrough': 'off',
       'no-control-regex': 'off',
+
+      /**
+       * React Query
+       */
+      '@tanstack/query/no-rest-destructuring': 'error',
+      '@tanstack/query/stable-query-client': 'error',
+      '@tanstack/query/no-unstable-deps': 'error',
+      '@tanstack/query/infinite-query-property-order': 'error',
+      '@tanstack/query/no-void-query-fn': 'error',
+      '@tanstack/query/mutation-property-order': 'error',
+      '@tanstack/query/prefer-query-options': 'off',
+      '@tanstack/query/exhaustive-deps': [
+         'off', // consider changing to warn, but very noisy
+         {
+          'allowlist': {
+            'variables': ['agent', 'ax', 'queryClient', 'moderationOpts'],
+           }
+         }
+      ],
     },
   },
 

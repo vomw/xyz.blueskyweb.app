@@ -228,9 +228,15 @@ export function useNotificationFeedQuery(opts: {
   const lastItemCount = useRef(0)
   const wantedItemCount = useRef(0)
   const autoPaginationAttemptCount = useRef(0)
+  const {
+    data,
+    isLoading,
+    isRefetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = query
   useEffect(() => {
-    const {data, isLoading, isRefetching, isFetchingNextPage, hasNextPage} =
-      query
     // Count the items that we already have.
     let itemCount = 0
     for (const page of data?.pages || []) {
@@ -262,13 +268,20 @@ export function useNotificationFeedQuery(opts: {
       if (itemCount < wantedItemCount.current) {
         autoPaginationAttemptCount.current++
         if (autoPaginationAttemptCount.current < 50 /* failsafe */) {
-          query.fetchNextPage()
+          void fetchNextPage()
         }
       } else {
         autoPaginationAttemptCount.current = 0
       }
     }
-  }, [query])
+  }, [
+    data,
+    isLoading,
+    isRefetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  ])
 
   return query
 }
@@ -298,7 +311,7 @@ export function* findAllPostsInQueryData(
         if (AppBskyFeedDefs.isPostView(item.subject)) {
           const quotedPost = getEmbeddedPost(item.subject?.embed)
           if (quotedPost && didOrHandleUriMatches(atUri, quotedPost)) {
-            yield embedViewRecordToPostView(quotedPost!)
+            yield embedViewRecordToPostView(quotedPost)
           }
         }
       }
