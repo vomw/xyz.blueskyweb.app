@@ -190,7 +190,10 @@ function QueryProviderInner({
   })
   useEffect(() => {
     if (IS_WEB) {
-      window.__TANSTACK_QUERY_CLIENT__ = queryClient
+      // WARNING, BROKEN
+      // something since v5.32.0 causes OOMs. not important
+      // so disable for now
+      // window.__TANSTACK_QUERY_CLIENT__ = queryClient
     }
   }, [queryClient])
   return (
