@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {
   TextInput,
   type TextInputContentSizeChangeEvent,
@@ -19,7 +19,6 @@ export function AutosizedTextarea({
 
   onChangeText: onChangeTextOuter,
   onContentSizeChange: onContentSizeChangeOuter,
-
   style,
   ...rest
 }: Omit<TextInputProps, 'multiline'> & {
@@ -33,11 +32,14 @@ export function AutosizedTextarea({
   const {theme: t, fonts} = useAlf()
   const {processedStyle, minHeight, maxHeight} = useMemo(() => {
     const fs = flatten(style)
-    const ts = normalizeTextStyles([a.leading_snug, fs, t.atoms.text], {
-      fontScale: fonts.scaleMultiplier,
-      fontFamily: fonts.family,
-      flags: {},
-    })
+    const ts = normalizeTextStyles(
+      [a.text_md, a.leading_snug, t.atoms.text, fs],
+      {
+        fontScale: fonts.scaleMultiplier,
+        fontFamily: fonts.family,
+        flags: {},
+      },
+    )
     const lineHeight = ts.lineHeight || 20
     const padding = extractPadding(fs ?? {})
     const verticalSpace = padding.paddingTop + padding.paddingBottom
@@ -50,14 +52,10 @@ export function AutosizedTextarea({
      * On iOS, minHeight/maxHeight works fine natively.
      */
     const tas = IS_WEB
-      ? {height: lineHeight + verticalSpace}
+      ? {height: mh}
       : IS_ANDROID
         ? {height: mh}
         : {minHeight: mh, maxHeight: xh}
-
-    if (IS_IOS) {
-      delete ts.lineHeight
-    }
 
     return {
       processedStyle: {
@@ -78,52 +76,46 @@ export function AutosizedTextarea({
   const [androidInputHeight, setAndroidInputHeight] = useState(minHeight)
 
   const prevHeight = useRef(0)
-  const onChangeText = useCallback(
-    (text: string) => {
-      if (IS_WEB) {
-        const el = textInputRef.current as unknown as HTMLTextAreaElement
-        if (el) {
-          el.style.height = '0px'
-          const scrollHeight = el.scrollHeight
-          const nextHeight = Math.min(
-            Math.max(scrollHeight, minHeight),
-            maxHeight,
-          )
-          el.style.height = `${nextHeight}px`
-          el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
-          if (nextHeight !== prevHeight.current) {
-            prevHeight.current = nextHeight
-            onUpdateHeight?.(nextHeight)
-          }
-        }
-      } else if (IS_IOS) {
-        textInputRef.current?.measure((_x, _y, _w, h) => {
-          if (h !== prevHeight.current) {
-            prevHeight.current = h
-            onUpdateHeight?.(h)
-          }
-        })
-      }
-
-      onChangeTextOuter?.(text)
-    },
-    [onChangeTextOuter, minHeight, maxHeight, onUpdateHeight],
-  )
-
-  const onContentSizeChange = useCallback(
-    (e: TextInputContentSizeChangeEvent) => {
-      if (IS_ANDROID) {
-        const h = Math.ceil(e.nativeEvent.contentSize.height)
-        const nextHeight = Math.min(Math.max(h, minHeight), maxHeight)
-        if (nextHeight !== androidInputHeight) {
-          setAndroidInputHeight(nextHeight)
+  const onChangeText = (text: string) => {
+    if (IS_WEB) {
+      const el = textInputRef.current as unknown as HTMLTextAreaElement
+      if (el) {
+        el.style.height = '0px'
+        const scrollHeight = el.scrollHeight
+        const nextHeight = Math.min(
+          Math.max(scrollHeight, minHeight),
+          maxHeight,
+        )
+        el.style.height = `${nextHeight}px`
+        el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
+        if (nextHeight !== prevHeight.current) {
+          prevHeight.current = nextHeight
+          onUpdateHeight?.(nextHeight)
         }
       }
+    } else if (IS_IOS) {
+      textInputRef.current?.measure((_x, _y, _w, h) => {
+        if (h !== prevHeight.current) {
+          prevHeight.current = h
+          onUpdateHeight?.(h)
+        }
+      })
+    }
 
-      onContentSizeChangeOuter?.(e)
-    },
-    [onContentSizeChangeOuter, minHeight, maxHeight, androidInputHeight],
-  )
+    onChangeTextOuter?.(text)
+  }
+
+  const onContentSizeChange = (e: TextInputContentSizeChangeEvent) => {
+    if (IS_ANDROID) {
+      const h = Math.ceil(e.nativeEvent.contentSize.height)
+      const nextHeight = Math.min(Math.max(h, minHeight), maxHeight)
+      if (nextHeight !== androidInputHeight) {
+        setAndroidInputHeight(nextHeight)
+      }
+    }
+
+    onContentSizeChangeOuter?.(e)
+  }
 
   /*
    * On Android, height is driven by onContentSizeChange (see the TextInput

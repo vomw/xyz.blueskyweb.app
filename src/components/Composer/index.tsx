@@ -48,7 +48,7 @@ import {
 import {AutosizedTextarea} from '#/components/forms/AutosizedTextarea'
 import {useOnKeyboard} from '#/components/hooks/useOnKeyboard'
 import {Span, Text} from '#/components/Typography'
-import {IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
+import {IS_IOS, IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
 
 export type SubmitRequest =
   | {
@@ -219,11 +219,27 @@ export function Composer({
     transform: [{translateY: -inputScrollSharedValue.value}],
   }))
   const textStyle = useMemo(() => {
-    return normalizeTextStyles([a.leading_snug, rawTextStyle, t.atoms.text], {
-      fontScale: fonts.scaleMultiplier,
-      fontFamily: fonts.family,
-      flags: {},
-    })
+    const ts = normalizeTextStyles(
+      [a.leading_snug, rawTextStyle, t.atoms.text],
+      {
+        fontScale: fonts.scaleMultiplier,
+        fontFamily: fonts.family,
+        flags: {},
+      },
+    )
+    /**
+     * On iOS, having a lineHeight on the Text component causes the text to be
+     * vertically misaligned with the TextInput.
+     *
+     * This only seems to be an issue on iOS, and not on Android or web. It's
+     * possible that this is a bug in React Native's Text component on iOS,
+     * but in the meantime, we'll just remove the lineHeight on iOS to ensure
+     * the text is properly aligned.
+     */
+    if (IS_IOS) {
+      delete ts.lineHeight
+    }
+    return ts
   }, [rawTextStyle, fonts])
 
   /*
