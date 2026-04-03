@@ -4,7 +4,6 @@ import {
   Keyboard,
   type LayoutChangeEvent,
   Platform,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -18,6 +17,7 @@ import {Trans} from '@lingui/react/macro'
 import {type Dimensions} from '#/lib/media/types'
 import {colors} from '#/lib/styles'
 import {type ComposerImage, cropImage} from '#/state/gallery'
+import {DraggableScrollView} from '#/view/com/pager/DraggableScrollView'
 import {atoms as a, tokens, useTheme} from '#/alf'
 import {Admonition} from '#/components/Admonition'
 import * as Dialog from '#/components/Dialog'
@@ -76,9 +76,8 @@ const getItemWidth = (image: ComposerImage, height: number) => {
 const GalleryInner = ({images, dispatch}: GalleryInnerProps) => {
   return images.length !== 0 ? (
     <>
-      <ScrollView
+      <DraggableScrollView
         testID="selectedPhotosView"
-        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{gap: IMAGE_GAP, paddingTop: 16}}
         style={{height: CONTAINER_HEIGHT + 16}}>
@@ -98,7 +97,7 @@ const GalleryInner = ({images, dispatch}: GalleryInnerProps) => {
             />
           )
         })}
-      </ScrollView>
+      </DraggableScrollView>
       {images.some(image => !image.alt) && (
         <Admonition type="info" style={[a.mt_sm]}>
           <Trans>
