@@ -13,7 +13,7 @@ import {
   useState,
 } from 'react'
 import {
-  TextInput,
+  type TextInput,
   type TextInputProps,
   type TextInputSubmitEditingEvent,
   View,
@@ -29,7 +29,6 @@ import {
   useTapper,
 } from '@bsky.app/tapper'
 
-import {HITSLOP_10} from '#/lib/constants'
 import {mergeRefs} from '#/lib/merge-refs'
 import {
   atoms as a,
@@ -46,13 +45,10 @@ import {
   parseAutocompleteItemType,
   useAutocomplete,
 } from '#/components/Autocomplete'
+import {AutosizedTextarea} from '#/components/forms/AutosizedTextarea'
 import {useOnKeyboard} from '#/components/hooks/useOnKeyboard'
 import {Span, Text} from '#/components/Typography'
-import {IS_ANDROID, IS_IOS, IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
-
-/*
- * ─── Types ────────────────────────────────────────────────────────────────────
- */
+import {IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
 
 export type SubmitRequest =
   | {
@@ -67,9 +63,9 @@ export type SubmitRequest =
     }
 
 /**
- * Bail-out API for special cases where a parent component needs to
- * imperatively control the Composer (e.g. clearing the input on submit).
- * Prefer props/callbacks for normal data flow.
+ * Imperative API exposed via `internalApiRef` prop for parent components that
+ * need to control the composer programmatically, e.g. to clear the input or
+ * insert text at the current cursor position.
  */
 export type ComposerInternalApi = {
   input?: ReturnType<typeof useTapper>['input']
@@ -106,7 +102,6 @@ export type ComposerProps = Omit<
     paddingRight?: number
   }
   textStyle?: TextStyleProp['style']
-  initialNumberOfLines?: number
   maxNumberOfLines?: number
   initialText?: string
   onChange?: (text: string) => void
@@ -114,6 +109,10 @@ export type ComposerProps = Omit<
   onFacetCommitted?: (facet: TapperFacet) => void
   onRequestSubmit?: (request: SubmitRequest) => void
   internalApiRef?: React.Ref<ComposerInternalApi>
+  autocompletePlacement?: Exclude<
+    Parameters<typeof useSift>[0],
+    undefined
+  >['placement']
 }
 
 export function Composer({
@@ -123,7 +122,6 @@ export function Composer({
   style,
   padding,
   textStyle: rawTextStyle,
-  initialNumberOfLines = 1,
   maxNumberOfLines,
   initialText,
   onChange: onChangeOuter,
@@ -131,29 +129,34 @@ export function Composer({
   onFacetCommitted: onFacetCommittedOuter,
   onRequestSubmit,
   internalApiRef,
+  autocompletePlacement,
   ...rest
 }: ComposerProps) {
   const {theme: t, fonts} = useAlf()
-  const textInputRef = useRef<TextInput>(null)
 
+  /*
+   * Meat and potatoes
+   */
   const tapper = useTapper({initialText})
   const sift = useSift({
     offset: a.p_sm.padding,
-    placement: 'top-start',
+    placement: autocompletePlacement,
     dynamicWidth: IS_WEB,
   })
-  const inputScrollSharedValue = useSharedValue(0)
+
+  /*
+   * Active facet state for controlling the visibility of the Autocomplete.
+   */
   const [activeFacet, setActiveFacet] = useState<TapperActiveFacet | null>(null)
 
-  const callbackRefs = useRef({
-    onActiveFacetOuter,
-    onFacetCommittedOuter,
-  })
-  callbackRefs.current = {
-    onActiveFacetOuter,
-    onFacetCommittedOuter,
-  }
+  /*
+   * Reanimated shared value for syncing scroll on all platforms.
+   */
+  const inputScrollSharedValue = useSharedValue(0)
 
+  /*
+   * Expose imperative internal API
+   */
   useImperativeHandle(
     internalApiRef,
     () => ({
@@ -180,6 +183,17 @@ export function Composer({
     onChangeOuter?.(tapper.state.text)
   }, [tapper.state.text, onChangeOuter])
 
+  /*
+   * Tapper callbacks
+   */
+  const callbackRefs = useRef({
+    onActiveFacetOuter,
+    onFacetCommittedOuter,
+  })
+  callbackRefs.current = {
+    onActiveFacetOuter,
+    onFacetCommittedOuter,
+  }
   useEffect(() => {
     const offActiveFacet = tapper.on('activeFacet', facet => {
       setActiveFacet(facet)
@@ -198,105 +212,23 @@ export function Composer({
     }
   }, [tapper.on, tapper.input])
 
-  // ─── Text style computation ───────────────────────────────────────────
-
-  const {textStyle, textAreaStyle, minHeight, maxHeight} = useMemo(() => {
-    const ts = normalizeTextStyles(
-      [a.leading_snug, rawTextStyle, t.atoms.text],
-      {
-        fontScale: fonts.scaleMultiplier,
-        fontFamily: fonts.family,
-        flags: {},
-      },
-    )
-    const lineHeight = ts.lineHeight || 20
-    const verticalSpace =
-      (padding?.paddingTop || 0) + (padding?.paddingBottom || 0)
-    const mh = lineHeight * initialNumberOfLines + verticalSpace
-    const xh = maxNumberOfLines
-      ? lineHeight * maxNumberOfLines + verticalSpace
-      : 999
-    /*
-     * On web, we set an initial height and auto-resize via DOM measurement.
-     * On Android, we drive height explicitly via onContentSizeChange to avoid
-     * sub-pixel oscillation that causes layout jumpiness.
-     * On iOS, minHeight/maxHeight works fine natively.
-     */
-    const tas = IS_WEB
-      ? {height: lineHeight + verticalSpace}
-      : IS_ANDROID
-        ? {height: mh}
-        : {minHeight: mh, maxHeight: xh}
-
-    if (IS_IOS) {
-      delete ts.lineHeight
-    }
-
-    return {textStyle: ts, textAreaStyle: tas, minHeight: mh, maxHeight: xh}
-  }, [t, fonts, padding, rawTextStyle, initialNumberOfLines, maxNumberOfLines])
-
   /*
-   * On Android, multiline TextInput oscillates between slightly different
-   * contentSize values on consecutive layout passes (sub-pixel rounding).
-   * This causes visible jumpiness when using minHeight/maxHeight. Instead,
-   * we drive the height explicitly and ceil the value to stabilize it.
+   * Styles
    */
-  const [androidInputHeight, setAndroidInputHeight] = useState(minHeight)
-
-  // ─── Height auto-resize + sift positioning ────────────────────────────
-
-  const updateAutocompletePosition = useCallback(() => {
-    sift.updatePosition()
-  }, [sift])
-
-  useOnKeyboard('keyboardDidShow', updateAutocompletePosition)
-  useOnKeyboard('keyboardDidHide', updateAutocompletePosition)
-
-  const prevHeight = useRef(0)
-  useEffect(() => {
-    if (IS_WEB) {
-      const el = textInputRef.current as unknown as HTMLTextAreaElement
-      if (!el) return
-      el.style.height = '0px'
-      const scrollHeight = el.scrollHeight
-      const nextHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight)
-      el.style.height = `${nextHeight}px`
-      el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
-      if (nextHeight !== prevHeight.current) {
-        prevHeight.current = nextHeight
-        updateAutocompletePosition()
-      }
-      return
-    }
-
-    if (IS_IOS) {
-      textInputRef.current?.measure((_x, _y, _w, h) => {
-        if (h !== prevHeight.current) {
-          prevHeight.current = h
-          updateAutocompletePosition()
-        }
-      })
-    }
-  }, [tapper.state.text, minHeight, maxHeight, updateAutocompletePosition])
-
-  /*
-   * On Android, height is driven by onContentSizeChange (see the TextInput
-   * below), so we update the autocomplete position when that height changes.
-   */
-  useEffect(() => {
-    if (IS_ANDROID) {
-      updateAutocompletePosition()
-    }
-  }, [androidInputHeight, updateAutocompletePosition])
-
-  // ─── Scroll sync ──────────────────────────────────────────────────────
-
   const previewScrollStyle = useAnimatedStyle(() => ({
     transform: [{translateY: -inputScrollSharedValue.value}],
   }))
+  const textStyle = useMemo(() => {
+    return normalizeTextStyles([a.leading_snug, rawTextStyle, t.atoms.text], {
+      fontScale: fonts.scaleMultiplier,
+      fontFamily: fonts.family,
+      flags: {},
+    })
+  }, [rawTextStyle, fonts])
 
-  // ─── Web keyboard handling ────────────────────────────────────────────
-
+  /*
+   * Web keyboard handling
+   */
   const isComposing = useRef(false)
   const onKeyPressWeb = useCallback(
     (e: React.KeyboardEvent | any) => {
@@ -322,6 +254,15 @@ export function Composer({
     },
     [onRequestSubmit],
   )
+
+  /*
+   * Sift popover positioning
+   */
+  const updateAutocompletePosition = useCallback(() => {
+    sift.updatePosition()
+  }, [sift])
+  useOnKeyboard('keyboardDidShow', updateAutocompletePosition)
+  useOnKeyboard('keyboardDidHide', updateAutocompletePosition)
 
   return (
     <>
@@ -359,47 +300,32 @@ export function Composer({
             </Text>
           </Animated.View>
         </View>
-        <TextInput
-          dirName="ltr"
-          multiline={true}
-          hitSlop={HITSLOP_10}
+        <AutosizedTextarea
+          maxRows={12}
           placeholder={placeholder}
           placeholderTextColor={t.palette.contrast_500}
           accessibilityLabel={label}
           accessibilityHint={label}
-          keyboardAppearance={t.scheme}
-          submitBehavior="newline"
           onSubmitEditing={e => {
             onRequestSubmit?.({platform: 'native', nativeEvent: e})
           }}
           style={[
             textStyle,
             padding,
-            a.relative,
             a.z_20,
-            a.border_0,
             {
               color: 'transparent',
               background: 'transparent',
-              textAlignVertical: 'top',
-              includeFontPadding: false,
             },
-            IS_ANDROID ? {height: androidInputHeight} : textAreaStyle,
             web({
-              resize: 'none',
-              outline: 'none',
               caretColor: textStyle.color ?? 'black',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
               overscrollBehavior: 'none',
-              ...textAreaStyle,
             }),
           ]}
           {...rest}
           {...tapper.inputProps}
           {...sift.targetProps}
           ref={mergeRefs([
-            textInputRef,
             rest.ref,
             tapper.inputProps.ref,
             sift.targetProps.ref,
@@ -416,15 +342,6 @@ export function Composer({
               inputScrollSharedValue.value = e.nativeEvent.contentOffset.y
             }
           }}
-          onContentSizeChange={
-            IS_ANDROID
-              ? e => {
-                  const h = Math.ceil(e.nativeEvent.contentSize.height)
-                  const clamped = Math.min(Math.max(h, minHeight), maxHeight)
-                  setAndroidInputHeight(clamped)
-                }
-              : undefined
-          }
           // @ts-ignore web only
           onCompositionStart={() => {
             isComposing.current = true
@@ -433,6 +350,7 @@ export function Composer({
           onCompositionEnd={() => {
             isComposing.current = false
           }}
+          onUpdateHeight={updateAutocompletePosition}
         />
 
         {children}

@@ -75,6 +75,8 @@ export default function Storybook() {
               </Button>
             </View>
 
+            <Forms />
+
             <Button
               color="primary"
               size="small"
@@ -109,7 +111,6 @@ export default function Storybook() {
 
             <Toasts />
             <Buttons />
-            <Forms />
             <Typography />
             <Spacing />
             <Shadows />
