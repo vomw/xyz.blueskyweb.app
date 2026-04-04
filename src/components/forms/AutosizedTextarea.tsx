@@ -6,7 +6,7 @@ import {
 } from 'react-native'
 
 import {mergeRefs} from '#/lib/merge-refs'
-import {atoms as a, extractPadding, flatten, useAlf, web} from '#/alf'
+import {atoms as a, extractPadding, useAlf, web} from '#/alf'
 import {normalizeTextStyles} from '#/alf/typography'
 import {IS_ANDROID, IS_IOS, IS_WEB} from '#/env'
 
@@ -19,7 +19,7 @@ export function AutosizedTextarea({
 
   onChangeText: onChangeTextOuter,
   onContentSizeChange: onContentSizeChangeOuter,
-  style,
+  style: outerStyle,
   ...rest
 }: Omit<TextInputProps, 'multiline'> & {
   ref?: React.Ref<TextInput>
@@ -28,82 +28,94 @@ export function AutosizedTextarea({
   maxRows?: number
   onUpdateHeight?: (height: number) => void
 }) {
-  const textInputRef = useRef<TextInput>(null)
   const {theme: t, fonts} = useAlf()
-  const {processedStyle, minHeight, maxHeight} = useMemo(() => {
-    const fs = flatten(style)
-    const ts = normalizeTextStyles(
-      [a.text_md, a.leading_snug, t.atoms.text, fs],
-      {
-        fontScale: fonts.scaleMultiplier,
-        fontFamily: fonts.family,
-        flags: {},
-      },
-    )
-    const lineHeight = ts.lineHeight || 20
-    const padding = extractPadding(fs ?? {})
-    const verticalSpace = padding.paddingTop + padding.paddingBottom
-    const mh = lineHeight * minRows + verticalSpace
-    const xh = maxRows ? lineHeight * maxRows + verticalSpace : Infinity
-    /*
-     * iOS: minHeight/maxHeight works fine natively.
-     * Web + Android: we set an explicit initial height and resize dynamically
-     * (web via DOM measurement, Android via onContentSizeChange state).
-     *
-     * iOS also seems to need 1px headroom to actually expand to the correct
-     * maxHeight
-     */
-    const tas = IS_IOS ? {minHeight: mh, maxHeight: xh + 1} : {height: mh}
+  const internalRef = useRef<TextInput>(null)
+  const {style, minInputHeight, maxInputHeight, verticalContentPadding} =
+    useMemo(() => {
+      const normalizedStyles = normalizeTextStyles(
+        [a.text_md, a.leading_snug, t.atoms.text, outerStyle],
+        {
+          fontScale: fonts.scaleMultiplier,
+          fontFamily: fonts.family,
+          flags: {},
+        },
+      )
+      const lineHeight = normalizedStyles.lineHeight || 20
+      const {paddingTop, paddingBottom} = extractPadding(normalizedStyles ?? {})
+      const verticalContentPadding = paddingTop + paddingBottom
+      const minInputHeight = lineHeight * minRows + verticalContentPadding
+      const maxInputHeight = maxRows
+        ? lineHeight * maxRows + verticalContentPadding
+        : Infinity
 
-    return {
-      processedStyle: {
-        ...ts,
-        ...tas,
-      },
-      minHeight: mh,
-      maxHeight: xh,
-    }
-  }, [t, fonts, style, minRows, maxRows])
+      /*
+       * iOS: minHeight/maxHeight works fine natively.
+       * Web + Android: we set an explicit initial height and resize dynamically
+       * (web via DOM measurement, Android via onContentSizeChange state).
+       *
+       * iOS also seems to need 1px headroom to actually expand to the correct
+       * maxHeight
+       */
+      const heightConstraints = IS_IOS
+        ? {minHeight: minInputHeight, maxHeight: maxInputHeight + 1}
+        : {height: minInputHeight}
+
+      return {
+        style: {
+          ...normalizedStyles,
+          ...heightConstraints,
+        },
+        minInputHeight,
+        maxInputHeight,
+        verticalContentPadding,
+      }
+    }, [t, fonts, outerStyle, minRows, maxRows])
 
   /*
-   * On Android, multiline TextInput oscillates between slightly different
-   * contentSize values on consecutive layout passes (sub-pixel rounding).
-   * This causes visible jumpiness when using minHeight/maxHeight. Instead,
-   * we drive the height explicitly and ceil the value to stabilize it.
+   * Web handling
    */
-  const [androidInputHeight, setAndroidInputHeight] = useState(minHeight)
-
-  const prevHeight = useRef(0)
-  const resizeWeb = () => {
-    const el = textInputRef.current as unknown as HTMLTextAreaElement
+  const prevWebHeight = useRef(0)
+  const handleResizeWeb = () => {
+    const el = internalRef.current as unknown as HTMLTextAreaElement
     if (!el) return
+    // collapse to get natural scroll height
     el.style.height = '0px'
-    const scrollHeight = el.scrollHeight
-    const nextHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight)
+    const scrollHeight = Math.ceil(el.scrollHeight)
+    const nextHeight = Math.min(
+      Math.max(scrollHeight, minInputHeight),
+      maxInputHeight,
+    )
+    // immediately update height to prevent flicker
     el.style.height = `${nextHeight}px`
-    el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
-    if (nextHeight !== prevHeight.current) {
-      prevHeight.current = nextHeight
+    el.style.overflowY = scrollHeight > maxInputHeight ? 'auto' : 'hidden'
+    if (nextHeight !== prevWebHeight.current) {
+      prevWebHeight.current = nextHeight
       onUpdateHeight?.(nextHeight)
     }
   }
-
   const onChangeText = (text: string) => {
-    if (IS_WEB) resizeWeb()
+    if (IS_WEB) handleResizeWeb()
     onChangeTextOuter?.(text)
   }
 
   /*
-   * Native height tracking: on Android we ceil to stabilize sub-pixel
-   * oscillation and drive height via state; on iOS we just notify.
+   * Native handling
+   *
+   * We track the height as state on native, and on Android, we use this to
+   * directly drive the `height`.
    */
+  const [nativeHeight, setNativeHeight] = useState(minInputHeight)
   const onContentSizeChange = (e: TextInputContentSizeChangeEvent) => {
-    const h = Math.ceil(e.nativeEvent.contentSize.height)
-    const nextHeight = Math.min(Math.max(h, minHeight), maxHeight)
+    const contentSize = Math.ceil(e.nativeEvent.contentSize.height)
+    // ios reports the content size without padding
+    const height = IS_IOS ? contentSize + verticalContentPadding : contentSize
+    const nextHeight = Math.min(
+      Math.max(height, minInputHeight),
+      maxInputHeight,
+    )
 
-    if (nextHeight !== prevHeight.current) {
-      prevHeight.current = nextHeight
-      if (IS_ANDROID) setAndroidInputHeight(nextHeight)
+    if (nextHeight !== nativeHeight) {
+      setNativeHeight(nextHeight)
       onUpdateHeight?.(nextHeight)
     }
 
@@ -119,10 +131,10 @@ export function AutosizedTextarea({
       placeholder={label}
       keyboardAppearance={t.scheme}
       submitBehavior="newline"
+      scrollEnabled={nativeHeight >= maxInputHeight}
       style={[
         a.relative,
         a.border_0,
-        IS_ANDROID ? {height: androidInputHeight} : {},
         {
           textAlignVertical: 'top',
           includeFontPadding: false,
@@ -133,14 +145,15 @@ export function AutosizedTextarea({
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
         }),
-        processedStyle,
+        style,
+        IS_ANDROID ? {height: nativeHeight} : {},
       ]}
       {...rest}
       ref={mergeRefs([
         (node: TextInput | null) => {
-          textInputRef.current = node
+          internalRef.current = node
           // bop resize on first render
-          if (IS_WEB && node) resizeWeb()
+          if (IS_WEB && node) handleResizeWeb()
         },
         ref,
       ])}
