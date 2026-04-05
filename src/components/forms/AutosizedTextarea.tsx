@@ -10,6 +10,14 @@ import {atoms as a, extractPadding, useAlf, web} from '#/alf'
 import {normalizeTextStyles} from '#/alf/typography'
 import {IS_ANDROID, IS_IOS, IS_WEB} from '#/env'
 
+export type AutosizedTextareaProps = Omit<TextInputProps, 'multiline'> & {
+  ref?: React.Ref<TextInput>
+  label: string
+  minRows?: number
+  maxRows?: number
+  onUpdateHeight?: (height: number) => void
+}
+
 export function AutosizedTextarea({
   ref,
   label,
@@ -21,13 +29,7 @@ export function AutosizedTextarea({
   onContentSizeChange: onContentSizeChangeOuter,
   style: outerStyle,
   ...rest
-}: Omit<TextInputProps, 'multiline'> & {
-  ref?: React.Ref<TextInput>
-  label: string
-  minRows?: number
-  maxRows?: number
-  onUpdateHeight?: (height: number) => void
-}) {
+}: AutosizedTextareaProps) {
   const {theme: t, fonts} = useAlf()
   const internalRef = useRef<TextInput>(null)
   const {style, minInputHeight, maxInputHeight, verticalContentPadding} =

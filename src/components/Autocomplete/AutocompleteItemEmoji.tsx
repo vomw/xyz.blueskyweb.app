@@ -19,11 +19,14 @@ export function AutocompleteItemEmoji({
     <SiftItem
       {...props}
       style={s => [
-        a.px_md,
-        a.py_sm,
+        {paddingVertical: 6, paddingHorizontal: 10},
+        a.flex_row,
+        a.align_center,
+        a.gap_sm,
         active || s.hovered || s.pressed ? [t.atoms.bg_contrast_25] : [],
       ]}>
-      <Text>{item.value}</Text>
+      <Text style={[a.text_xl, a.leading_tight]}>{item.value}</Text>
+      <Text style={[a.text_md, a.leading_tight]}>:{item.emoji.id}:</Text>
     </SiftItem>
   )
 }

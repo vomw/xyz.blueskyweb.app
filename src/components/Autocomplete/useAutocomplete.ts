@@ -92,7 +92,7 @@ export function useAutocomplete({
           key: result.item.id,
           type: 'emoji' as const,
           value: result.item.skins[0].native,
-          emoji: result.item.skins[0].native,
+          emoji: result.item,
         }))
       }
 

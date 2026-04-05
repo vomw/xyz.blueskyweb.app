@@ -1,4 +1,5 @@
 import {type Sift} from '@bsky.app/sift'
+import {type Emoji} from '@emoji-mart/data'
 
 import type * as bsky from '#/types/bsky'
 
@@ -20,7 +21,7 @@ export type AutocompleteEmoji = {
   key: string
   type: 'emoji'
   value: string
-  emoji: string
+  emoji: Emoji
 }
 
 export type AutocompleteItem =

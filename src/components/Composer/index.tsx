@@ -1,9 +1,3 @@
-/**
- * TODO
- *
- * Native
- * - make sure we limit the height of autocomplete so it doesn't go off screen
- */
 import {
   useCallback,
   useEffect,
@@ -14,7 +8,6 @@ import {
 } from 'react'
 import {
   type TextInput,
-  type TextInputProps,
   type TextInputSubmitEditingEvent,
   View,
 } from 'react-native'
@@ -22,8 +15,10 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
+import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useSift, type UseSiftReturn} from '@bsky.app/sift'
 import {
+  facets,
   type TapperActiveFacet,
   type TapperFacet,
   useTapper,
@@ -45,7 +40,10 @@ import {
   parseAutocompleteItemType,
   useAutocomplete,
 } from '#/components/Autocomplete'
-import {AutosizedTextarea} from '#/components/forms/AutosizedTextarea'
+import {
+  AutosizedTextarea,
+  type AutosizedTextareaProps,
+} from '#/components/forms/AutosizedTextarea'
 import {useOnKeyboard} from '#/components/hooks/useOnKeyboard'
 import {Span, Text} from '#/components/Typography'
 import {IS_IOS, IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
@@ -71,6 +69,7 @@ export type ComposerInternalApi = {
   input?: ReturnType<typeof useTapper>['input']
   clear: () => void
   insert(text: string): void
+  setAnchorRef(ref: View | null): void
 }
 
 export function useComposerInternalApiRef() {
@@ -82,7 +81,7 @@ export function useComposerInternalApiRef() {
  */
 
 export type ComposerProps = Omit<
-  TextInputProps,
+  AutosizedTextareaProps,
   | 'value'
   | 'onChange'
   | 'onChangeText'
@@ -91,57 +90,65 @@ export type ComposerProps = Omit<
   | 'style'
   | 'onSubmitEditing'
 > & {
-  children?: React.ReactNode
   label: string
   ref?: React.Ref<TextInput>
-  style?: ViewStyleProp['style']
-  padding?: {
+  internalApiRef?: React.Ref<ComposerInternalApi>
+  outerStyle?: ViewStyleProp['style']
+  contentTextStyle?: TextStyleProp['style']
+  contentPaddingStyle?: {
     paddingTop?: number
     paddingBottom?: number
     paddingLeft?: number
     paddingRight?: number
   }
-  textStyle?: TextStyleProp['style']
-  maxNumberOfLines?: number
-  initialText?: string
   onChange?: (text: string) => void
   onActiveFacet?: (activeFacet: TapperActiveFacet | null) => void
   onFacetCommitted?: (facet: TapperFacet) => void
   onRequestSubmit?: (request: SubmitRequest) => void
-  internalApiRef?: React.Ref<ComposerInternalApi>
   autocompletePlacement?: Exclude<
     Parameters<typeof useSift>[0],
     undefined
   >['placement']
+  disableEmojiFacets?: boolean
 }
 
 export function Composer({
-  children,
   label,
-  placeholder,
-  style,
-  padding,
-  textStyle: rawTextStyle,
-  maxNumberOfLines,
-  initialText,
+  ref,
+  internalApiRef,
+  outerStyle,
+  contentTextStyle,
+  contentPaddingStyle,
   onChange: onChangeOuter,
   onActiveFacet: onActiveFacetOuter,
   onFacetCommitted: onFacetCommittedOuter,
   onRequestSubmit,
-  internalApiRef,
   autocompletePlacement,
+  defaultValue,
+  disableEmojiFacets = !IS_WEB,
   ...rest
 }: ComposerProps) {
   const {theme: t, fonts} = useAlf()
+  const insets = useSafeAreaInsets()
 
   /*
    * Meat and potatoes
    */
-  const tapper = useTapper({initialText})
+  const tapper = useTapper({
+    initialText: defaultValue ?? '',
+    facets: disableEmojiFacets
+      ? {
+          mention: facets.mention,
+          tag: facets.tag,
+          url: facets.url,
+        }
+      : facets,
+  })
   const sift = useSift({
     offset: a.p_sm.padding,
     placement: autocompletePlacement,
     dynamicWidth: IS_WEB,
+    insets,
   })
 
   /*
@@ -166,8 +173,11 @@ export function Composer({
         inputScrollSharedValue.value = 0
       },
       insert: tapper.insert,
+      setAnchorRef: (ref: View | null) => {
+        sift.refs.setAnchor(ref)
+      },
     }),
-    [tapper.input, tapper.insert, inputScrollSharedValue],
+    [tapper.input, tapper.insert, inputScrollSharedValue, sift.refs],
   )
 
   /*
@@ -220,7 +230,7 @@ export function Composer({
   }))
   const textStyle = useMemo(() => {
     const ts = normalizeTextStyles(
-      [a.leading_snug, rawTextStyle, t.atoms.text],
+      [a.leading_snug, t.atoms.text, contentTextStyle],
       {
         fontScale: fonts.scaleMultiplier,
         fontFamily: fonts.family,
@@ -240,7 +250,7 @@ export function Composer({
       delete ts.lineHeight
     }
     return ts
-  }, [rawTextStyle, fonts])
+  }, [contentTextStyle, fonts])
 
   /*
    * Web keyboard handling
@@ -282,13 +292,13 @@ export function Composer({
 
   return (
     <>
-      <View style={[a.relative, style]}>
+      <View style={[a.relative, outerStyle]}>
         <View
           pointerEvents="none"
           style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
           <Animated.View
             style={[
-              padding,
+              contentPaddingStyle,
               {position: 'absolute', left: 0, right: 0},
               previewScrollStyle,
             ]}>
@@ -317,8 +327,6 @@ export function Composer({
           </Animated.View>
         </View>
         <AutosizedTextarea
-          maxRows={12}
-          placeholder={placeholder}
           placeholderTextColor={t.palette.contrast_500}
           accessibilityLabel={label}
           accessibilityHint={label}
@@ -327,7 +335,7 @@ export function Composer({
           }}
           style={[
             textStyle,
-            padding,
+            contentPaddingStyle,
             a.z_20,
             {
               color: 'transparent',
@@ -341,11 +349,7 @@ export function Composer({
           {...rest}
           {...tapper.inputProps}
           {...sift.targetProps}
-          ref={mergeRefs([
-            rest.ref,
-            tapper.inputProps.ref,
-            sift.targetProps.ref,
-          ])}
+          ref={mergeRefs([ref, tapper.inputProps.ref, sift.targetProps.ref])}
           onBlur={e => {
             rest.onBlur?.(e)
             setActiveFacet(null)
@@ -368,11 +372,9 @@ export function Composer({
           }}
           onUpdateHeight={updateAutocompletePosition}
         />
-
-        {children}
       </View>
 
-      {activeFacet && (
+      {activeFacet && activeFacet.type !== 'url' && (
         <AutocompleteInner
           sift={sift}
           activeFacet={activeFacet}
