@@ -69,7 +69,6 @@ export type ComposerInternalApi = {
   input?: ReturnType<typeof useTapper>['input']
   clear: () => void
   insert(text: string): void
-  setAnchorRef(ref: View | null): void
 }
 
 export function useComposerInternalApiRef() {
@@ -91,7 +90,8 @@ export type ComposerProps = Omit<
   | 'onSubmitEditing'
 > & {
   label: string
-  ref?: React.Ref<TextInput>
+  ref?: React.RefObject<TextInput>
+  autocompleteAnchorRef?: React.RefObject<View | null>
   internalApiRef?: React.Ref<ComposerInternalApi>
   outerStyle?: ViewStyleProp['style']
   contentTextStyle?: TextStyleProp['style']
@@ -116,6 +116,7 @@ export function Composer({
   label,
   ref,
   internalApiRef,
+  autocompleteAnchorRef,
   outerStyle,
   contentTextStyle,
   contentPaddingStyle,
@@ -173,12 +174,15 @@ export function Composer({
         inputScrollSharedValue.value = 0
       },
       insert: tapper.insert,
-      setAnchorRef: (ref: View | null) => {
-        sift.refs.setAnchor(ref)
-      },
     }),
-    [tapper.input, tapper.insert, inputScrollSharedValue, sift.refs],
+    [tapper.input, tapper.insert, inputScrollSharedValue],
   )
+
+  useEffect(() => {
+    if (autocompleteAnchorRef) {
+      sift.refs.setAnchor(autocompleteAnchorRef.current)
+    }
+  }, [sift.refs])
 
   /*
    * Skip the initial mount to avoid an unnecessary re-render — the parent

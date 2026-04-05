@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import {Pressable, View} from 'react-native'
 import {useLingui} from '@lingui/react/macro'
 import {countGraphemes} from 'unicode-segmenter/grapheme'
@@ -46,6 +46,7 @@ export function MessageComposer({
     isOpen: false,
     pos: {top: 0, left: 0, right: 0, bottom: 0, nextFocusRef: null},
   })
+  const anchorRef = useRef<View>(null)
   const composerInternalApiRef = useComposerInternalApiRef()
 
   const {state: focused, onIn: onFocus, onOut: onBlur} = useInteractionState()
@@ -109,11 +110,8 @@ export function MessageComposer({
         {children}
 
         <View
-          ref={node => {
-            if (!IS_WEB && node) {
-              composerInternalApiRef.current?.setAnchorRef(node)
-            }
-          }}
+          collapsable={false}
+          ref={IS_WEB ? undefined : anchorRef}
           // @ts-expect-error web only
           onMouseEnter={onHoverIn}
           onMouseLeave={onHoverOut}
@@ -173,6 +171,7 @@ export function MessageComposer({
             label={l`Message input field`}
             placeholder={l`Write a message`}
             autocompletePlacement="top-start"
+            autocompleteAnchorRef={anchorRef}
             internalApiRef={composerInternalApiRef}
             defaultValue={text}
             editable={editable}

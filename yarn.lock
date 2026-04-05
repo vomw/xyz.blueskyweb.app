@@ -2413,10 +2413,10 @@
   resolved "https://registry.yarnpkg.com/@bsky.app/react-native-mmkv/-/react-native-mmkv-2.12.5.tgz#eb17d31a6158c74393f617a1763ac223ff3f83a6"
   integrity sha512-3vUz1nQY1DiKIPAWRkpp5ZGxH5f2G6Ui0UuQuEYjYv81xx1qFcSzS9KQ2sHcOKYdkOM9amWV2Q8TQCxt1lrAHg==
 
-"@bsky.app/sift@^0.2.8":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@bsky.app/sift/-/sift-0.2.8.tgz#58cb8ed82e6402061a1e2315a03e1aaec66e6718"
-  integrity sha512-CVBo0fp8kpSPhiGYO1H0J8aaEREQ87fzoXdL2qaH64GgX+tqFJT9BlS4EvEyhJoyMHdRWinGgTTubf4Gkvcg/Q==
+"@bsky.app/sift@^0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@bsky.app/sift/-/sift-0.2.9.tgz#517710b850551846482e68c201750d1dfd549792"
+  integrity sha512-6eQzQ+xKkc0HcGzs96HaadKx+YfaCQwWO52S5VReyxuSii4Xz+bFZ4pjtHnH0NU/lB9W3llMLmjrV+Y5hGozhA==
 
 "@bsky.app/tapper@^0.4.2":
   version "0.4.2"
