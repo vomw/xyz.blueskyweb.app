@@ -181,7 +181,11 @@ function PostInner({
             type={post.author.associated?.labeler ? 'labeler' : 'user'}
           />
         </View>
-        <View style={styles.layoutContent}>
+        <View
+          style={[
+            styles.layoutContent,
+            !richText.text && styles.layoutContentNoText,
+          ]}>
           <PostMeta
             author={post.author}
             moderation={moderation}
@@ -259,6 +263,9 @@ const styles = StyleSheet.create({
   },
   layoutContent: {
     flex: 1,
+  },
+  layoutContentNoText: {
+    paddingTop: 10,
   },
   alert: {
     marginBottom: 6,

@@ -359,7 +359,11 @@ let FeedItemInner = ({
             />
           )}
         </View>
-        <View style={styles.layoutContent}>
+        <View
+          style={[
+            styles.layoutContent,
+            !richText.text && styles.layoutContentNoText,
+          ]}>
           <PostMeta
             author={post.author}
             moderation={moderation}
@@ -531,6 +535,9 @@ const styles = StyleSheet.create({
     position: 'relative',
     flex: 1,
     zIndex: 0,
+  },
+  layoutContentNoText: {
+    paddingTop: 10,
   },
   alert: {
     marginTop: 6,
