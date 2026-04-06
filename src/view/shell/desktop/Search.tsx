@@ -105,6 +105,7 @@ export function DesktopSearch() {
         onChangeText={onChangeText}
         onClearText={onPressCancelSearch}
         onSubmitEditing={onSubmit}
+        hotkey={true}
       />
       {tQuery !== '' && isActive && moderationOpts && (
         <View

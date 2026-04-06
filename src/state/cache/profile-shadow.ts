@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import {type AppBskyActorDefs, type AppBskyNotificationDefs} from '@atproto/api'
 import {type QueryClient} from '@tanstack/react-query'
-import EventEmitter from 'eventemitter3'
+import {EventEmitter} from 'eventemitter3'
 
 import {batchedUpdates} from '#/lib/batchedUpdates'
 import {findAllProfilesInQueryData as findAllProfilesInActivitySubscriptionsQueryData} from '#/state/queries/activity-subscriptions'
