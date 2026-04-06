@@ -150,6 +150,7 @@ export function Composer({
     placement: autocompletePlacement,
     dynamicWidth: IS_WEB,
     insets,
+    anchorRef: autocompleteAnchorRef,
   })
 
   /*
@@ -177,12 +178,6 @@ export function Composer({
     }),
     [tapper.input, tapper.insert, inputScrollSharedValue],
   )
-
-  useEffect(() => {
-    if (autocompleteAnchorRef) {
-      sift.refs.setAnchor(autocompleteAnchorRef.current)
-    }
-  }, [sift.refs])
 
   /*
    * Skip the initial mount to avoid an unnecessary re-render — the parent
@@ -294,42 +289,48 @@ export function Composer({
   useOnKeyboard('keyboardDidShow', updateAutocompletePosition)
   useOnKeyboard('keyboardDidHide', updateAutocompletePosition)
 
+  const textContent = (
+    <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
+      {tapper.state.nodes.map((node, i) => {
+        switch (node.type) {
+          case 'text':
+            return <Span key={i}>{node.value}</Span>
+          case 'trigger':
+          case 'facet':
+            return (
+              <Span
+                key={i}
+                ref={IS_WEB ? sift.refs.setAnchor : undefined}
+                style={
+                  node.type === 'facet' && {
+                    color: t.palette.primary_500,
+                  }
+                }>
+                {node.raw}
+              </Span>
+            )
+        }
+      })}
+    </Text>
+  )
+
   return (
     <>
       <View style={[a.relative, outerStyle]}>
-        <View
-          pointerEvents="none"
-          style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
-          <Animated.View
-            style={[
-              contentPaddingStyle,
-              {position: 'absolute', left: 0, right: 0},
-              previewScrollStyle,
-            ]}>
-            <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
-              {tapper.state.nodes.map((node, i) => {
-                switch (node.type) {
-                  case 'text':
-                    return <Span key={i}>{node.value}</Span>
-                  case 'trigger':
-                  case 'facet':
-                    return (
-                      <Span
-                        key={i}
-                        ref={IS_WEB ? sift.refs.setAnchor : undefined}
-                        style={
-                          node.type === 'facet' && {
-                            color: t.palette.primary_500,
-                          }
-                        }>
-                        {node.raw}
-                      </Span>
-                    )
-                }
-              })}
-            </Text>
-          </Animated.View>
-        </View>
+        {IS_WEB && (
+          <View
+            pointerEvents="none"
+            style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
+            <Animated.View
+              style={[
+                contentPaddingStyle,
+                {position: 'absolute', left: 0, right: 0},
+                previewScrollStyle,
+              ]}>
+              {textContent}
+            </Animated.View>
+          </View>
+        )}
         <AutosizedTextarea
           placeholderTextColor={t.palette.contrast_500}
           accessibilityLabel={label}
@@ -374,8 +375,9 @@ export function Composer({
           onCompositionEnd={() => {
             isComposing.current = false
           }}
-          onUpdateHeight={updateAutocompletePosition}
-        />
+          onUpdateHeight={updateAutocompletePosition}>
+          {IS_WEB ? null : textContent}
+        </AutosizedTextarea>
       </View>
 
       {activeFacet && activeFacet.type !== 'url' && (
