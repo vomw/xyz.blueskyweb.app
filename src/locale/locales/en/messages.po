@@ -1953,7 +1953,7 @@ msgstr ""
 #: src/screens/Deactivated.tsx:150
 #: src/screens/Profile/Header/EditProfileDialog.tsx:215
 #: src/screens/Profile/Header/EditProfileDialog.tsx:223
-#: src/screens/Search/Shell.tsx:396
+#: src/screens/Search/Shell.tsx:397
 #: src/screens/Settings/AppIconSettings/index.tsx:42
 #: src/screens/Settings/AppIconSettings/index.tsx:228
 #: src/screens/Settings/components/ChangeHandleDialog.tsx:80
@@ -1979,7 +1979,7 @@ msgstr ""
 msgid "Cancel reactivation and sign out"
 msgstr ""
 
-#: src/screens/Search/Shell.tsx:387
+#: src/screens/Search/Shell.tsx:388
 msgid "Cancel search"
 msgstr ""
 
@@ -2218,7 +2218,7 @@ msgstr ""
 msgid "Clear image cache"
 msgstr ""
 
-#: src/components/forms/SearchInput.tsx:69
+#: src/components/forms/SearchInput.tsx:87
 msgid "Clear search query"
 msgstr ""
 
@@ -2338,7 +2338,7 @@ msgstr ""
 msgid "Close dialog"
 msgstr ""
 
-#: src/view/shell/index.web.tsx:131
+#: src/view/shell/index.web.tsx:129
 msgid "Close drawer menu"
 msgstr ""
 
@@ -2430,6 +2430,7 @@ msgstr ""
 msgid "Complete the challenge"
 msgstr ""
 
+#: src/lib/hotkeys/index.tsx:67
 #: src/view/com/feeds/ComposerPrompt.tsx:147
 #: src/view/shell/desktop/LeftNav.tsx:575
 msgid "Compose new post"
@@ -4349,7 +4350,7 @@ msgstr ""
 msgid "Find people to follow"
 msgstr ""
 
-#: src/screens/Search/Shell.tsx:529
+#: src/screens/Search/Shell.tsx:530
 msgid "Find posts, users, and feeds on Bluesky"
 msgstr ""
 
@@ -4392,6 +4393,10 @@ msgstr ""
 #: src/components/contacts/components/OTPInput.tsx:55
 msgid "Focus code input"
 msgstr ""
+
+#: src/lib/hotkeys/index.tsx:74
+msgid "Focus the search field"
+msgstr "Focus the search field"
 
 #. User is not following this account, click to follow
 #: src/components/ProfileCard.tsx:546
@@ -6485,13 +6490,9 @@ msgid "New post"
 msgstr ""
 
 #: src/view/com/feeds/FeedPage.tsx:181
-msgctxt "action"
-msgid "New post"
-msgstr ""
-
 #: src/view/shell/desktop/LeftNav.tsx:583
 msgctxt "action"
-msgid "New Post"
+msgid "New post"
 msgstr ""
 
 #: src/view/com/notifications/NotificationFeedItem.tsx:545
@@ -8731,10 +8732,10 @@ msgid "Scroll to top"
 msgstr ""
 
 #: src/components/dialogs/SearchablePeopleList.tsx:515
-#: src/components/forms/SearchInput.tsx:33
-#: src/components/forms/SearchInput.tsx:35
+#: src/components/forms/SearchInput.tsx:51
+#: src/components/forms/SearchInput.tsx:53
 #: src/screens/Search/Shell.tsx:354
-#: src/screens/Search/Shell.tsx:517
+#: src/screens/Search/Shell.tsx:518
 #: src/view/shell/bottom-bar/BottomBar.tsx:199
 msgid "Search"
 msgstr ""
@@ -8772,7 +8773,7 @@ msgstr ""
 msgid "Search for \"{searchText}\""
 msgstr ""
 
-#: src/view/shell/desktop/Search.tsx:128
+#: src/view/shell/desktop/Search.tsx:129
 msgid "Search for “{tQuery}”"
 msgstr "Search for “{tQuery}”"
 
@@ -9634,7 +9635,7 @@ msgstr ""
 msgid "Sorry, we're unable to load account suggestions at this time."
 msgstr ""
 
-#: src/App.native.tsx:142
+#: src/App.native.tsx:141
 #: src/App.web.tsx:119
 msgid "Sorry! Your session expired. Please sign in again."
 msgstr ""
