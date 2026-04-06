@@ -1,7 +1,5 @@
-import React from 'react'
-
-export function Provider({children}: React.PropsWithChildren<unknown>) {
-  return <>{children}</>
+export function Provider({children}: {children: React.ReactNode}) {
+  return children
 }
 
 export function useHotkeysContext() {
