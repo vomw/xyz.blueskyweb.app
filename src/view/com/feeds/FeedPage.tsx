@@ -75,6 +75,10 @@ export function FeedPage({
   const feedFeedback = useFeedFeedback(feedInfo, hasSession)
   const scrollElRef = useRef<ListMethods>(null)
   const [hasNew, setHasNew] = useState(false)
+  const [hasBeenFocused, setHasBeenFocused] = useState(isPageFocused)
+  if (isPageFocused && !hasBeenFocused) {
+    setHasBeenFocused(true)
+  }
   const setHomeBadge = useSetHomeBadge()
   const isVideoFeed = useMemo(() => {
     const isBskyVideoFeed = VIDEO_FEED_URIS.includes(feedInfo.uri)
@@ -138,6 +142,8 @@ export function FeedPage({
   }, [ax, scrollToTop, feed, queryClient])
 
   const shouldPrefetch = IS_NATIVE && isPageAdjacent
+  const windowSize =
+    isPageAdjacent && !hasBeenFocused ? 1 : undefined
   const isDiscoverFeed = feedInfo.uri === DISCOVER_FEED_URI
   return (
     <View
@@ -161,6 +167,7 @@ export function FeedPage({
             headerOffset={headerOffset}
             savedFeedConfig={savedFeedConfig}
             isVideoFeed={isVideoFeed}
+            windowSize={windowSize}
           />
         </FeedFeedbackProvider>
       </MainScrollProvider>

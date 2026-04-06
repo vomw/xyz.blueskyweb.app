@@ -203,6 +203,7 @@ let PostFeed = ({
   savedFeedConfig,
   initialNumToRender: initialNumToRenderOverride,
   isVideoFeed = false,
+  windowSize: windowSizeOverride,
 }: {
   feed: FeedDescriptor
   feedParams?: FeedParams
@@ -225,6 +226,7 @@ let PostFeed = ({
   savedFeedConfig?: AppBskyActorDefs.SavedFeed
   initialNumToRender?: number
   isVideoFeed?: boolean
+  windowSize?: number
   lastFetchDate?: () => number
 }): React.ReactNode => {
   const ax = useAnalytics()
@@ -1015,7 +1017,7 @@ let PostFeed = ({
           desktopFixedHeightOffset ? desktopFixedHeightOffset : true
         }
         initialNumToRender={initialNumToRenderOverride ?? initialNumToRender}
-        windowSize={9}
+        windowSize={windowSizeOverride ?? 9}
         maxToRenderPerBatch={IS_IOS ? 5 : 1}
         updateCellsBatchingPeriod={40}
         onItemSeen={onItemSeen}
