@@ -496,7 +496,7 @@ let PostContent = ({
       ) : undefined}
       {record && <TranslatedPost hideTranslateLink post={post} />}
       {postEmbed ? (
-        <View style={[a.pb_xs]}>
+        <View style={[a.pb_xs, !richText.text && {marginTop: 6}]}>
           <Embed
             embed={postEmbed}
             moderation={moderation}

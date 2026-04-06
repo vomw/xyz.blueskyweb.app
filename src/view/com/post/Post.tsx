@@ -225,11 +225,13 @@ function PostInner({
             ) : undefined}
             <TranslatedPost hideTranslateLink post={post} />
             {post.embed ? (
-              <Embed
-                embed={post.embed}
-                moderation={moderation}
-                viewContext={PostEmbedViewContext.Feed}
-              />
+              <View style={!richText.text ? {marginTop: 6} : undefined}>
+                <Embed
+                  embed={post.embed}
+                  moderation={moderation}
+                  viewContext={PostEmbedViewContext.Feed}
+                />
+              </View>
             ) : null}
           </ContentHider>
           <PostControls
