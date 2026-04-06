@@ -142,8 +142,7 @@ export function FeedPage({
   }, [ax, scrollToTop, feed, queryClient])
 
   const shouldPrefetch = IS_NATIVE && isPageAdjacent
-  const windowSize =
-    isPageAdjacent && !hasBeenFocused ? 1 : undefined
+  const windowSize = isPageFocused || hasBeenFocused ? undefined : 1
   const isDiscoverFeed = feedInfo.uri === DISCOVER_FEED_URI
   return (
     <View
