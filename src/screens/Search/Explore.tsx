@@ -28,7 +28,10 @@ import {
   createGetSuggestedFeedsQueryKey,
   useGetSuggestedFeedsQuery,
 } from '#/state/queries/trending/useGetSuggestedFeedsQuery'
-import {getSuggestedUsersForExploreQueryKeyRoot} from '#/state/queries/trending/useGetSuggestedUsersForExploreQuery'
+import {
+  getSuggestedUsersForExploreQueryKeyRoot,
+  useGetSuggestedUsersForExploreQuery,
+} from '#/state/queries/trending/useGetSuggestedUsersForExploreQuery'
 import {createGetTrendsQueryKey} from '#/state/queries/trending/useGetTrendsQuery'
 import {
   createSuggestedStarterPacksQueryKey,
@@ -73,7 +76,6 @@ import {
   SuggestedAccountsTabBar,
   SuggestedProfileCard,
 } from './modules/ExploreSuggestedAccounts'
-import {useSuggestedUsersForExplore} from './util/useSuggestedUsersForExplore'
 
 function LoadMore({item}: {item: ExploreScreenItems & {type: 'loadMore'}}) {
   const t = useTheme()
@@ -242,7 +244,7 @@ export function Explore({
     isLoading: suggestedUsersIsLoading,
     error: suggestedUsersError,
     isRefetching: suggestedUsersIsRefetching,
-  } = useSuggestedUsersForExplore({
+  } = useGetSuggestedUsersForExploreQuery({
     category: selectedInterest || (useFullExperience ? null : interests[0]),
   })
   /* End special language handling */

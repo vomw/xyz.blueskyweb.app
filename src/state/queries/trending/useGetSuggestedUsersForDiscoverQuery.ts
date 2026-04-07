@@ -1,6 +1,6 @@
 import {
   type AppBskyActorDefs,
-  type AppBskyUnspeccedGetSuggestedUsers,
+  type AppBskyUnspeccedGetSuggestedUsersForDiscover,
 } from '@atproto/api'
 import {type QueryClient, useQuery} from '@tanstack/react-query'
 
@@ -15,7 +15,6 @@ import {useAgent} from '#/state/session'
 
 export type QueryProps = {
   limit?: number
-  enabled?: boolean
 }
 
 export const getSuggestedUsersForDiscoverQueryKeyRoot =
@@ -24,12 +23,11 @@ export const createGetSuggestedUsersForDiscoverQueryKey = (
   props: QueryProps,
 ) => [getSuggestedUsersForDiscoverQueryKeyRoot, props.limit]
 
-export function useGetSuggestedUsersForDiscoverQuery(props: QueryProps) {
+export function useGetSuggestedUsersForDiscoverQuery(props: QueryProps = {}) {
   const agent = useAgent()
   const {data: preferences} = usePreferencesQuery()
 
   return useQuery({
-    enabled: !!preferences && props.enabled !== false,
     staleTime: STALE.MINUTES.THREE,
     queryKey: createGetSuggestedUsersForDiscoverQueryKey(props),
     queryFn: async () => {
@@ -58,9 +56,11 @@ export function* findAllProfilesInQueryData(
   did: string,
 ): Generator<AppBskyActorDefs.ProfileView, void> {
   const responses =
-    queryClient.getQueriesData<AppBskyUnspeccedGetSuggestedUsers.OutputSchema>({
-      queryKey: [getSuggestedUsersForDiscoverQueryKeyRoot],
-    })
+    queryClient.getQueriesData<AppBskyUnspeccedGetSuggestedUsersForDiscover.OutputSchema>(
+      {
+        queryKey: [getSuggestedUsersForDiscoverQueryKeyRoot],
+      },
+    )
   for (const [_key, response] of responses) {
     if (!response) {
       continue

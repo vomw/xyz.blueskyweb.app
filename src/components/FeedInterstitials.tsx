@@ -16,9 +16,9 @@ import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useGetPopularFeedsQuery} from '#/state/queries/feed'
 import {type FeedDescriptor} from '#/state/queries/post-feed'
 import {useSuggestedFollowsByActorWithDismiss} from '#/state/queries/suggested-follows'
+import {useGetSuggestedUsersForDiscoverQuery} from '#/state/queries/trending/useGetSuggestedUsersForDiscoverQuery'
 import {useSession} from '#/state/session'
 import {BlockDrawerGesture} from '#/view/shell/BlockDrawerGesture'
-import {useSuggestedUsersForDiscover} from '#/screens/Search/util/useSuggestedUsersForDiscover'
 import {
   atoms as a,
   native,
@@ -138,7 +138,7 @@ export function SuggestedFollowsProfile({did}: {did: string}) {
 }
 
 export function SuggestedFollowsHome() {
-  const {isLoading, data, error} = useSuggestedUsersForDiscover()
+  const {isLoading, data, error} = useGetSuggestedUsersForDiscoverQuery()
 
   const profiles = data?.actors
 
