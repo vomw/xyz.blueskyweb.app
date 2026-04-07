@@ -236,9 +236,6 @@ export const s = StyleSheet.create({
   green3: {color: colors.green3},
   green4: {color: colors.green4},
   green5: {color: colors.green5},
-
-  brandBlue: {color: colors.brandBlue},
-  likeColor: {color: colors.like},
 })
 
 export function lh(
