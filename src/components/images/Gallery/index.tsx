@@ -19,6 +19,7 @@ import {useAnalytics} from '#/analytics'
 
 const CONTAINER_ASPECT_RATIO = 3 / 2
 const ITEM_GAP = 8 // tokens.space.sm
+const MIN_PEEK = 40
 
 interface GalleryProps {
   images: AppBskyEmbedImages.ViewImage[]
@@ -76,16 +77,21 @@ export function Gallery({
     ? windowWidth - insetLeft - containerWidth
     : QUOTE_PADDING
 
-  const getItemWidth = (image: AppBskyEmbedImages.ViewImage) => {
+  const getItemWidth = (image: AppBskyEmbedImages.ViewImage, index: number) => {
     const ar = image.aspectRatio
+    let width = containerHeight // default to square-ish
     if (ar && ar.width > 0 && ar.height > 0) {
       const ratio = ar.width / ar.height
       // Width derived from image's own aspect ratio at the fixed container height
       // Clamp aspect ratio between 2:3 (portrait) and 3:2 (landscape)
       const clamped = Math.max(2 / 3, Math.min(ratio, 3 / 2))
-      return containerHeight * clamped
+      width = containerHeight * clamped
     }
-    return containerHeight // default to square-ish
+    // Ensure the first image leaves room for a peek of the next
+    if (index === 0 && images.length > 1) {
+      width = Math.min(width, containerWidth - MIN_PEEK)
+    }
+    return width
   }
 
   if (screenReaderEnabled) {
@@ -170,6 +176,8 @@ export function Gallery({
             pagingEnabled={false}
             showsHorizontalScrollIndicator={false}
             decelerationRate={0.993}
+            directionalLockEnabled
+            alwaysBounceVertical={false}
             style={{
               width: bleed ? windowWidth : containerWidth + QUOTE_PADDING * 2,
               height: containerHeight,
@@ -186,7 +194,7 @@ export function Gallery({
               let accumulated = insetLeft // account for left content padding
               let page = 0
               for (let i = 0; i < images.length; i++) {
-                const w = getItemWidth(images[i]) + ITEM_GAP
+                const w = getItemWidth(images[i], i) + ITEM_GAP
                 if (offsetX < accumulated + w / 2) {
                   page = i
                   break
@@ -211,7 +219,7 @@ export function Gallery({
                 collapsable={false}
                 style={[
                   {
-                    width: getItemWidth(image),
+                    width: getItemWidth(image, index),
                     height: containerHeight,
                   },
                 ]}>

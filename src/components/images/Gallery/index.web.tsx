@@ -16,6 +16,7 @@ import {useAnalytics} from '#/analytics'
 
 const CONTAINER_ASPECT_RATIO = 3 / 2
 const ITEM_GAP = 8
+const MIN_PEEK = 40
 
 interface GalleryProps {
   images: AppBskyEmbedImages.ViewImage[]
@@ -65,20 +66,25 @@ export function Gallery({
   const containerHeight =
     containerWidth > 0 ? containerWidth / CONTAINER_ASPECT_RATIO : 0
 
-  const getItemWidth = (image: AppBskyEmbedImages.ViewImage) => {
+  const getItemWidth = (image: AppBskyEmbedImages.ViewImage, index: number) => {
     const ar = image.aspectRatio
+    let width = containerHeight
     if (ar && ar.width > 0 && ar.height > 0) {
       const ratio = ar.width / ar.height
       const clamped = Math.max(2 / 3, Math.min(ratio, 3 / 2))
-      return containerHeight * clamped
+      width = containerHeight * clamped
     }
-    return containerHeight
+    // Ensure the first image leaves room for a peek of the next
+    if (index === 0 && images.length > 1) {
+      width = Math.min(width, containerWidth - MIN_PEEK)
+    }
+    return width
   }
 
   // Embla carousel
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: () => insetLeftRef.current,
-    containScroll: false,
+    containScroll: 'trimSnaps',
     dragFree: true,
   })
 
@@ -96,9 +102,17 @@ export function Gallery({
         currentPageRef.current = page
       }
     }
+    const onDragStart = () => setIsDragging(true)
+    const onDragEnd = () => setIsDragging(false)
     emblaApi.on('select', onSelect)
+    emblaApi.on('pointerDown', onDragStart)
+    emblaApi.on('pointerUp', onDragEnd)
+    emblaApi.on('settle', onDragEnd)
     return () => {
       emblaApi.off('select', onSelect)
+      emblaApi.off('pointerDown', onDragStart)
+      emblaApi.off('pointerUp', onDragEnd)
+      emblaApi.off('settle', onDragEnd)
     }
   }, [emblaApi, ax, images.length])
 
@@ -110,6 +124,7 @@ export function Gallery({
   // Suppress click after drag
   const pointerDown = useRef(false)
   const dragged = useRef(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     if (!emblaApi) return
@@ -206,31 +221,32 @@ export function Gallery({
             ref={emblaRef}
             style={{
               overflow: 'visible',
-              width: isBleed ? containerWidth + insetLeft : '100%',
+              width: isBleed ? containerWidth + insetLeft + insetRight : '100%',
               height: containerHeight,
-              cursor: 'grab',
+              cursor: isDragging ? 'grabbing' : 'grab',
+              userSelect: 'none',
             }}>
             <div
               style={{
                 display: 'flex',
                 gap: ITEM_GAP,
-                paddingLeft: isWithinQuote ? QUOTE_PADDING : 0,
+                paddingLeft: isWithinQuote ? QUOTE_PADDING : insetLeft,
                 paddingRight: isWithinQuote ? QUOTE_PADDING : 0,
                 height: containerHeight,
               }}>
               {images.map((image, index) => (
-                <div
+                <Slide
                   key={index}
-                  style={{
-                    flex: `0 0 ${getItemWidth(image)}px`,
-                    minWidth: 0,
-                    height: containerHeight,
-                  }}>
+                  width={getItemWidth(image, index)}
+                  height={containerHeight}>
                   <View
                     ref={containerRefs[index]}
                     collapsable={false}
                     style={[
-                      {width: getItemWidth(image), height: containerHeight},
+                      {
+                        width: getItemWidth(image, index),
+                        height: containerHeight,
+                      },
                     ]}
                     aria-roledescription="slide"
                     aria-label={
@@ -314,12 +330,49 @@ export function Gallery({
                       </View>
                     ) : null}
                   </View>
-                </div>
+                </Slide>
               ))}
+              {isBleed && insetRight > 0 && (
+                <div
+                  aria-hidden
+                  style={{
+                    flex: `0 0 ${Math.max(0, insetRight - ITEM_GAP)}px`,
+                    minWidth: 0,
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>
       )}
     </View>
+  )
+}
+
+function Slide({
+  width,
+  height,
+  children,
+}: {
+  width: number
+  height: number
+  children: React.ReactNode
+}) {
+  const [pressed, setPressed] = useState(false)
+  return (
+    <div
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
+      onPointerMove={() => setPressed(false)}
+      style={{
+        flex: `0 0 ${width}px`,
+        minWidth: 0,
+        height,
+        transition: 'transform 0.15s ease-out',
+        transform: pressed ? 'scale(0.975)' : undefined,
+      }}>
+      {children}
+    </div>
   )
 }
