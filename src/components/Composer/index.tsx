@@ -396,7 +396,11 @@ function AutocompleteInner({
   })
 
   useEffect(() => {
-    if (activeFacet?.type === 'emoji' && activeFacet.raw.endsWith(':')) {
+    if (
+      activeFacet?.type === 'emoji' &&
+      !!activeFacet.value.length &&
+      activeFacet.raw.endsWith(':')
+    ) {
       if (items?.[0]) {
         activeFacet.replace(items[0].value, {noTrailingSpace: true})
         onDismiss()
