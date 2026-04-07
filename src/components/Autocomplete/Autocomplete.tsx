@@ -27,12 +27,14 @@ function renderItem(
 }
 
 export function Autocomplete({
+  inverted,
   sift,
   data,
   render = renderItem,
   onSelect,
   onDismiss,
 }: {
+  inverted?: boolean
   sift: UseSiftReturn
   data: AutocompleteItem[]
   render?: Parameters<typeof Sift<AutocompleteItem>>[0]['render']
@@ -51,7 +53,7 @@ export function Autocomplete({
   return (
     <Portal>
       <Sift
-        inverted={!IS_WEB}
+        inverted={inverted}
         sift={sift}
         data={data}
         onSelect={onSelect}

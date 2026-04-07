@@ -426,6 +426,7 @@ function AutocompleteInner({
 
   return items && items.length ? (
     <AutocompleteBase
+      inverted={!IS_WEB}
       sift={sift}
       data={items}
       render={props => {
