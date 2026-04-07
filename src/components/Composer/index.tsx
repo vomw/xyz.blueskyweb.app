@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import {useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react'
 import {
   type TextInput,
   type TextInputSubmitEditingEvent,
@@ -253,37 +246,34 @@ export function Composer({
    * Web keyboard handling
    */
   const isComposing = useRef(false)
-  const onKeyPressWeb = useCallback(
-    (e: React.KeyboardEvent | any) => {
-      if (IS_WEB_TOUCH_DEVICE) return
-      if (isComposing.current) return
+  const onKeyPressWeb = (e: React.KeyboardEvent | any) => {
+    if (IS_WEB_TOUCH_DEVICE) return
+    if (isComposing.current) return
 
-      /*
-       * On Safari, the final keydown to dismiss an IME is also "Enter" with
-       * keyCode 229. Chrome/Firefox don't have this problem.
-       *
-       * @see https://github.com/bluesky-social/social-app/issues/4178
-       */
-      if (e.key === 'Enter' && e.keyCode === 229) return
+    /*
+     * On Safari, the final keydown to dismiss an IME is also "Enter" with
+     * keyCode 229. Chrome/Firefox don't have this problem.
+     *
+     * @see https://github.com/bluesky-social/social-app/issues/4178
+     */
+    if (e.key === 'Enter' && e.keyCode === 229) return
 
-      if (e.key === 'Enter') {
-        onRequestSubmit?.({
-          platform: 'web',
-          shiftKey: e.shiftKey,
-          metaKey: e.metaKey,
-          nativeEvent: e.nativeEvent,
-        })
-      }
-    },
-    [onRequestSubmit],
-  )
+    if (e.key === 'Enter') {
+      onRequestSubmit?.({
+        platform: 'web',
+        shiftKey: e.shiftKey,
+        metaKey: e.metaKey,
+        nativeEvent: e.nativeEvent,
+      })
+    }
+  }
 
   /*
    * Sift popover positioning
    */
-  const updateAutocompletePosition = useCallback(() => {
+  const updateAutocompletePosition = () => {
     sift.updatePosition()
-  }, [sift])
+  }
 
   const textContent = (
     <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
