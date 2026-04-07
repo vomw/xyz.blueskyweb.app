@@ -61,6 +61,7 @@ export function DesktopSearch() {
   return (
     <View collapsable={false} ref={sift.refs.setAnchor}>
       <SearchInput
+        hotkey
         value={query}
         onFocus={onFocus}
         onChangeText={onChangeText}

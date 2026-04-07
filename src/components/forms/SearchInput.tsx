@@ -3,6 +3,7 @@ import {type TextInput, View} from 'react-native'
 import {useLingui} from '@lingui/react/macro'
 
 import {HITSLOP_10} from '#/lib/constants'
+import {mergeRefs} from '#/lib/merge-refs'
 import {listenFocusSearch} from '#/state/events'
 import {atoms as a, useTheme} from '#/alf'
 import {Button, ButtonIcon} from '#/components/Button'
@@ -18,7 +19,7 @@ type Props = Omit<TextField.InputProps, 'label'> & {
    */
   onClearText?: () => void
   hotkey?: boolean
-  ref?: React.RefObject<TextInput | null>
+  ref?: React.Ref<TextInput>
 }
 
 export function SearchInput({
@@ -33,21 +34,20 @@ export function SearchInput({
   const {t: l} = useLingui()
   const showClear = value && value.length > 0
   const internalRef = useRef<TextInput>(null)
-  const inputRef = ref ?? internalRef
 
   useEffect(() => {
     if (!hotkey) return
     return listenFocusSearch(() => {
-      inputRef.current?.focus()
+      internalRef.current?.focus()
     })
-  }, [hotkey, inputRef])
+  }, [hotkey])
 
   return (
     <View style={[a.w_full, a.relative]}>
       <TextField.Root>
         <TextField.Icon icon={MagnifyingGlassIcon} />
         <TextField.Input
-          inputRef={inputRef}
+          inputRef={mergeRefs([internalRef, ref])}
           label={label || l`Search`}
           value={value}
           placeholder={l`Search`}
