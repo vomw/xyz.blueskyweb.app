@@ -7,6 +7,8 @@ import {type AutocompleteItemProps} from './types'
 
 export function AutocompleteItemProfile({
   active,
+  isFirst,
+  isLast,
   props,
   item,
 }: AutocompleteItemProps) {
@@ -19,9 +21,15 @@ export function AutocompleteItemProfile({
     <SiftItem
       {...props}
       style={s => [
-        a.px_md,
         a.py_sm,
+        a.px_md,
         active || s.hovered || s.pressed ? [t.atoms.bg_contrast_25] : [],
+        isFirst && {
+          paddingTop: a.py_sm.paddingTop * 1.2,
+        },
+        isLast && {
+          paddingBottom: a.py_sm.paddingTop * 1.2,
+        },
       ]}>
       <ProfileCard.Header>
         <ProfileCard.Avatar

@@ -1,6 +1,5 @@
 import {SiftItem} from '@bsky.app/sift'
 
-import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {atoms as a, useTheme} from '#/alf'
 import {Text} from '#/components/Typography'
 import {type AutocompleteItemProps} from './types'
@@ -11,9 +10,8 @@ export function AutocompleteItemEmoji({
   item,
 }: AutocompleteItemProps) {
   const t = useTheme()
-  const moderationOpts = useModerationOpts()
 
-  if (item.type !== 'emoji' || !moderationOpts) return null
+  if (item.type !== 'emoji') return null
 
   return (
     <SiftItem

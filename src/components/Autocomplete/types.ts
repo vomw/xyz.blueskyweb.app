@@ -24,13 +24,25 @@ export type AutocompleteEmoji = {
   emoji: Emoji
 }
 
+export type AutocompleteSearch = {
+  key: string
+  type: 'search'
+  value: string
+}
+
 export type AutocompleteItem =
   | AutocompleteProfile
   | AutocompleteTag
   | AutocompleteEmoji
+  | AutocompleteSearch
 
 export type AutocompleteItemType = AutocompleteItem['type']
 
 export type AutocompleteItemProps = Parameters<
   Parameters<typeof Sift<AutocompleteItem>>[0]['render']
 >[0]
+
+export type AutocompleteApi = {
+  query: string
+  items: AutocompleteItem[]
+}

@@ -11,6 +11,7 @@ import {STALE} from '#/state/queries'
 import {DEFAULT_LOGGED_OUT_PREFERENCES} from '#/state/queries/preferences'
 import {useAgent} from '#/state/session'
 import {
+  type AutocompleteApi,
   type AutocompleteItem,
   type AutocompleteItemType,
   type AutocompleteProfile,
@@ -47,24 +48,26 @@ function useEmojiSearch() {
 
 export function useAutocomplete({
   type,
-  query,
+  query: q,
   limit,
+  showSearchFallback = false,
 }: {
   type: AutocompleteItemType
   query: string
   limit?: number
-}) {
+  showSearchFallback?: boolean
+}): AutocompleteApi {
   const agent = useAgent()
   const moderationOpts = useModerationOpts()
   const emojiSearch = useEmojiSearch()
 
-  return useQuery({
+  const query = useQuery({
     staleTime: STALE.MINUTES.ONE,
     queryKey: [
       'autocomplete',
       {
         type,
-        query,
+        query: q,
       },
     ],
     async queryFn() {
@@ -73,10 +76,10 @@ export function useAutocomplete({
         if (!query) return []
 
         // Going from "foo" to "foo." should not clear matches.
-        query = query.toLowerCase().trim().replace(/\.$/, '')
+        q = q.toLowerCase().trim().replace(/\.$/, '')
 
         const res = await agent.searchActorsTypeahead({
-          q: query,
+          q,
           limit: limit || 8,
         })
 
@@ -87,7 +90,7 @@ export function useAutocomplete({
           profile,
         }))
       } else if (type === 'emoji') {
-        const results = await emojiSearch(query, limit || 8)
+        const results = await emojiSearch(q, limit || 8)
         return results.map(result => ({
           key: result.item.id,
           type: 'emoji' as const,
@@ -109,7 +112,7 @@ export function useAutocomplete({
 
           if (item.type === 'profile') {
             const moderated = moderateProfileItem({
-              query,
+              query: q,
               item,
               moderationOpts: moderationOpts || DEFAULT_MOD_OPTS,
             })
@@ -119,12 +122,25 @@ export function useAutocomplete({
           }
         }
 
+        if (showSearchFallback && q) {
+          results.unshift({
+            key: `search-${q}`,
+            type: 'search' as const,
+            value: q,
+          })
+        }
+
         return results
       },
-      [query, moderationOpts],
+      [q, showSearchFallback, moderationOpts],
     ),
     placeholderData: keepPreviousData,
   })
+
+  return {
+    query: q,
+    items: query.data || [],
+  }
 }
 
 function moderateProfileItem({

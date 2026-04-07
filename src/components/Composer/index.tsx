@@ -403,7 +403,7 @@ function AutocompleteInner({
   activeFacet: TapperActiveFacet
   onDismiss: () => void
 }) {
-  const {data} = useAutocomplete({
+  const {items} = useAutocomplete({
     type: parseAutocompleteItemType(activeFacet.type),
     query: activeFacet.value,
   })
@@ -417,17 +417,17 @@ function AutocompleteInner({
 
   useEffect(() => {
     if (activeFacet?.type === 'emoji' && activeFacet.raw.endsWith(':')) {
-      if (data?.[0]) {
-        activeFacet.replace(data[0].value, {noTrailingSpace: true})
+      if (items?.[0]) {
+        activeFacet.replace(items[0].value, {noTrailingSpace: true})
         onDismiss()
       }
     }
-  }, [data, activeFacet])
+  }, [items, activeFacet])
 
-  return data && data.length ? (
+  return items && items.length ? (
     <AutocompleteBase
       sift={sift}
-      data={data}
+      data={items}
       render={props => {
         if (props.item.type === 'profile') {
           return <AutocompleteItemProfile {...props} />
