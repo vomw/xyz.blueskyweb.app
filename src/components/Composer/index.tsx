@@ -44,7 +44,6 @@ import {
   AutosizedTextarea,
   type AutosizedTextareaProps,
 } from '#/components/forms/AutosizedTextarea'
-import {useOnKeyboard} from '#/components/hooks/useOnKeyboard'
 import {Span, Text} from '#/components/Typography'
 import {IS_IOS, IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
 
@@ -285,8 +284,6 @@ export function Composer({
   const updateAutocompletePosition = useCallback(() => {
     sift.updatePosition()
   }, [sift])
-  useOnKeyboard('keyboardDidShow', updateAutocompletePosition)
-  useOnKeyboard('keyboardDidHide', updateAutocompletePosition)
 
   const textContent = (
     <Text style={[textStyle, web({whiteSpace: 'pre-wrap'})]}>
@@ -407,13 +404,6 @@ function AutocompleteInner({
     type: parseAutocompleteItemType(activeFacet.type),
     query: activeFacet.value,
   })
-
-  const updatePosition = useCallback(() => {
-    sift.updatePosition()
-  }, [sift])
-
-  useOnKeyboard('keyboardDidShow', updatePosition)
-  useOnKeyboard('keyboardDidHide', updatePosition)
 
   useEffect(() => {
     if (activeFacet?.type === 'emoji' && activeFacet.raw.endsWith(':')) {
