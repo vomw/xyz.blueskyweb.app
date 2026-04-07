@@ -186,10 +186,12 @@ export function SettingsScreen({}: Props) {
               <Trans>Privacy and security</Trans>
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
-          <SettingsList.LinkItem to="/moderation" label={_(msg`Moderation`)}>
+          <SettingsList.LinkItem
+            to="/moderation"
+            label={_(msg`Moderation and content filters`)}>
             <SettingsList.ItemIcon icon={HandIcon} />
             <SettingsList.ItemText>
-              <Trans>Moderation</Trans>
+              <Trans>Moderation and content filters</Trans>
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.LinkItem
@@ -245,7 +247,7 @@ export function SettingsScreen({}: Props) {
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.PressableItem
-            onPress={() => Linking.openURL(HELP_DESK_URL)}
+            onPress={() => void Linking.openURL(HELP_DESK_URL)}
             label={_(msg`Help`)}
             accessibilityHint={_(msg`Opens helpdesk in browser`)}>
             <SettingsList.ItemIcon icon={CircleQuestionIcon} />
