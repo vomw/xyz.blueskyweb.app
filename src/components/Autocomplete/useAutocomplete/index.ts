@@ -1,11 +1,8 @@
 import {useCallback} from 'react'
 import {moderateProfile, type ModerationOpts} from '@atproto/api'
-import {type Emoji} from '@emoji-mart/data'
 import {keepPreviousData, useQuery} from '@tanstack/react-query'
-import Fuse from 'fuse.js'
 
 import {isJustAMute, moduiContainsHideableOffense} from '#/lib/moderation'
-import {useGetEmojis} from '#/lib/useGetEmojis'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {STALE} from '#/state/queries'
 import {DEFAULT_LOGGED_OUT_PREFERENCES} from '#/state/queries/preferences'
@@ -16,34 +13,11 @@ import {
   type AutocompleteItemType,
   type AutocompleteProfile,
 } from '#/components/Autocomplete/types'
+import {useEmojiSearch} from './useEmojiSearch'
 
 const DEFAULT_MOD_OPTS = {
   userDid: undefined,
   prefs: DEFAULT_LOGGED_OUT_PREFERENCES.moderationPrefs,
-}
-
-/*
- * Lazily loaded Fuse instance for emoji search. Built once on first search,
- * then reused for all subsequent searches.
- */
-let emojiFuseInstance: Fuse<Emoji> | null = null
-function useEmojiSearch() {
-  const getEmojis = useGetEmojis()
-
-  return useCallback(
-    async (query: string, limit: number = 8) => {
-      if (!emojiFuseInstance) {
-        const data = await getEmojis()
-        emojiFuseInstance = new Fuse(Object.values(data.emojis), {
-          keys: ['search'],
-          threshold: 0.3,
-        })
-      }
-
-      return emojiFuseInstance.search(query, {limit})
-    },
-    [getEmojis],
-  )
 }
 
 export function useAutocomplete({
@@ -90,13 +64,7 @@ export function useAutocomplete({
           profile,
         }))
       } else if (type === 'emoji') {
-        const results = await emojiSearch(q, limit || 8)
-        return results.map(result => ({
-          key: result.item.id,
-          type: 'emoji' as const,
-          value: result.item.skins[0].native,
-          emoji: result.item,
-        }))
+        return emojiSearch(q, limit || 8)
       }
 
       return []
