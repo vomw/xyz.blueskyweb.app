@@ -69,6 +69,7 @@ export type ComposerInternalApi = {
   input?: ReturnType<typeof useTapper>['input']
   clear: () => void
   insert(text: string): void
+  setAutocompleteAnchor: (node: View | null) => void
 }
 
 export function useComposerInternalApiRef() {
@@ -91,7 +92,6 @@ export type ComposerProps = Omit<
 > & {
   label: string
   ref?: React.RefObject<TextInput>
-  autocompleteAnchorRef?: React.RefObject<View | null>
   internalApiRef?: React.Ref<ComposerInternalApi>
   outerStyle?: ViewStyleProp['style']
   contentTextStyle?: TextStyleProp['style']
@@ -116,7 +116,6 @@ export function Composer({
   label,
   ref,
   internalApiRef,
-  autocompleteAnchorRef,
   outerStyle,
   contentTextStyle,
   contentPaddingStyle,
@@ -150,7 +149,6 @@ export function Composer({
     placement: autocompletePlacement,
     dynamicWidth: IS_WEB,
     insets,
-    anchorRef: autocompleteAnchorRef,
   })
 
   /*
@@ -175,8 +173,9 @@ export function Composer({
         inputScrollSharedValue.value = 0
       },
       insert: tapper.insert,
+      setAutocompleteAnchor: sift.refs.setAnchor,
     }),
-    [tapper.input, tapper.insert, inputScrollSharedValue],
+    [tapper.input, tapper.insert, inputScrollSharedValue, sift.refs.setAnchor],
   )
 
   /*
