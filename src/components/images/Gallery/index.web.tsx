@@ -171,7 +171,7 @@ export function Gallery({
         const ps = window.getComputedStyle(parent)
         const pl = parseFloat(ps.paddingLeft)
         const pr = parseFloat(ps.paddingRight)
-        if (pl >= 8 && pr >= 8 && ps.cursor === 'pointer') {
+        if (pl >= 8 && pr >= 8) {
           const parentRect = parent.getBoundingClientRect()
           const il = galleryRect.left - parentRect.left
           insetLeftRef.current = il
@@ -332,11 +332,11 @@ export function Gallery({
                   </View>
                 </Slide>
               ))}
-              {isBleed && insetRight > 0 && (
+              {(isBleed ? insetRight > 0 : isWithinQuote) && (
                 <div
                   aria-hidden
                   style={{
-                    flex: `0 0 ${Math.max(0, insetRight - ITEM_GAP)}px`,
+                    flex: `0 0 ${Math.max(0, (isBleed ? insetRight : QUOTE_PADDING) - ITEM_GAP)}px`,
                     minWidth: 0,
                   }}
                 />
