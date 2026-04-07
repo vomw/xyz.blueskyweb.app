@@ -33,6 +33,7 @@ export function AutocompleteItemProfile({
       ]}>
       <ProfileCard.Header>
         <ProfileCard.Avatar
+          disabledPreview
           profile={item.profile}
           moderationOpts={moderationOpts}
         />
