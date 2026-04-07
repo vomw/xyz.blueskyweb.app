@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react'
+import {useEffect, useState} from 'react'
 import {Pressable, View} from 'react-native'
 import {useLingui} from '@lingui/react/macro'
 import {countGraphemes} from 'unicode-segmenter/grapheme'
@@ -58,11 +58,11 @@ export function MessageComposer({
   const [text, setText] = useState(getDraft)
   useSaveMessageDraft(text)
 
-  const openEmojiPicker = useCallback((pos: any) => {
+  const openEmojiPicker = (pos: any) => {
     setEmojiPickerState({isOpen: true, pos})
-  }, [])
+  }
 
-  const onSubmit = useCallback(() => {
+  const onSubmit = () => {
     if (!editable) return
     if (!hasEmbed && text.trim() === '') return
     if (countGraphemes(text) > MAX_DM_GRAPHEME_LENGTH) {
@@ -81,17 +81,7 @@ export function MessageComposer({
     if (IS_WEB) {
       composerInternalApiRef.current?.input?.focus()
     }
-  }, [
-    l,
-    editable,
-    hasEmbed,
-    text,
-    clearDraft,
-    onSendMessage,
-    playHaptic,
-    setEmbed,
-    composerInternalApiRef,
-  ])
+  }
 
   useEffect(() => {
     function onEmojiInserted(emoji: Emoji) {
