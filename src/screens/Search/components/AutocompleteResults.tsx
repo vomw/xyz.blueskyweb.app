@@ -132,5 +132,3 @@ let SearchLinkCard = ({
     </Link>
   )
 }
-SearchLinkCard = memo(SearchLinkCard)
-export {SearchLinkCard}
