@@ -9086,10 +9086,10 @@ expo-notifications@~0.32.16:
     expo-application "~7.0.8"
     expo-constants "~18.0.13"
 
-expo-paste-input@^0.1.10:
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/expo-paste-input/-/expo-paste-input-0.1.10.tgz#7df0a07ae6ecd381004624dbe88762997d962780"
-  integrity sha512-TkAauK1eIq7+vk2SA39trmDO6dLfFLQL+09KIVZh//3XWs8gHC5ezH3vjfjr7xj9xi67amyeiDCErP5caTDIKg==
+expo-paste-input@^0.1.12:
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/expo-paste-input/-/expo-paste-input-0.1.12.tgz#0295eb26caf738fc39019f4ecae48c22b126b67e"
+  integrity sha512-iaOCgygmCYVbSj+gJOxr8P28y8Tf0X4UHtVVXRjEsARKf5gQUoVaRX63uzB+8h+g6vN710fSmu5vdxNP28bw8g==
 
 expo-privacy-sensitive@^0.1.0:
   version "0.1.0"
