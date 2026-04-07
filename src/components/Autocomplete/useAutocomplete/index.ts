@@ -47,7 +47,7 @@ export function useAutocomplete({
     async queryFn() {
       if (type === 'profile') {
         // TODO return recents
-        if (!query) return []
+        if (!q) return []
 
         // Going from "foo" to "foo." should not clear matches.
         q = q.toLowerCase().trim().replace(/\.$/, '')
