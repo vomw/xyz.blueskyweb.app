@@ -12,8 +12,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {msg} from '@lingui/core/macro'
-import {useLingui} from '@lingui/react'
+import {useLingui} from '@lingui/react/macro'
 import {countGraphemes} from 'unicode-segmenter/grapheme'
 
 import {HITSLOP_10, MAX_DM_GRAPHEME_LENGTH} from '#/lib/constants'
@@ -39,13 +38,13 @@ export function MessageInput({
   setEmbed,
   children,
 }: {
-  onSendMessage: (message: string) => void
+  onSendMessage: (message: string) => Promise<void> | void
   hasEmbed: boolean
   setEmbed: (embedUrl: string | undefined) => void
   children?: React.ReactNode
   openEmojiPicker?: (pos: EmojiPickerPosition) => void
 }) {
-  const {_} = useLingui()
+  const {t: l} = useLingui()
   const t = useTheme()
   const playHaptic = useHaptics()
   const {getDraft, clearDraft} = useMessageDraft()
@@ -76,13 +75,13 @@ export function MessageInput({
       return
     }
     if (countGraphemes(message) > MAX_DM_GRAPHEME_LENGTH) {
-      Toast.show(_(msg`Message is too long`), {
+      Toast.show(l`Message is too long`, {
         type: 'error',
       })
       return
     }
     clearDraft()
-    onSendMessage(message)
+    void onSendMessage(message)
     playHaptic()
     setEmbed(undefined)
     setMessage('')
@@ -105,7 +104,7 @@ export function MessageInput({
     playHaptic,
     setEmbed,
     inputRef,
-    _,
+    l,
   ])
 
   useFocusedInputHandler(
@@ -134,7 +133,7 @@ export function MessageInput({
   }))
 
   return (
-    <View style={[a.px_md, a.pb_sm, a.pt_xs]}>
+    <View style={[a.px_md, a.pb_sm, a.pt_sm]}>
       {children}
       <View
         style={[
@@ -151,9 +150,9 @@ export function MessageInput({
           isFocused && inputStyles.chromeFocus,
         ]}>
         <AnimatedTextInput
-          accessibilityLabel={_(msg`Message input field`)}
-          accessibilityHint={_(msg`Type your message here`)}
-          placeholder={_(msg`Write a message`)}
+          accessibilityLabel={l`Message input field`}
+          accessibilityHint={l`Type your message here`}
+          placeholder={l`Message`}
           placeholderTextColor={t.palette.contrast_500}
           value={message}
           onChange={evt => {
@@ -191,7 +190,7 @@ export function MessageInput({
         />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={_(msg`Send message`)}
+          accessibilityLabel={l`Send message`}
           accessibilityHint=""
           hitSlop={HITSLOP_10}
           style={[

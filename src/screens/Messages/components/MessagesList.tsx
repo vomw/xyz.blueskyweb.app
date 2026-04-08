@@ -45,13 +45,15 @@ import {List, type ListMethods} from '#/view/com/util/List'
 import {ChatDisabled} from '#/screens/Messages/components/ChatDisabled'
 import {MessageInput} from '#/screens/Messages/components/MessageInput'
 import {MessageListError} from '#/screens/Messages/components/MessageListError'
+import {MessageListError as MessageListErrorDeprecated} from '#/screens/Messages/components/MessageListError_DEPRECATED'
 import {ChatEmptyPill} from '#/components/dms/ChatEmptyPill'
 import {MessageItem} from '#/components/dms/MessageItem'
+import {MessageItem as MessageItemDeprecated} from '#/components/dms/MessageItem_DEPRECATED'
 import {NewMessagesPill} from '#/components/dms/NewMessagesPill'
 import {Loader} from '#/components/Loader'
 import {Text} from '#/components/Typography'
-import {IS_NATIVE} from '#/env'
-import {IS_WEB} from '#/env'
+import {useAnalytics} from '#/analytics'
+import {IS_NATIVE, IS_WEB} from '#/env'
 import {ChatStatusInfo} from './ChatStatusInfo'
 import {MessageInputEmbed, useMessageEmbed} from './MessageInputEmbed'
 
@@ -67,18 +69,6 @@ function MaybeLoader({isLoading}: {isLoading: boolean}) {
       {isLoading && <Loader size="xl" />}
     </View>
   )
-}
-
-function renderItem({item}: {item: ConvoItem}) {
-  if (item.type === 'message' || item.type === 'pending-message') {
-    return <MessageItem item={item} />
-  } else if (item.type === 'deleted-message') {
-    return <Text>Deleted message</Text>
-  } else if (item.type === 'error') {
-    return <MessageListError item={item} />
-  }
-
-  return null
 }
 
 function keyExtractor(item: ConvoItem) {
@@ -106,6 +96,9 @@ export function MessagesList({
   const agent = useAgent()
   const getPost = useGetPost()
   const {embedUri, setEmbed} = useMessageEmbed()
+  const ax = useAnalytics()
+
+  const isGroupChatEnabled = ax.features.enabled(ax.features.GroupChatsEnable)
 
   useHideBottomBarBorderForScreen()
 
@@ -224,7 +217,7 @@ export function MessagesList({
 
   const onStartReached = useCallback(() => {
     if (hasScrolled && prevContentHeight.current > layoutHeight.get()) {
-      convoState.fetchMessageHistory()
+      void convoState.fetchMessageHistory()
     }
   }, [convoState, hasScrolled, layoutHeight])
 
@@ -416,6 +409,33 @@ export function MessagesList({
     setEmojiPickerState({isOpen: true, pos})
   }, [])
 
+  const renderItem = ({item}: {item: ConvoItem}) => {
+    if (item.type === 'message' || item.type === 'pending-message') {
+      return isGroupChatEnabled ? (
+        <MessageItem
+          item={item}
+          profile={convoState.convo.members.find(
+            member => member.did === item.message.sender.did,
+          )}
+          // TODO This is placeholder for now, just to test the group chat UI.
+          isGroupChat={convoState.convo.kind === 'group'}
+        />
+      ) : (
+        <MessageItemDeprecated item={item} />
+      )
+    } else if (item.type === 'deleted-message') {
+      return <Text>Deleted message</Text>
+    } else if (item.type === 'error') {
+      return isGroupChatEnabled ? (
+        <MessageListError item={item} />
+      ) : (
+        <MessageListErrorDeprecated item={item} />
+      )
+    }
+
+    return null
+  }
+
   return (
     <>
       {/* Custom scroll provider so that we can use the `onScroll` event in our custom List implementation */}
@@ -458,7 +478,7 @@ export function MessagesList({
             convoState={convoState}
             hasAcceptOverride={hasAcceptOverride}>
             <MessageInput
-              onSendMessage={onSendMessage}
+              onSendMessage={message => void onSendMessage(message)}
               hasEmbed={!!embedUri}
               setEmbed={setEmbed}
               openEmojiPicker={onOpenEmojiPicker}>
