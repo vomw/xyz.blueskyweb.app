@@ -12,6 +12,7 @@ import {type Dimensions} from '#/lib/media/types'
 import {useA11y} from '#/state/a11y'
 import {useLargeAltBadgeEnabled} from '#/state/preferences/large-alt-badge'
 import {atoms as a, useTheme} from '#/alf'
+import {AutoSizedImage} from '#/components/images/AutoSizedImage'
 import {MediaInsetBorder} from '#/components/MediaInsetBorder'
 import {PostEmbedViewContext} from '#/components/Post/Embed/types'
 import {Text} from '#/components/Typography'
@@ -96,55 +97,26 @@ export function Gallery({
 
   if (screenReaderEnabled) {
     return (
-      <View
-        style={[a.rounded_md, a.overflow_hidden]}
-        accessibilityRole="adjustable">
+      <View style={[a.relative, a.gap_sm]}>
         {images.map((image, index) => (
-          <View
-            key={index}
-            ref={containerRefs[index]}
-            collapsable={false}
-            style={[
-              {aspectRatio: CONTAINER_ASPECT_RATIO},
-              t.atoms.bg_contrast_25,
-            ]}>
-            <Pressable
-              onPress={
-                onPress
-                  ? () =>
-                      onPress(
-                        index,
-                        containerRefs.slice(0, images.length),
-                        thumbDimsRef.current.slice(),
-                      )
-                  : undefined
-              }
-              onPressIn={onPressIn ? () => onPressIn(index) : undefined}
-              accessibilityRole="button"
-              accessibilityLabel={
-                image.alt || l`Image ${index + 1} of ${images.length}`
-              }
-              accessibilityHint={l`Opens full image`}
-              style={[a.flex_1]}>
-              <Image
-                source={{uri: image.thumb}}
-                style={[a.flex_1]}
-                contentFit="cover"
-                accessible={true}
-                accessibilityLabel={image.alt}
-                accessibilityHint=""
-                accessibilityIgnoresInvertColors
-                onLoad={e => {
-                  thumbDimsRef.current[index] = {
-                    width: e.source.width,
-                    height: e.source.height,
-                  }
-                }}
-                loading={index === 0 ? 'eager' : 'lazy'}
-              />
-              <MediaInsetBorder />
-            </Pressable>
-          </View>
+          <AutoSizedImage
+            key={image.thumb}
+            crop={
+              viewContext === PostEmbedViewContext.ThreadHighlighted
+                ? 'none'
+                : viewContext === PostEmbedViewContext.FeedEmbedRecordWithMedia
+                  ? 'square'
+                  : 'constrained'
+            }
+            image={image}
+            onPress={(containerRef, dims) =>
+              onPress?.(index, [containerRef], [dims])
+            }
+            onPressIn={() => onPressIn?.(index)}
+            hideBadge={
+              viewContext === PostEmbedViewContext.FeedEmbedRecordWithMedia
+            }
+          />
         ))}
       </View>
     )
