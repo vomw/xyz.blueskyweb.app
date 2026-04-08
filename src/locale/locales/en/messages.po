@@ -857,8 +857,8 @@ msgstr ""
 #: src/view/com/composer/GifAltText.tsx:76
 #: src/view/com/composer/GifAltText.tsx:150
 #: src/view/com/composer/GifAltText.tsx:217
-#: src/view/com/composer/photos/Gallery.tsx:196
-#: src/view/com/composer/photos/Gallery.tsx:243
+#: src/view/com/composer/photos/Gallery.tsx:265
+#: src/view/com/composer/photos/Gallery.tsx:312
 #: src/view/com/composer/photos/ImageAltTextDialog.tsx:95
 #: src/view/com/composer/photos/ImageAltTextDialog.tsx:103
 msgid "Add alt text"
@@ -1162,12 +1162,13 @@ msgstr ""
 #: src/components/images/Gallery.tsx:120
 #: src/components/Post/Embed/VideoEmbed/GifPresentationControls.tsx:94
 #: src/view/com/composer/GifAltText.tsx:100
-#: src/view/com/composer/photos/Gallery.tsx:214
+#: src/view/com/composer/photos/Gallery.tsx:283
 msgid "ALT"
 msgstr ""
 
 #: src/screens/Settings/AccessibilitySettings.tsx:55
 #: src/view/com/composer/GifAltText.tsx:160
+#: src/view/com/composer/photos/Gallery.tsx:188
 #: src/view/com/composer/photos/ImageAltTextDialog.tsx:128
 #: src/view/com/composer/videos/SubtitleDialog.tsx:41
 #: src/view/com/composer/videos/SubtitleDialog.tsx:59
@@ -1181,7 +1182,6 @@ msgid "Alt Text"
 msgstr ""
 
 #: src/view/com/composer/GifAltText.tsx:105
-#: src/view/com/composer/photos/Gallery.tsx:125
 msgid "Alt text describes images for blind and low-vision users, and helps give context to everyone."
 msgstr ""
 
@@ -3130,6 +3130,10 @@ msgstr ""
 msgid "Deleted list"
 msgstr ""
 
+#: src/view/com/composer/photos/Gallery.tsx:193
+msgid "Describe this image for blind and low-vision users..."
+msgstr "Describe this image for blind and low-vision users..."
+
 #: src/components/dialogs/lists/CreateOrEditListDialog.tsx:453
 #: src/screens/Profile/Header/EditProfileDialog.tsx:360
 #: src/screens/Profile/Header/EditProfileDialog.tsx:367
@@ -3495,7 +3499,7 @@ msgstr ""
 
 #: src/view/com/composer/photos/EditImageDialog.web.tsx:86
 #: src/view/com/composer/photos/EditImageDialog.web.tsx:90
-#: src/view/com/composer/photos/Gallery.tsx:221
+#: src/view/com/composer/photos/Gallery.tsx:290
 msgid "Edit image"
 msgstr ""
 
@@ -5254,6 +5258,11 @@ msgstr ""
 #: src/view/com/lightbox/Lightbox.web.tsx:248
 msgid "Image {0} of {1}"
 msgstr ""
+
+#. placeholder {0}: imageIndex + 1
+#: src/view/com/composer/photos/Gallery.tsx:181
+msgid "Image {0} of {imageCount}"
+msgstr "Image {0} of {imageCount}"
 
 #: src/screens/Settings/AboutSettings.tsx:63
 msgid "Image cache cleared"
@@ -8131,7 +8140,7 @@ msgstr ""
 msgid "Remove from your feeds?"
 msgstr ""
 
-#: src/view/com/composer/photos/Gallery.tsx:230
+#: src/view/com/composer/photos/Gallery.tsx:299
 msgid "Remove image"
 msgstr ""
 

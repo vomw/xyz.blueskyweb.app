@@ -1,4 +1,4 @@
-import {memo, useMemo, useState} from 'react'
+import {memo, useCallback, useMemo, useRef, useState} from 'react'
 import {
   findNodeHandle,
   type ImageStyle,
@@ -16,13 +16,15 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
+import {MAX_ALT_TEXT} from '#/lib/constants'
 import {useWebMediaQueries} from '#/lib/hooks/useWebMediaQueries'
 import {type Dimensions} from '#/lib/media/types'
+import {enforceLen} from '#/lib/strings/helpers'
 import {colors} from '#/lib/styles'
 import {type ComposerImage, cropImage} from '#/state/gallery'
 import {atoms as a, tokens, useTheme} from '#/alf'
-import {Admonition} from '#/components/Admonition'
 import * as Dialog from '#/components/Dialog'
+import * as TextField from '#/components/forms/TextField'
 import {MediaInsetBorder} from '#/components/MediaInsetBorder'
 import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
@@ -120,16 +122,83 @@ const GalleryInner = ({images, containerInfo, dispatch}: GalleryInnerProps) => {
           )
         })}
       </View>
-      {images.some(image => !image.alt) && (
-        <Admonition type="info" style={[a.mt_sm]}>
-          <Trans>
-            Alt text describes images for blind and low-vision users, and helps
-            give context to everyone.
-          </Trans>
-        </Admonition>
-      )}
+      {(() => {
+        const firstMissing = images.find(image => !image.alt)
+        if (!firstMissing) return null
+        return (
+          <InlineAltTextInput
+            key={firstMissing.source.id}
+            image={firstMissing}
+            imageCount={images.length}
+            imageIndex={images.indexOf(firstMissing)}
+            onChange={next => {
+              dispatch({type: 'embed_update_image', image: next})
+            }}
+          />
+        )
+      })()}
     </>
   ) : null
+}
+
+const InlineAltTextInput = ({
+  image,
+  imageCount,
+  imageIndex,
+  onChange,
+}: {
+  image: ComposerImage
+  imageCount: number
+  imageIndex: number
+  onChange: (next: ComposerImage) => void
+}) => {
+  const {_} = useLingui()
+  const t = useTheme()
+  const textRef = useRef(image.alt)
+
+  const handleChangeText = useCallback((text: string) => {
+    textRef.current = text
+  }, [])
+
+  const handleBlur = useCallback(() => {
+    const trimmed = textRef.current.trim()
+    if (trimmed !== image.alt) {
+      onChange({...image, alt: enforceLen(trimmed, MAX_ALT_TEXT, true)})
+    }
+  }, [image, onChange])
+
+  return (
+    <View style={[a.mt_sm, a.flex_row, a.gap_sm, a.align_start]}>
+      <Image
+        source={{uri: (image.transformed ?? image.source).path}}
+        style={{width: 40, height: 40, borderRadius: 6}}
+        contentFit="cover"
+        accessibilityIgnoresInvertColors
+      />
+      <View style={[a.flex_1]}>
+        {imageCount > 1 && (
+          <Text style={[a.text_xs, a.mb_xs, t.atoms.text_contrast_medium]}>
+            <Trans>
+              Image {imageIndex + 1} of {imageCount}
+            </Trans>
+          </Text>
+        )}
+        <TextField.Root>
+          <TextField.Input
+            label={_(msg`Alt text`)}
+            defaultValue={image.alt}
+            onChangeText={handleChangeText}
+            onBlur={handleBlur}
+            placeholder={_(
+              msg`Describe this image for blind and low-vision users...`,
+            )}
+            multiline
+            numberOfLines={2}
+          />
+        </TextField.Root>
+      </View>
+    </View>
+  )
 }
 
 type GalleryItemProps = {
