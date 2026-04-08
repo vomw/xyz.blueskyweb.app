@@ -97,9 +97,7 @@ function InnerProvider({children}: {children: React.ReactNode}) {
     logger.debug(`useAgeAssuranceState`, {state})
   }, [state])
 
-  return (
-    <AgeAssuranceStateContext.Provider
-      value={useMemo(() => {
+  const ctx = useMemo(() => {
         const chatDisabled = state.access !== AgeAssuranceAccess.Full
         const isUnderAdultAge = data?.birthdate
           ? isUnderAge(data.birthdate, 18)
@@ -123,8 +121,26 @@ function InnerProvider({children}: {children: React.ReactNode}) {
             isOverAppMinAccessAge,
           },
         }
-      }, [state, data, config])}>
+      }, [state, data, config])
+
+
+      // useeffect
+
+  return (
+    <AgeAssuranceStateContext.Provider
+      value={ctx}>
       {children}
     </AgeAssuranceStateContext.Provider>
   )
+}
+
+let record: any
+function Composer() {
+  const {flags} = useAgeAssurance()
+  useEffect(() => {
+    if (flags.chatDisabled) {
+      const {record} = getOtherRequiredDataFromCache()
+      // put record chat settings IF they  allowIncoming !== 'none' already
+    }
+  }, [flags.chatDisabled])
 }

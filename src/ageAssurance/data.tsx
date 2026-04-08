@@ -325,6 +325,7 @@ export function useServerStateQuery() {
 
 export type OtherRequiredData = {
   birthdate: string | undefined
+  chatRecord?: any
 }
 export function createOtherRequiredDataQueryKey({did}: {did: string}) {
   return ['otherRequiredData', did]
@@ -335,7 +336,10 @@ export async function getOtherRequiredData({
   agent: AtpAgent
 }): Promise<OtherRequiredData> {
   if (debug.enabled) return debug.resolve(debug.otherRequiredData)
-  const [prefs] = await Promise.all([agent.getPreferences()])
+  const [prefs] = await Promise.all([
+    agent.getPreferences()
+    // get record
+  ])
   const data: OtherRequiredData = {
     birthdate: prefs.birthDate ? prefs.birthDate.toISOString() : undefined,
   }
