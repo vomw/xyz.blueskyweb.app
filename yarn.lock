@@ -20,14 +20,14 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@atproto/api@^0.19.5":
-  version "0.19.5"
-  resolved "https://registry.yarnpkg.com/@atproto/api/-/api-0.19.5.tgz#6388e5d6d3a1693fe04b5f37c705682bac8601d3"
-  integrity sha512-u6R5TecYJDO8l8QFN09AMuJASYnUkJ4HhYE5hg4/dha/z14a+OAil2/dli/208uM5AHPFLtlnB8kIK9XU5GgQQ==
+"@atproto/api@^0.19.6":
+  version "0.19.6"
+  resolved "https://registry.yarnpkg.com/@atproto/api/-/api-0.19.6.tgz#c8fae3d792fe429c900ac0ba2609d60b9a89e28b"
+  integrity sha512-8L5dZvGaclB52b8msjtgDNx3uLWUY4PELA7KbFyAWBFVasCceE1txdrscCqDCLN+Fff9+Sm07OIjnjHYJXdETA==
   dependencies:
     "@atproto/common-web" "^0.4.19"
     "@atproto/lexicon" "^0.6.2"
-    "@atproto/syntax" "^0.5.2"
+    "@atproto/syntax" "^0.5.3"
     "@atproto/xrpc" "^0.7.7"
     await-lock "^2.2.2"
     multiformats "^9.9.0"
@@ -73,10 +73,17 @@
     multiformats "^9.9.0"
     zod "^3.23.8"
 
-"@atproto/syntax@^0.5.0", "@atproto/syntax@^0.5.1", "@atproto/syntax@^0.5.2":
+"@atproto/syntax@^0.5.0", "@atproto/syntax@^0.5.1":
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/@atproto/syntax/-/syntax-0.5.2.tgz#d4b32c9feb421ceeb5ade1fa80bc42764d51e52e"
   integrity sha512-W41szOnkppoHr0iCUrzL8gy3OD6qmDyp1UvUgmTx2oFQfgbudpz51T/gznesiCcqiUT5obfHdx4PJ+WdlEOE7Q==
+  dependencies:
+    tslib "^2.8.1"
+
+"@atproto/syntax@^0.5.3":
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/@atproto/syntax/-/syntax-0.5.3.tgz#4331d01f63fe56c374dcf95d4432a22b62271a17"
+  integrity sha512-gzhlHOJHm5KXdCc17fXi1fXM81ccs5jJfNgCui84ay9JGvczxegpYHNqdMlv+iBuhtBzFIjgx6ChjRxN/kO8kQ==
   dependencies:
     tslib "^2.8.1"
 
@@ -2390,6 +2397,16 @@
   version "2.12.5"
   resolved "https://registry.yarnpkg.com/@bsky.app/react-native-mmkv/-/react-native-mmkv-2.12.5.tgz#eb17d31a6158c74393f617a1763ac223ff3f83a6"
   integrity sha512-3vUz1nQY1DiKIPAWRkpp5ZGxH5f2G6Ui0UuQuEYjYv81xx1qFcSzS9KQ2sHcOKYdkOM9amWV2Q8TQCxt1lrAHg==
+
+"@bsky.app/sift@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@bsky.app/sift/-/sift-0.3.1.tgz#f529832001bcd64950c214e85aec055a1f2edcdb"
+  integrity sha512-jG9GDh0Yh4vBM98BP4HvBp8VBqnt+280tFx9Gh/bWYtZdiN1xfrTkqWqRkvxyujgpXlyoemREUn+7dGs8Bl60A==
+
+"@bsky.app/tapper@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@bsky.app/tapper/-/tapper-0.5.0.tgz#39f3814a063cc0e8ee58c05e09be3d5cb8638f22"
+  integrity sha512-Fb7L2CruOA/k/FgKDOGChr+JKXsf+geAOTZXDevs9oqbSYTrXuI8KrRgaDwPS+FVCp1vAYHC/3esuVv+lbUtnw==
 
 "@crowdin/cli@^4.14.1":
   version "4.14.1"
@@ -6926,9 +6943,9 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001517, caniuse-lite@^1.0.30001587, caniuse-lite@^1.0.30001669, caniuse-lite@^1.0.30001741:
-  version "1.0.30001751"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001751.tgz"
-  integrity sha512-A0QJhug0Ly64Ii3eIqHu5X51ebln3k4yTUkY1j8drqpWHVreg/VLijN48cZ1bYPiqOQuqpkIKnzr/Ul8V+p6Cw==
+  version "1.0.30001786"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001786.tgz"
+  integrity sha512-4oxTZEvqmLLrERwxO76yfKM7acZo310U+v4kqexI2TL1DkkUEMT8UijrxxcnVdxR3qkVf5awGRX+4Z6aPHVKrA==
 
 cborg@^4.0.0:
   version "4.2.6"
@@ -9625,6 +9642,11 @@ functions-have-names@^1.2.2, functions-have-names@^1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.3.tgz#0404fe4ee2ba2f607f0e0ec3c80bae994133b834"
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
+
+fuse.js@^7.1.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-7.3.0.tgz#68e1ea1c6c0ff262f1801a949a78edbe05b0bc13"
+  integrity sha512-plz8RVjfcDedTGfVngWH1jmJvBvAwi1v2jecfDerbEnMcmOYUEEwKFTHbNoCiYyzaK2Ws8lABkTCcRSqCY1q4w==
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
