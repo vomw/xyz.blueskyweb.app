@@ -308,6 +308,7 @@ export function QuoteEmbed({
         <Embed
           embed={quote.embed}
           moderation={moderation}
+          viewContext={PostEmbedViewContext.FeedEmbedRecordWithMedia}
           isWithinQuote={parentIsWithinQuote ?? true}
           // already within quote? override nested
           allowNestedQuotes={

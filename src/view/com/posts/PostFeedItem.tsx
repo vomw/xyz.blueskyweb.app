@@ -359,7 +359,11 @@ let FeedItemInner = ({
             />
           )}
         </View>
-        <View style={styles.layoutContent}>
+        <View
+          style={[
+            styles.layoutContent,
+            !richText.text && styles.layoutContentNoText,
+          ]}>
           <PostMeta
             author={post.author}
             moderation={moderation}
@@ -492,7 +496,7 @@ let PostContent = ({
       ) : undefined}
       {record && <TranslatedPost hideTranslateLink post={post} />}
       {postEmbed ? (
-        <View style={[a.pb_xs]}>
+        <View style={[a.pb_xs, !richText.text && {marginTop: 6}]}>
           <Embed
             embed={postEmbed}
             moderation={moderation}
@@ -531,6 +535,9 @@ const styles = StyleSheet.create({
     position: 'relative',
     flex: 1,
     zIndex: 0,
+  },
+  layoutContentNoText: {
+    paddingTop: 10,
   },
   alert: {
     marginTop: 6,

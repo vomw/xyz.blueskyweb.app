@@ -1043,4 +1043,19 @@ export type Events = {
   'profile:associated:germ:click-self-info': {}
   'profile:associated:germ:self-disconnect': {}
   'profile:associated:germ:self-reconnect': {}
+
+  // Gallery carousel events
+  'post:gallery:swipe': {
+    fromIndex: number
+    toIndex: number
+    totalImages: number
+  }
+  'post:gallery:openLightbox': {
+    imageIndex: number
+    totalImages: number
+  }
+  'post:gallery:impression': {
+    totalImages: number
+    postUri: string
+  }
 }
