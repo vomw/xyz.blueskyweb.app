@@ -1,12 +1,16 @@
 name: Build Signed APK
 
 on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to build from'
-        required: true
-        default: 'main'
+    # inputs:
+    #   branch:
+    #     description: 'Branch to build from'
+    #     required: true
+    #     default: 'main'
 
 jobs:
   build:
