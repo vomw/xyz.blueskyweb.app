@@ -10,7 +10,7 @@ import {
 
 import {createPersistedQueryStorage} from '#/lib/persisted-query-storage'
 import {listenNetworkConfirmed, listenNetworkLost} from '#/state/events'
-import {isQueryPersisted} from '#/state/queries/util'
+import {PERSISTED_QUERY_ROOT} from '#/state/queries'
 import * as env from '#/env'
 import {IS_NATIVE, IS_WEB} from '#/env'
 
@@ -137,7 +137,8 @@ const dehydrateOptions: PersistQueryClientProviderProps['persistOptions']['dehyd
   {
     shouldDehydrateMutation: (_: any) => false,
     shouldDehydrateQuery: query => {
-      return isQueryPersisted(query.queryKey)
+      const root = String(query.queryKey[0])
+      return root === PERSISTED_QUERY_ROOT
     },
   }
 
@@ -189,10 +190,7 @@ function QueryProviderInner({
   })
   useEffect(() => {
     if (IS_WEB) {
-      // WARNING, BROKEN
-      // something since v5.32.0 causes OOMs. not important
-      // so disable for now
-      // window.__TANSTACK_QUERY_CLIENT__ = queryClient
+      window.__TANSTACK_QUERY_CLIENT__ = queryClient
     }
   }, [queryClient])
   return (

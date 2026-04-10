@@ -38,7 +38,6 @@ import {
   RQKEY,
   usePostFeedQuery,
 } from '#/state/queries/post-feed'
-import {truncateAndInvalidate} from '#/state/queries/util'
 import {useSession} from '#/state/session'
 import {useProgressGuide} from '#/state/shell/progress-guide'
 import {useSelectedFeed} from '#/state/shell/selected-feed'
@@ -701,22 +700,13 @@ let PostFeed = ({
     })
     setIsPTRing(true)
     try {
-      await truncateAndInvalidate(queryClient, RQKEY(feed, feedParams))
+      await refetch()
       onHasNew?.(false)
     } catch (err) {
       logger.error('Failed to refresh posts feed', {message: err})
     }
     setIsPTRing(false)
-  }, [
-    ax,
-    queryClient,
-    setIsPTRing,
-    onHasNew,
-    feed,
-    feedParams,
-    feedType,
-    enabled,
-  ])
+  }, [ax, refetch, setIsPTRing, onHasNew, feed, feedType, enabled])
 
   const onEndReached = useCallback(async () => {
     if (isFetching || !hasNextPage || isError) return

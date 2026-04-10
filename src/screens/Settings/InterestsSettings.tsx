@@ -19,9 +19,7 @@ import {
 } from '#/state/queries/preferences'
 import {type UsePreferencesQueryResponse} from '#/state/queries/preferences/types'
 import {createGetSuggestedFeedsQueryKey} from '#/state/queries/trending/useGetSuggestedFeedsQuery'
-import {createGetSuggestedUsersForDiscoverQueryKey} from '#/state/queries/trending/useGetSuggestedUsersForDiscoverQuery'
-import {createGetSuggestedUsersForExploreQueryKey} from '#/state/queries/trending/useGetSuggestedUsersForExploreQuery'
-import {createGetSuggestedUsersForSeeMoreQueryKey} from '#/state/queries/trending/useGetSuggestedUsersForSeeMoreQuery'
+import {createGetSuggestedUsersQueryKey} from '#/state/queries/trending/useGetSuggestedUsersQuery'
 import {createSuggestedStarterPacksQueryKey} from '#/state/queries/useSuggestedStarterPacksQuery'
 import {useAgent} from '#/state/session'
 import {atoms as a, useGutters, useTheme} from '#/alf'
@@ -122,15 +120,7 @@ function Inner({
         await Promise.all([
           qc.resetQueries({queryKey: createSuggestedStarterPacksQueryKey()}),
           qc.resetQueries({queryKey: createGetSuggestedFeedsQueryKey()}),
-          qc.resetQueries({
-            queryKey: createGetSuggestedUsersForDiscoverQueryKey({}),
-          }),
-          qc.resetQueries({
-            queryKey: createGetSuggestedUsersForExploreQueryKey({}),
-          }),
-          qc.resetQueries({
-            queryKey: createGetSuggestedUsersForSeeMoreQueryKey({}),
-          }),
+          qc.resetQueries({queryKey: createGetSuggestedUsersQueryKey({})}),
         ])
 
         Toast.show(

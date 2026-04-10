@@ -1,109 +1,166 @@
-import {useState} from 'react'
-import {View} from 'react-native'
-import {useSift} from '@bsky.app/sift'
+import {memo, useCallback, useState} from 'react'
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  type ViewStyle,
+} from 'react-native'
+import {useLingui} from '@lingui/react/macro'
 import {StackActions, useNavigation} from '@react-navigation/native'
 
+import {usePalette} from '#/lib/hooks/usePalette'
 import {type NavigationProp} from '#/lib/routes/types'
+import {useModerationOpts} from '#/state/preferences/moderation-opts'
+import {useActorAutocompleteQuery} from '#/state/queries/actor-autocomplete'
+import {Link} from '#/view/com/util/Link'
+import {Text} from '#/view/com/util/text/Text'
+import {SearchProfileCard} from '#/screens/Search/components/SearchProfileCard'
 import {atoms as a} from '#/alf'
-import {
-  Autocomplete as AutocompleteBase,
-  type AutocompleteItem,
-  useAutocomplete,
-} from '#/components/Autocomplete'
 import {SearchInput} from '#/components/forms/SearchInput'
 
-export function DesktopSearch() {
-  const navigation = useNavigation<NavigationProp>()
-  const [active, setActive] = useState(false)
-  const [query, setQuery] = useState<string>('')
-  const showResults = active && !!query.length
+let SearchLinkCard = ({
+  label,
+  to,
+  onPress,
+  style,
+}: {
+  label: string
+  to?: string
+  onPress?: () => void
+  style?: ViewStyle
+}): React.ReactNode => {
+  const pal = usePalette('default')
 
-  const sift = useSift({
-    offset: a.p_sm.padding,
-    placement: 'bottom',
-  })
+  const inner = (
+    <View
+      style={[pal.border, {paddingVertical: 16, paddingHorizontal: 12}, style]}>
+      <Text type="md" style={[pal.text]}>
+        {label}
+      </Text>
+    </View>
+  )
 
-  const onFocus = () => {
-    if (query.length) setActive(true)
-  }
-
-  const onChangeText = (text: string) => {
-    setQuery(text)
-    if (!active) {
-      setActive(true)
-    }
-  }
-
-  const onClearText = () => {
-    setQuery('')
-    setActive(false)
-  }
-
-  const onSubmit = () => {
-    if (!query.length) return
-    onClearText()
-    sift.elements.input.blur()
-    navigation.dispatch(StackActions.push('Search', {q: query}))
-  }
-
-  const onSelect = (item: AutocompleteItem) => {
-    if (item.type === 'profile') {
-      onClearText()
-      sift.elements.input.blur()
-      navigation.navigate('Profile', {name: item.profile.handle})
-    } else if (item.type === 'search') {
-      onClearText()
-      sift.elements.input.blur()
-      navigation.navigate('Search', {q: item.value})
-    }
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        accessibilityLabel={label}
+        accessibilityHint="">
+        {inner}
+      </TouchableOpacity>
+    )
   }
 
   return (
-    <View collapsable={false} ref={sift.refs.setAnchor}>
+    <Link href={to} asAnchor anchorNoUnderline>
+      <View
+        style={[
+          pal.border,
+          {paddingVertical: 16, paddingHorizontal: 12},
+          style,
+        ]}>
+        <Text type="md" style={[pal.text]}>
+          {label}
+        </Text>
+      </View>
+    </Link>
+  )
+}
+SearchLinkCard = memo(SearchLinkCard)
+export {SearchLinkCard}
+
+export function DesktopSearch() {
+  const {t: l} = useLingui()
+  const pal = usePalette('default')
+  const navigation = useNavigation<NavigationProp>()
+  const [isActive, setIsActive] = useState<boolean>(false)
+  const [query, setQuery] = useState<string>('')
+  const {data: autocompleteData, isFetching} = useActorAutocompleteQuery(
+    query,
+    true,
+  )
+
+  const moderationOpts = useModerationOpts()
+
+  const onChangeText = useCallback((text: string) => {
+    setQuery(text)
+    setIsActive(text.length > 0)
+  }, [])
+
+  const onPressCancelSearch = useCallback(() => {
+    setQuery('')
+    setIsActive(false)
+  }, [setQuery])
+
+  const onSubmit = useCallback(() => {
+    setIsActive(false)
+    if (!query.length) return
+    navigation.dispatch(StackActions.push('Search', {q: query}))
+  }, [query, navigation])
+
+  const onSearchProfileCardPress = useCallback(() => {
+    setQuery('')
+    setIsActive(false)
+  }, [])
+
+  return (
+    <View style={[styles.container, pal.view]}>
       <SearchInput
-        hotkey
         value={query}
-        onFocus={onFocus}
         onChangeText={onChangeText}
-        onClearText={onClearText}
+        onClearText={onPressCancelSearch}
         onSubmitEditing={onSubmit}
-        {...sift.targetProps}
       />
-      {showResults && (
-        <Inner
-          query={query}
-          sift={sift}
-          onSelect={onSelect}
-          onDismiss={() => setActive(false)}
-        />
+      {query !== '' && isActive && moderationOpts && (
+        <View
+          style={[
+            pal.view,
+            pal.borderDark,
+            styles.resultsContainer,
+            a.overflow_hidden,
+          ]}>
+          {isFetching && !autocompleteData?.length ? (
+            <View style={{padding: 8}}>
+              <ActivityIndicator />
+            </View>
+          ) : (
+            <>
+              <SearchLinkCard
+                label={l`Search for "${query}"`}
+                to={`/search?q=${encodeURIComponent(query)}`}
+                style={
+                  (autocompleteData?.length ?? 0) > 0
+                    ? {borderBottomWidth: 1}
+                    : undefined
+                }
+              />
+              {autocompleteData?.map(item => (
+                <SearchProfileCard
+                  key={item.did}
+                  profile={item}
+                  moderationOpts={moderationOpts}
+                  onPress={onSearchProfileCardPress}
+                />
+              ))}
+            </>
+          )}
+        </View>
       )}
     </View>
   )
 }
 
-function Inner({
-  query,
-  sift,
-  onSelect,
-  onDismiss,
-}: {
-  query: string
-  sift: ReturnType<typeof useSift>
-  onSelect: (item: AutocompleteItem) => void
-  onDismiss: () => void
-}) {
-  const {items} = useAutocomplete({
-    type: 'profile',
-    query,
-    showSearchFallback: true,
-  })
-
-  return items && items.length ? (
-    <AutocompleteBase
-      sift={sift}
-      data={items}
-      onSelect={onSelect}
-      onDismiss={onDismiss}
-    />
-  ) : null
-}
+const styles = StyleSheet.create({
+  container: {
+    position: 'relative',
+    width: '100%',
+  },
+  resultsContainer: {
+    marginTop: 10,
+    flexDirection: 'column',
+    width: '100%',
+    borderWidth: 1,
+    borderRadius: 6,
+  },
+})

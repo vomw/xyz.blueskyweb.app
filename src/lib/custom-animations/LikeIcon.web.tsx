@@ -2,6 +2,7 @@ import {useEffect, useRef} from 'react'
 import {View} from 'react-native'
 import {useReducedMotion} from 'react-native-reanimated'
 
+import {s} from '#/lib/styles'
 import {useTheme} from '#/alf'
 import {
   Heart2_Filled_Stroke2_Corner0_Rounded as HeartIconFilled,
@@ -73,7 +74,7 @@ export function AnimatedLikeIcon({
       {isLiked ? (
         // @ts-expect-error is div
         <View ref={likeIconRef}>
-          <HeartIconFilled style={{color: t.palette.pink}} width={size} />
+          <HeartIconFilled style={s.likeColor} width={size} />
         </View>
       ) : (
         <HeartIconOutline
@@ -86,7 +87,7 @@ export function AnimatedLikeIcon({
         ref={circle1Ref}
         style={{
           position: 'absolute',
-          backgroundColor: t.palette.pink,
+          backgroundColor: s.likeColor.color,
           top: 0,
           left: 0,
           width: size,

@@ -7,11 +7,9 @@ import {useLingui} from '@lingui/react/macro'
 import {useFocusEffect} from '@react-navigation/native'
 
 import {useGoogleTranslate} from '#/lib/hooks/useGoogleTranslate'
-import {codeToLanguageName} from '#/locale/helpers'
 import {logger} from '#/logger'
-import {useLanguagePrefs} from '#/state/preferences'
 import {useAnalytics} from '#/analytics'
-import {IS_ANDROID, IS_IOS, IS_TRANSLATION_SUPPORTED} from '#/env'
+import {HAS_ON_DEVICE_TRANSLATION, IS_ANDROID, IS_IOS} from '#/env'
 import {Context} from './context'
 import {
   type ContextType,
@@ -23,11 +21,6 @@ import {guessLanguage} from './utils'
 
 export * from './types'
 export * from './utils'
-
-const E_SAME_AS_SOURCE_LANGUAGE =
-  'Translation result is the same as the source text.'
-const E_EMPTY_RESULT = 'Translation result is empty.'
-const E_INVALID_SOURCE_LANGUAGE = 'Invalid source language'
 
 /**
  * Attempts on-device translation via @bsky.app/expo-translate-text.
@@ -84,11 +77,11 @@ async function attemptTranslation(
     typeof result.translatedTexts === 'string' ? result.translatedTexts : ''
 
   if (translatedText === input) {
-    throw new Error(E_SAME_AS_SOURCE_LANGUAGE)
+    throw new Error('Translation result is the same as the source text.')
   }
 
   if (translatedText === '') {
-    throw new Error(E_EMPTY_RESULT)
+    throw new Error('Translation result is empty.')
   }
 
   return {
@@ -163,7 +156,6 @@ export function Provider({children}: React.PropsWithChildren<unknown>) {
   >({})
   const [refCounts, setRefCounts] = useState<Record<string, number>>({})
   const ax = useAnalytics()
-  const langPrefs = useLanguagePrefs()
   const {t: l} = useLingui()
   const googleTranslate = useGoogleTranslate()
 
@@ -240,7 +232,7 @@ export function Provider({children}: React.PropsWithChildren<unknown>) {
         googleTranslate: shouldForceGoogleTranslate,
       })
 
-      if (shouldForceGoogleTranslate || !IS_TRANSLATION_SUPPORTED) {
+      if (shouldForceGoogleTranslate || !HAS_ON_DEVICE_TRANSLATION) {
         await googleTranslate(
           text,
           expectedTargetLanguage,
@@ -285,8 +277,7 @@ export function Provider({children}: React.PropsWithChildren<unknown>) {
             postLanguages: possibleSourceLanguages,
           },
         }))
-      } catch (err) {
-        const e = err as Error
+      } catch (e) {
         logger.error('Failed to translate text on device', {safeMessage: e})
         // On-device translation failed (language pack missing or user
         // dismissed the download prompt).
@@ -301,21 +292,6 @@ export function Provider({children}: React.PropsWithChildren<unknown>) {
           textLength: text.length,
         })
         let errorMessage = l`Device failed to translate :(`
-        if (e.message === E_SAME_AS_SOURCE_LANGUAGE) {
-          errorMessage = l`Translation to the same language is unavailable on your device.`
-        }
-        if (e.message === E_EMPTY_RESULT) {
-          errorMessage = l`No translation received from your device.`
-        }
-        if (
-          expectedSourceLanguage &&
-          e.message.includes(E_INVALID_SOURCE_LANGUAGE)
-        ) {
-          errorMessage = l`${codeToLanguageName(
-            expectedSourceLanguage,
-            langPrefs.appLanguage,
-          )} is not supported by your device.`
-        }
         if (!IS_ANDROID) {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
         }
@@ -325,7 +301,7 @@ export function Provider({children}: React.PropsWithChildren<unknown>) {
         }))
       }
     },
-    [ax, googleTranslate, l, langPrefs.appLanguage],
+    [ax, googleTranslate, l],
   )
 
   const ctx = useMemo(

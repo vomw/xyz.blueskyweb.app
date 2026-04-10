@@ -1,14 +1,16 @@
 import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {TextInput, View, type ViewToken} from 'react-native'
 import {type ModerationOpts} from '@atproto/api'
-import {Trans, useLingui} from '@lingui/react/macro'
+import {msg} from '@lingui/core/macro'
+import {useLingui} from '@lingui/react'
+import {Trans} from '@lingui/react/macro'
 
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
 import {popularInterests, useInterestsDisplayNames} from '#/lib/interests'
 import {useModerationOpts} from '#/state/preferences/moderation-opts'
 import {useActorSearch} from '#/state/queries/actor-search'
 import {usePreferencesQuery} from '#/state/queries/preferences'
-import {useGetSuggestedUsersForSeeMoreQuery} from '#/state/queries/trending/useGetSuggestedUsersForSeeMoreQuery'
+import {useGetSuggestedUsersQuery} from '#/state/queries/trending/useGetSuggestedUsersQuery'
 import {useSession} from '#/state/session'
 import {type Follow10ProgressGuide} from '#/state/shell/progress-guide'
 import {type ListMethods} from '#/view/com/util/List'
@@ -62,14 +64,14 @@ export function FollowDialog({
   showArrow?: boolean
 }) {
   const ax = useAnalytics()
-  const {t: l} = useLingui()
+  const {_} = useLingui()
   const control = Dialog.useDialogControl()
   const {gtPhone} = useBreakpoints()
 
   return (
     <>
       <Button
-        label={l`Find people to follow`}
+        label={_(msg`Find people to follow`)}
         onPress={() => {
           control.open()
           ax.metric('progressGuide:followDialog:open', {})
@@ -110,7 +112,7 @@ let lastSelectedInterest = ''
 let lastSearchText = ''
 
 function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
-  const {t: l} = useLingui()
+  const {_} = useLingui()
   const ax = useAnalytics()
   const interestsDisplayNames = useInterestsDisplayNames()
   const {data: preferences} = usePreferencesQuery()
@@ -141,7 +143,7 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
     data: suggestions,
     isFetching: isFetchingSuggestions,
     error: suggestionsError,
-  } = useGetSuggestedUsersForSeeMoreQuery({
+  } = useGetSuggestedUsersQuery({
     category: selectedInterest,
     limit: 50,
   })
@@ -180,7 +182,7 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
       _items.push({
         type: 'empty',
         key: 'empty',
-        message: l`We're having network issues, try again`,
+        message: _(msg`We're having network issues, try again`),
       })
     } else {
       const seen = new Set<string>()
@@ -206,12 +208,12 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
       !_items.length &&
       !isSearchResultsError
     ) {
-      _items.push({type: 'empty', key: 'empty', message: l`No results`})
+      _items.push({type: 'empty', key: 'empty', message: _(msg`No results`)})
     }
 
     return _items
   }, [
-    l,
+    _,
     suggestions,
     suggestionsError,
     isFetchingSuggestions,
@@ -224,9 +226,6 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
     isSearchResultsError,
   ])
 
-  const isGuide = Boolean(guide)
-  const recIdForLogging = hasSearchText ? undefined : suggestions?.recId
-
   const renderItems = useCallback(
     ({item, index}: {item: Item; index: number}) => {
       switch (item.type) {
@@ -236,9 +235,6 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
               profile={item.profile}
               moderationOpts={moderationOpts!}
               noBorder={index === 0}
-              position={index}
-              recId={recIdForLogging}
-              isGuide={isGuide}
             />
           )
         }
@@ -252,7 +248,7 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
           return null
       }
     },
-    [moderationOpts, recIdForLogging, isGuide],
+    [moderationOpts],
   )
 
   // Track seen profiles
@@ -273,8 +269,8 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
               i => i.type === 'profile' && i.profile.did === item.profile.did,
             )
             ax.metric('suggestedUser:seen', {
-              logContext: isGuide ? 'ProgressGuide' : 'SeeMoreSuggestedUsers',
-              recId: recIdForLogging,
+              logContext: 'ProgressGuide',
+              recId: hasSearchText ? undefined : suggestions?.recId,
               position: position !== -1 ? position : 0,
               suggestedDid: item.profile.did,
               category: selectedInterestRef.current,
@@ -408,7 +404,7 @@ let Header = ({
 Header = memo(Header)
 
 function HeaderTop({guide}: {guide?: Follow10ProgressGuide}) {
-  const {t: l} = useLingui()
+  const {_} = useLingui()
   const t = useTheme()
   const control = Dialog.useDialogContext()
   return (
@@ -442,7 +438,7 @@ function HeaderTop({guide}: {guide?: Follow10ProgressGuide}) {
       )}
       {IS_WEB ? (
         <Button
-          label={l`Close`}
+          label={_(msg`Close`)}
           size="small"
           shape="round"
           variant={IS_WEB ? 'ghost' : 'solid'}
@@ -478,18 +474,22 @@ let Tab = ({
   onLayout: (index: number, x: number, width: number) => void
 }): React.ReactNode => {
   const t = useTheme()
-  const {t: l} = useLingui()
+  const {_} = useLingui()
   const label = active
-    ? l({
-        message: `Search for "${interestsDisplayName}" (active)`,
-        comment:
-          'Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.',
-      })
-    : l({
-        message: `Search for "${interestsDisplayName}"`,
-        comment:
-          'Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.',
-      })
+    ? _(
+        msg({
+          message: `Search for "${interestsDisplayName}" (active)`,
+          comment:
+            'Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is currently selected.',
+        }),
+      )
+    : _(
+        msg({
+          message: `Search for "${interestsDisplayName}"`,
+          comment:
+            'Accessibility label for a tab that searches for accounts in a category (e.g. Art, Video Games, Sports, etc.) that are suggested for the user to follow. The tab is not currently active and can be selected.',
+        }),
+      )
   return (
     <View
       key={interest}
@@ -532,25 +532,16 @@ let FollowProfileCard = ({
   profile,
   moderationOpts,
   noBorder,
-  position,
-  recId,
-  isGuide,
 }: {
   profile: bsky.profile.AnyProfileView
   moderationOpts: ModerationOpts
   noBorder?: boolean
-  position: number
-  recId?: string
-  isGuide: boolean
 }): React.ReactNode => {
   return (
     <FollowProfileCardInner
       profile={profile}
       moderationOpts={moderationOpts}
       noBorder={noBorder}
-      position={position}
-      recId={recId}
-      isGuide={isGuide}
     />
   )
 }
@@ -561,21 +552,14 @@ function FollowProfileCardInner({
   moderationOpts,
   onFollow,
   noBorder,
-  position,
-  recId,
-  isGuide,
 }: {
   profile: bsky.profile.AnyProfileView
   moderationOpts: ModerationOpts
   onFollow?: () => void
   noBorder?: boolean
-  position: number
-  recId?: string
-  isGuide: boolean
 }) {
   const control = Dialog.useDialogContext()
   const t = useTheme()
-  const ax = useAnalytics()
   return (
     <ProfileCard.Link
       profile={profile}
@@ -604,19 +588,7 @@ function FollowProfileCardInner({
                 moderationOpts={moderationOpts}
                 logContext="PostOnboardingFindFollows"
                 shape="round"
-                onPress={() => {
-                  ax.metric('suggestedUser:follow', {
-                    logContext: isGuide
-                      ? 'ProgressGuide'
-                      : 'SeeMoreSuggestedUsers',
-                    location: 'Card',
-                    recId,
-                    position,
-                    suggestedDid: profile.did,
-                    category: null,
-                  })
-                  onFollow?.()
-                }}
+                onPress={onFollow}
                 colorInverted
               />
             </ProfileCard.Header>
@@ -660,7 +632,7 @@ function SearchInput({
   defaultValue: string
 }) {
   const t = useTheme()
-  const {t: l} = useLingui()
+  const {_} = useLingui()
   const {
     state: hovered,
     onIn: onMouseEnter,
@@ -680,9 +652,10 @@ function SearchInput({
         size="md"
         fill={interacted ? t.palette.primary_500 : t.palette.contrast_300}
       />
+
       <TextInput
         ref={inputRef}
-        placeholder={l`Search by name or interest`}
+        placeholder={_(msg`Search by name or interest`)}
         defaultValue={defaultValue}
         onChangeText={onChangeText}
         onFocus={onFocus}
@@ -701,8 +674,8 @@ function SearchInput({
         autoCorrect={false}
         autoComplete="off"
         autoCapitalize="none"
-        accessibilityLabel={l`Search profiles`}
-        accessibilityHint={l`Searches for profiles`}
+        accessibilityLabel={_(msg`Search profiles`)}
+        accessibilityHint={_(msg`Searches for profiles`)}
       />
     </View>
   )

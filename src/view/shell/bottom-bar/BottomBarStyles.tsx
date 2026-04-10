@@ -1,5 +1,6 @@
 import {StyleSheet} from 'react-native'
 
+import {colors} from '#/lib/styles'
 import {atoms as a} from '#/alf'
 
 export const styles = StyleSheet.create({
@@ -23,9 +24,8 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     left: '52%',
     top: 8,
-    paddingHorizontal: 5,
-    paddingTop: 1,
-    paddingBottom: 2,
+    paddingHorizontal: 4,
+    paddingBottom: 1,
     borderRadius: 6,
     zIndex: 1,
   },
@@ -37,9 +37,8 @@ export const styles = StyleSheet.create({
   notificationCountLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: 'white',
+    color: colors.white,
     fontVariant: ['tabular-nums'],
-    includeFontPadding: false,
   },
   hasNewBadge: {
     position: 'absolute',
@@ -48,7 +47,8 @@ export const styles = StyleSheet.create({
     top: 10,
     width: 8,
     height: 8,
-    borderRadius: 4,
+    backgroundColor: colors.blue3,
+    borderRadius: 6,
     zIndex: 1,
   },
   ctrlIcon: {

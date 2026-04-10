@@ -272,7 +272,7 @@ let NotificationFeedItem = ({
     <HeartIconFilled
       size="xl"
       style={[
-        {color: t.palette.pink},
+        s.likeColor,
         // {position: 'relative', top: -4}
       ]}
     />

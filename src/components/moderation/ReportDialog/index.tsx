@@ -184,7 +184,7 @@ function Inner(props: ReportDialogProps) {
         )
       })
   }, [
-    props.subject,
+    props,
     allLabelers,
     state.selectedOption,
     isBskyOnlyReason,
@@ -241,17 +241,7 @@ function Inner(props: ReportDialogProps) {
     } finally {
       setPending(false)
     }
-  }, [
-    _,
-    submitReport,
-    state,
-    dispatch,
-    props.subject,
-    props.control,
-    props.onAfterSubmit,
-    setPending,
-    setSuccess,
-  ])
+  }, [_, submitReport, state, dispatch, props, setPending, setSuccess])
 
   useCallOnce(() => {
     ax.metric('reportDialog:open', {

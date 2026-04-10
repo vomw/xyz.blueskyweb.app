@@ -3,7 +3,6 @@ const BANNED_IMPORTS = [
   '@fortawesome/free-solid-svg-icons',
 ]
 
-/** @type {import('eslint').Rule.RuleModule} */
 module.exports = {
   meta: {
     type: 'suggestion',

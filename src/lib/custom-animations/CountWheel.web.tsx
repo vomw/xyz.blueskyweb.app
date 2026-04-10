@@ -3,6 +3,10 @@ import {View} from 'react-native'
 import {useReducedMotion} from 'react-native-reanimated'
 
 import {decideShouldRoll} from '#/lib/custom-animations/util'
+import {s} from '#/lib/styles'
+import {Text} from '#/view/com/util/text/Text'
+import {atoms as a, useTheme} from '#/alf'
+import {useFormatPostStatCount} from '#/components/PostControls/util'
 
 const animationConfig = {
   duration: 400,
@@ -31,46 +35,50 @@ const exitingDownKeyframe = [
 ]
 
 export function CountWheel({
-  count,
-  isToggled,
+  likeCount,
+  big,
+  isLiked,
   hasBeenToggled,
-  renderCount,
 }: {
-  count: number
-  isToggled: boolean
+  likeCount: number
+  big?: boolean
+  isLiked: boolean
   hasBeenToggled: boolean
-  renderCount: (props: {count: number}) => React.ReactNode
 }) {
+  const t = useTheme()
   const shouldAnimate = !useReducedMotion() && hasBeenToggled
-  const shouldRoll = decideShouldRoll(isToggled, count)
+  const shouldRoll = decideShouldRoll(isLiked, likeCount)
 
   const countView = useRef<HTMLDivElement>(null)
   const prevCountView = useRef<HTMLDivElement>(null)
 
-  const [prevCount, setPrevCount] = useState(count)
-  const prevIsToggled = useRef(isToggled)
+  const [prevCount, setPrevCount] = useState(likeCount)
+  const prevIsLiked = useRef(isLiked)
+  const formatPostStatCount = useFormatPostStatCount()
+  const formattedCount = formatPostStatCount(likeCount)
+  const formattedPrevCount = formatPostStatCount(prevCount)
 
   useEffect(() => {
-    if (isToggled === prevIsToggled.current) {
+    if (isLiked === prevIsLiked.current) {
       return
     }
 
-    const newPrevCount = isToggled ? count - 1 : count + 1
+    const newPrevCount = isLiked ? likeCount - 1 : likeCount + 1
     if (shouldAnimate && shouldRoll) {
       countView.current?.animate?.(
-        isToggled ? enteringUpKeyframe : enteringDownKeyframe,
+        isLiked ? enteringUpKeyframe : enteringDownKeyframe,
         animationConfig,
       )
       prevCountView.current?.animate?.(
-        isToggled ? exitingUpKeyframe : exitingDownKeyframe,
+        isLiked ? exitingUpKeyframe : exitingDownKeyframe,
         animationConfig,
       )
       setPrevCount(newPrevCount)
     }
-    prevIsToggled.current = isToggled
-  }, [isToggled, count, shouldAnimate, shouldRoll])
+    prevIsLiked.current = isLiked
+  }, [isLiked, likeCount, shouldAnimate, shouldRoll])
 
-  if (count < 1) {
+  if (likeCount < 1) {
     return null
   }
 
@@ -79,15 +87,34 @@ export function CountWheel({
       <View
         // @ts-expect-error is div
         ref={countView}>
-        {renderCount({count})}
+        <Text
+          testID="likeCount"
+          style={[
+            big ? a.text_md : a.text_sm,
+            a.user_select_none,
+            isLiked
+              ? [a.font_semi_bold, s.likeColor]
+              : {color: t.palette.contrast_500},
+          ]}>
+          {formattedCount}
+        </Text>
       </View>
-      {shouldAnimate && (count > 1 || !isToggled) ? (
+      {shouldAnimate && (likeCount > 1 || !isLiked) ? (
         <View
           style={{position: 'absolute', opacity: 0}}
           aria-disabled={true}
           // @ts-expect-error is div
           ref={prevCountView}>
-          {renderCount({count: prevCount})}
+          <Text
+            style={[
+              big ? a.text_md : a.text_sm,
+              a.user_select_none,
+              isLiked
+                ? [a.font_semi_bold, s.likeColor]
+                : {color: t.palette.contrast_500},
+            ]}>
+            {formattedPrevCount}
+          </Text>
         </View>
       ) : null}
     </View>

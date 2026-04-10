@@ -161,9 +161,7 @@ export function SettingsScreen({}: Props) {
                           p => p.did === account.did,
                         )}
                         pendingDid={pendingDid}
-                        onPressSwitchAccount={(account, logContext) =>
-                          void onPressSwitchAccount(account, logContext)
-                        }
+                        onPressSwitchAccount={onPressSwitchAccount}
                       />
                     ))}
                   <AddAccountRow />
@@ -247,7 +245,7 @@ export function SettingsScreen({}: Props) {
             </SettingsList.ItemText>
           </SettingsList.LinkItem>
           <SettingsList.PressableItem
-            onPress={() => void Linking.openURL(HELP_DESK_URL)}
+            onPress={() => Linking.openURL(HELP_DESK_URL)}
             label={_(msg`Help`)}
             accessibilityHint={_(msg`Opens helpdesk in browser`)}>
             <SettingsList.ItemIcon icon={CircleQuestionIcon} />
@@ -394,7 +392,7 @@ function DevOptions() {
   } = useApplyPullRequestOTAUpdate()
   const [actyNotifNudged, setActyNotifNudged] = useActivitySubscriptionsNudged()
 
-  const resetOnboarding = () => {
+  const resetOnboarding = async () => {
     navigation.navigate('Home')
     onboardingDispatch({type: 'start'})
     Toast.show(_(msg`Onboarding reset`))
@@ -409,7 +407,7 @@ function DevOptions() {
     const lastEmailConfirm = new Date()
     // wind back 3 days
     lastEmailConfirm.setDate(lastEmailConfirm.getDate() - 3)
-    void persisted.write('reminders', {
+    persisted.write('reminders', {
       ...persisted.get('reminders'),
       lastEmailConfirm: lastEmailConfirm.toISOString(),
     })
@@ -433,7 +431,7 @@ function DevOptions() {
           style: 'default',
           text: 'Apply',
           onPress: (channel?: string) => {
-            void tryApplyUpdate(channel ?? '')
+            tryApplyUpdate(channel ?? '')
           },
         },
       ],
@@ -475,7 +473,7 @@ function DevOptions() {
         </SettingsList.ItemText>
       </SettingsList.PressableItem>
       <SettingsList.PressableItem
-        onPress={() => void resetOnboarding()}
+        onPress={() => resetOnboarding()}
         label={_(msg`Reset onboarding state`)}>
         <SettingsList.ItemText>
           <Trans>Reset onboarding state</Trans>
@@ -498,7 +496,7 @@ function DevOptions() {
         </SettingsList.PressableItem>
       )}
       <SettingsList.PressableItem
-        onPress={() => void clearAllStorage()}
+        onPress={() => clearAllStorage()}
         label={_(msg`Clear all storage data`)}>
         <SettingsList.ItemText>
           <Trans>Clear all storage data (restart after this)</Trans>
@@ -515,7 +513,7 @@ function DevOptions() {
       ) : null}
       {IS_NATIVE && isCurrentlyRunningPullRequestDeployment ? (
         <SettingsList.PressableItem
-          onPress={() => void revertToEmbedded()}
+          onPress={revertToEmbedded}
           label={_(msg`Unapply Pull Request`)}>
           <SettingsList.ItemText>
             <Trans>Unapply Pull Request {currentChannel}</Trans>
@@ -545,7 +543,7 @@ function DevOptions() {
           <Button
             onPress={() => {
               device.set([PolicyUpdate202508], false)
-              void agent.bskyAppRemoveNuxs([PolicyUpdate202508])
+              agent.bskyAppRemoveNuxs([PolicyUpdate202508])
               Toast.show(`Done`, {
                 type: 'info',
               })

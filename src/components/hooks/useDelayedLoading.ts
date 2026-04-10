@@ -1,14 +1,15 @@
 import {useEffect, useState} from 'react'
 
-export function useDelayedLoading(delay: number, isActuallyLoading: boolean) {
-  const [isDelayActive, setIsDelayActive] = useState(isActuallyLoading)
+export function useDelayedLoading(delay: number, initialState: boolean = true) {
+  const [isLoading, setIsLoading] = useState(initialState)
 
   useEffect(() => {
-    if (!isDelayActive) return
+    let timeout: NodeJS.Timeout
+    // on initial load, show a loading spinner for a hot sec to prevent flash
+    if (isLoading) timeout = setTimeout(() => setIsLoading(false), delay)
 
-    const timeout = setTimeout(() => setIsDelayActive(false), delay)
-    return () => clearTimeout(timeout)
-  }, [isDelayActive, delay])
+    return () => timeout && clearTimeout(timeout)
+  }, [isLoading, delay])
 
-  return isDelayActive || isActuallyLoading
+  return isLoading
 }

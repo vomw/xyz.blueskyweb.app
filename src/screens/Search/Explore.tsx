@@ -28,10 +28,7 @@ import {
   createGetSuggestedFeedsQueryKey,
   useGetSuggestedFeedsQuery,
 } from '#/state/queries/trending/useGetSuggestedFeedsQuery'
-import {
-  getSuggestedUsersForExploreQueryKeyRoot,
-  useGetSuggestedUsersForExploreQuery,
-} from '#/state/queries/trending/useGetSuggestedUsersForExploreQuery'
+import {getSuggestedUsersQueryKeyRoot} from '#/state/queries/trending/useGetSuggestedUsersQuery'
 import {createGetTrendsQueryKey} from '#/state/queries/trending/useGetTrendsQuery'
 import {
   createSuggestedStarterPacksQueryKey,
@@ -51,6 +48,7 @@ import {ExploreInterestsCard} from '#/screens/Search/modules/ExploreInterestsCar
 import {ExploreRecommendations} from '#/screens/Search/modules/ExploreRecommendations'
 import {ExploreTrendingTopics} from '#/screens/Search/modules/ExploreTrendingTopics'
 import {ExploreTrendingVideos} from '#/screens/Search/modules/ExploreTrendingVideos'
+import {useSuggestedUsers} from '#/screens/Search/util/useSuggestedUsers'
 import {atoms as a, native, platform, useTheme} from '#/alf'
 import {Admonition} from '#/components/Admonition'
 import {Button} from '#/components/Button'
@@ -244,8 +242,9 @@ export function Explore({
     isLoading: suggestedUsersIsLoading,
     error: suggestedUsersError,
     isRefetching: suggestedUsersIsRefetching,
-  } = useGetSuggestedUsersForExploreQuery({
+  } = useSuggestedUsers({
     category: selectedInterest || (useFullExperience ? null : interests[0]),
+    search: !useFullExperience,
   })
   /* End special language handling */
 
@@ -317,7 +316,7 @@ export function Explore({
         queryKey: createSuggestedStarterPacksQueryKey(),
       }),
       qc.resetQueries({
-        queryKey: [getSuggestedUsersForExploreQueryKeyRoot],
+        queryKey: [getSuggestedUsersQueryKeyRoot],
       }),
       qc.resetQueries({
         queryKey: [useActorSearchQueryKeyRoot],

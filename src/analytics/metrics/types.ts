@@ -480,12 +480,10 @@ export type Events = {
   'suggestedUser:follow': {
     logContext:
       | 'Explore'
-      | 'DiscoverInterstitial'
-      | 'ProfileInterstitial'
-      | 'ProfileHeader'
+      | 'InterstitialDiscover'
+      | 'InterstitialProfile'
+      | 'Profile'
       | 'Onboarding'
-      | 'SeeMoreSuggestedUsers'
-      | 'ProgressGuide'
     location: 'Card' | 'Profile' | 'FollowAll'
     recId?: number | string
     position: number
@@ -495,11 +493,9 @@ export type Events = {
   'suggestedUser:press': {
     logContext:
       | 'Explore'
-      | 'DiscoverInterstitial'
-      | 'ProfileInterstitial'
-      | 'ProfileHeader'
+      | 'InterstitialDiscover'
+      | 'InterstitialProfile'
       | 'Onboarding'
-      | 'SeeMoreSuggestedUsers'
     recId?: number | string
     position: number
     suggestedDid: string
@@ -508,11 +504,10 @@ export type Events = {
   'suggestedUser:seen': {
     logContext:
       | 'Explore'
-      | 'DiscoverInterstitial'
-      | 'ProfileInterstitial'
-      | 'ProfileHeader'
+      | 'InterstitialDiscover'
+      | 'InterstitialProfile'
+      | 'Profile'
       | 'Onboarding'
-      | 'SeeMoreSuggestedUsers'
       | 'ProgressGuide'
     recId?: number | string
     position: number
@@ -522,14 +517,14 @@ export type Events = {
   'suggestedUser:seeMore': {
     logContext:
       | 'Explore'
-      | 'DiscoverInterstitial'
-      | 'ProfileInterstitial'
-      | 'ProfileHeader'
+      | 'InterstitialDiscover'
+      | 'InterstitialProfile'
+      | 'Profile'
       | 'Onboarding'
     recId?: number | string
   }
   'suggestedUser:dismiss': {
-    logContext: 'DiscoverInterstitial' | 'ProfileInterstitial' | 'ProfileHeader'
+    logContext: 'InterstitialDiscover' | 'InterstitialProfile'
     recId?: number | string
     position: number
     suggestedDid: string
