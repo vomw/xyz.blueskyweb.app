@@ -57,6 +57,7 @@ module.exports = function (_config) {
       primaryColor: '#1083fe',
       newArchEnabled: false,
       ios: {
+        buildNumber: process.env.BSKY_IOS_BUILD_NUMBER || '1',
         supportsTablet: false,
         bundleIdentifier: 'xyz.blueskyweb.app',
         config: {
@@ -184,6 +185,7 @@ module.exports = function (_config) {
         barStyle: 'light-content',
       },
       android: {
+        versionCode: parseInt(process.env.BSKY_ANDROID_VERSION_CODE || '1', 10),
         icon: './assets/app-icons/android_icon_default_next.png',
         adaptiveIcon: {
           foregroundImage: './assets/icon-android-foreground.png',

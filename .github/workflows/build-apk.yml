@@ -6,11 +6,15 @@ on:
   pull_request:
     branches: [ '*' ]
   workflow_dispatch:
-    # inputs:
-    #   branch:
-    #     description: 'Branch to build from'
-    #     required: true
-    #     default: 'main'
+    inputs:
+      branch:
+        description: 'Branch to build from'
+        required: true
+        default: 'main'
+      version_code:
+        description: 'Android Version Code (integer)'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -49,10 +53,15 @@ jobs:
 
       - name: 🏗️ Generate Android Project
         run: npx expo prebuild --platform android --non-interactive
+        env:
+          BSKY_ANDROID_VERSION_CODE: ${{ github.event.inputs.version_code || github.run_number }}
+          BSKY_IOS_BUILD_NUMBER: ${{ github.run_number }}
 
       - name: 🔨 Build Release APK
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
+        env:
+          BSKY_ANDROID_VERSION_CODE: ${{ github.event.inputs.version_code || github.run_number }}
 
       - name: ✍️ Sign APK
         id: sign_app
