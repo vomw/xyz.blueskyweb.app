@@ -1,0 +1,64 @@
+name: Build Signed APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build from'
+        required: true
+        default: 'main'
+
+jobs:
+  build:
+    name: Build Signed Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: 🔧 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🔨 Setup EAS
+        uses: expo/expo-github-action@main
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: ⛏️ Setup EAS local builds
+        run: yarn global add eas-cli-local-build-plugin
+
+      - name: ⚙️ Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: 🔤 Compile translations
+        run: yarn intl:build
+
+      - name: 🛠️ Create dummy google-services.json
+        run: |
+          if [ ! -f google-services.json ]; then
+            echo '{"project_info":{"project_number":"0","project_id":"dummy","storage_bucket":"dummy.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:0:android:0","android_client_info":{"package_name":"xyz.blueskyweb.app"}},"api_key":[{"current_key":"dummy"}],"services":{"appinvite_service":{"status":1,"other_platform_id":[]}}}]}' > google-services.json
+          fi
+
+      - name: 🏗️ Build APK
+        run: |
+          eas build -p android --profile production-apk --local --output ./bluesky.apk --non-interactive
+
+      - name: 🚀 Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bluesky-signed-apk
+          path: ./bluesky.apk
+          retention-days: 1
