@@ -1,4 +1,4 @@
-name: Build Signed APK
+name: Build Signed APK (No Expo Cloud)
 
 on:
   push:
@@ -33,16 +33,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-
-      - name: 🔨 Setup EAS
-        uses: expo/expo-github-action@main
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: ⛏️ Setup EAS local builds
-        run: yarn global add eas-cli-local-build-plugin
+          cache: 'gradle'
 
       - name: ⚙️ Install dependencies
         run: yarn install --frozen-lockfile
@@ -56,13 +47,35 @@ jobs:
             echo '{"project_info":{"project_number":"0","project_id":"dummy","storage_bucket":"dummy.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:0:android:0","android_client_info":{"package_name":"xyz.blueskyweb.app"}},"api_key":[{"current_key":"dummy"}],"services":{"appinvite_service":{"status":1,"other_platform_id":[]}}}]}' > google-services.json
           fi
 
-      - name: 🏗️ Build APK
-        run: |
-          eas build -p android --profile production-apk --local --output ./bluesky.apk --non-interactive
+      - name: 🏗️ Generate Android Project
+        run: npx expo prebuild --platform android --non-interactive
 
-      - name: 🚀 Upload Artifact
+      - name: 🔨 Build Release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: ✍️ Sign APK
+        id: sign_app
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE }}
+          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "35.0.0"
+
+      - name: 🚀 Upload Signed APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: bluesky-signed-apk
-          path: ./bluesky.apk
+          path: ${{ steps.sign_app.outputs.signedReleaseFile }}
           retention-days: 1
+
+      - name: 🚀 Upload Unsigned APK (Backup)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bluesky-unsigned-apk
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
