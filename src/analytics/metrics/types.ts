@@ -5,6 +5,8 @@
 import {type Platform} from 'react-native'
 
 import {type NotificationReason} from '#/lib/hooks/useNotificationHandler'
+import {type VideoCompressSkipReason} from '#/lib/media/video/types'
+import {type NotificationType} from '#/state/queries/notifications/types'
 import {type FeedDescriptor} from '#/state/queries/post-feed'
 import {type LiveEventFeedMetricContext} from '#/features/liveEvents/types'
 
@@ -42,6 +44,7 @@ export type Events = {
       | 'SignupQueued'
       | 'Deactivated'
       | 'Takendown'
+      | 'AgeAssuranceDataUnavailableScreen'
       | 'AgeAssuranceNoAccessScreen'
     scope: 'current' | 'every'
   }
@@ -53,12 +56,50 @@ export type Events = {
     context: 'StartOnboarding' | 'AfterOnboarding' | 'Login' | 'Home'
     status: 'granted' | 'denied' | 'undetermined'
   }
+  'notifications:bundleExpand': {
+    notificationType: NotificationType
+    authorCount: number
+  }
   'state:background': {
     secondsActive: number
   }
   'state:foreground': {}
   'router:navigate': {
     from?: string
+  }
+  'web:list:size': {
+    itemCount: number
+    renderedRowCount: number
+    contentHeight: number
+    sessionAgeMs: number
+    milestone: 100 | 250 | 500 | 1000
+    heapUsedBytes?: number
+    heapLimitBytes?: number
+  }
+  'web:list:longTasks': {
+    itemCount: number
+    renderedRowCount: number
+    taskCount: number
+    totalDurationMs: number
+    maxDurationMs: number
+    intervalMs: number
+    sessionAgeMs: number
+    heapUsedBytes?: number
+    heapLimitBytes?: number
+  }
+  'nav:click': {
+    item:
+      | 'home'
+      | 'search'
+      | 'chat'
+      | 'notifications'
+      | 'profile'
+      | 'feeds'
+      | 'lists'
+      | 'saved'
+      | 'settings'
+      | 'menu'
+    surface: 'bottomBar' | 'drawer' | 'drawerHeader' | 'topBar' | 'leftNav'
   }
   'deepLink:referrerReceived': {
     to: string
@@ -82,7 +123,23 @@ export type Events = {
     activeStep: number
   }
   'signup:captchaSuccess': {}
-  'signup:captchaFailure': {}
+  'signup:captchaFailure': {
+    reason: 'state-mismatch' | 'webview-error' | 'http-error'
+    host?: string
+    statusCode?: number
+  }
+  'signup:captchaSlow': {}
+  'signup:captchaBlockedLoad': {
+    host: string
+    isTopFrame: boolean
+  }
+  'signup:captchaBackPress': {
+    phase?: 'attesting' | 'challenge'
+  }
+  'signup:attestTimeout': {}
+  'signup:createAccountFailure': {
+    reason: string
+  }
   'signup:fieldError': {
     field: string
     errorCount: number
@@ -116,6 +173,7 @@ export type Events = {
     selectedInterests: string[]
     selectedInterestsLength: number
   }
+  'onboarding:interests:disabledNextPressed': {}
   'onboarding:suggestedAccounts:tabPressed': {
     tab: string
   }
@@ -170,18 +228,54 @@ export type Events = {
     feedType: string
     reason: 'pull-to-refresh' | 'soft-reset' | 'load-latest'
   }
-  'feed:save': {
-    feedUrl: string
-  }
-  'feed:unsave': {
-    feedUrl: string
-  }
-  'feed:pin': {
-    feedUrl: string
-  }
-  'feed:unpin': {
-    feedUrl: string
-  }
+  'feed:save': {feedUrl: string} & (
+    | {
+        logContext?: never
+        recId?: never
+        position?: never
+      }
+    | {
+        logContext: 'Explore'
+        recId: string
+        position: number
+      }
+  )
+  'feed:unsave': {feedUrl: string} & (
+    | {
+        logContext?: never
+        recId?: never
+        position?: never
+      }
+    | {
+        logContext: 'Explore'
+        recId: string
+        position: number
+      }
+  )
+  'feed:pin': {feedUrl: string} & (
+    | {
+        logContext?: never
+        recId?: never
+        position?: never
+      }
+    | {
+        logContext: 'Explore'
+        recId: string
+        position: number
+      }
+  )
+  'feed:unpin': {feedUrl: string} & (
+    | {
+        logContext?: never
+        recId?: never
+        position?: never
+      }
+    | {
+        logContext: 'Explore'
+        recId: string
+        position: number
+      }
+  )
   'feed:like': {
     feedUrl: string
   }
@@ -193,9 +287,15 @@ export type Events = {
   }
   'feed:suggestion:seen': {
     feedUrl: string
+    logContext: 'Explore'
+    recId?: string
+    position: number
   }
   'feed:suggestion:press': {
     feedUrl: string
+    logContext: 'Explore'
+    recId?: string
+    position: number
   }
   'post:showMore': {
     uri: string
@@ -248,12 +348,7 @@ export type Events = {
   }
   'composer:open': {
     logContext:
-      | 'Fab'
-      | 'PostReply'
-      | 'QuotePost'
-      | 'ProfileFeed'
-      | 'Deeplink'
-      | 'Other'
+      'Fab' | 'PostReply' | 'QuotePost' | 'ProfileFeed' | 'Deeplink' | 'Other'
     isReply: boolean
     hasQuote: boolean
     hasDraft: boolean
@@ -410,6 +505,7 @@ export type Events = {
   'post:view': {
     uri: string
     authorDid: string
+    isReply: boolean
     logContext:
       | 'FeedItem'
       | 'PostThreadItem'
@@ -449,32 +545,41 @@ export type Events = {
       | 'ExploreSuggestedAccounts'
       | 'OnboardingSuggestedAccounts'
       | 'FindContacts'
+      | 'GroupChat'
+      | 'NotificationExpandedProfileCard'
   }
   'profile:followers:view': {
     contextProfileDid: string
     isOwnProfile: boolean
+    sort?: 'latest' | 'top'
   }
   'profile:followers:paginate': {
     contextProfileDid: string
     itemCount: number
     page: number
+    sort?: 'latest' | 'top'
   }
   'profile:following:view': {
     contextProfileDid: string
     isOwnProfile: boolean
+    sort?: 'latest' | 'top'
   }
   'profile:following:paginate': {
     contextProfileDid: string
     itemCount: number
     page: number
+    sort?: 'latest' | 'top'
   }
   'profileCard:seen': {
     contextProfileDid?: string
     profileDid: string
     position?: number
+    sort?: 'latest' | 'top'
   }
   'profile:mute': {}
   'profile:unmute': {}
+  'profile:muteReposts': {}
+  'profile:unmuteReposts': {}
   'profile:block': {}
   'profile:unblock': {}
   'suggestedUser:follow': {
@@ -487,7 +592,8 @@ export type Events = {
       | 'SeeMoreSuggestedUsers'
       | 'ProgressGuide'
     location: 'Card' | 'Profile' | 'FollowAll'
-    recId?: number | string
+    recSource?: 'Search'
+    recId?: string
     position: number
     suggestedDid: string
     category: string | null
@@ -500,7 +606,7 @@ export type Events = {
       | 'ProfileHeader'
       | 'Onboarding'
       | 'SeeMoreSuggestedUsers'
-    recId?: number | string
+    recId?: string
     position: number
     suggestedDid: string
     category: string | null
@@ -514,7 +620,8 @@ export type Events = {
       | 'Onboarding'
       | 'SeeMoreSuggestedUsers'
       | 'ProgressGuide'
-    recId?: number | string
+    recSource?: 'Search'
+    recId?: string
     position: number
     suggestedDid: string
     category: string | null
@@ -526,11 +633,11 @@ export type Events = {
       | 'ProfileInterstitial'
       | 'ProfileHeader'
       | 'Onboarding'
-    recId?: number | string
+    recId?: string
   }
   'suggestedUser:dismiss': {
     logContext: 'DiscoverInterstitial' | 'ProfileInterstitial' | 'ProfileHeader'
-    recId?: number | string
+    recId?: string
     position: number
     suggestedDid: string
   }
@@ -552,9 +659,12 @@ export type Events = {
       | 'ExploreSuggestedAccounts'
       | 'OnboardingSuggestedAccounts'
       | 'FindContacts'
+      | 'GroupChat'
+      | 'NotificationExpandedProfileCard'
   }
   'chat:create': {
-    logContext: 'ProfileHeader' | 'NewChatDialog' | 'SendViaChatDialog'
+    logContext:
+      'ProfileHeader' | 'NewChatDialog' | 'SendViaChatDialog' | 'ConvoSettings'
   }
   'chat:open': {
     logContext:
@@ -562,12 +672,94 @@ export type Events = {
       | 'NewChatDialog'
       | 'ChatsList'
       | 'SendViaChatDialog'
+      | 'ConvoSettings'
   }
+  // Message replies
+  'chat:message:reply:send': {
+    convoId: string
+    isGroup: boolean
+  }
+  'chat:message:reply:tap': {
+    convoId: string
+  }
+
+  // Group chat adoption
+  'groupchat:create': {
+    logContext: 'NewChatDialog' | 'SendViaChatDialog'
+  }
+  'groupchat:landingPage:view': {
+    hasSession: boolean
+  }
+  'groupchat:inviteLink:redeem': {}
+
+  // Group chat user interactions
+  'groupchat:message:send': {
+    convoId: string
+    isOwner: boolean
+  }
+  'groupchat:mute': {
+    convoId: string
+  }
+  'groupchat:unmute': {
+    convoId: string
+  }
+  'groupchat:leave': {
+    convoId: string
+    isOwner: boolean
+  }
+  'groupchat:settings:view': {
+    convoId: string
+    isOwner: boolean
+  }
+  'groupchat:inviteLink:shareButton:press': {
+    convoId: string
+    method: 'post' | 'copy' | 'native'
+  }
+  'groupchat:inviteLink:shared': {
+    convoId: string
+    method: 'post' | 'dm'
+  }
+
+  // Group chat owner actions
+  'groupchat:owner:editName': {
+    convoId: string
+  }
+  'groupchat:owner:lock': {
+    convoId: string
+  }
+  'groupchat:owner:unlock': {
+    convoId: string
+  }
+  'groupchat:owner:kickMember': {
+    convoId: string
+  }
+  'groupchat:owner:inviteMember': {
+    convoId: string
+  }
+  'groupchat:owner:joinRequest:accept': {
+    convoId: string
+  }
+  'groupchat:owner:joinRequest:reject': {
+    convoId: string
+  }
+  'groupchat:owner:inviteLink:create': {
+    convoId: string
+  }
+  'groupchat:owner:inviteLink:disable': {
+    convoId: string
+  }
+
+  // Group chat problems
+  'groupchat:join:memberLimitReached': {
+    convoId: string
+  }
+
   'starterPack:addUser': {
     starterPack?: string
   }
   'starterPack:removeUser': {
     starterPack?: string
+    context?: 'opt-out'
   }
   'starterPack:share': {
     starterPack: string
@@ -578,8 +770,26 @@ export type Events = {
     logContext: 'StarterPackProfilesList' | 'Onboarding'
     starterPack: string
     count: number
+    recId?: string
+    position?: number
+  }
+  'starterPack:suggestion:seen': {
+    logContext: 'Explore' | 'Onboarding'
+    starterPack: string
+    recId: string
+    position: number
+  }
+  'starterPack:suggestion:press': {
+    logContext: 'Explore'
+    starterPack: string
+    recId: string
+    position: number
   }
   'starterPack:delete': {}
+  'starterPack:optOut': {
+    starterPack: string
+    action: 'optOut' | 'undo'
+  }
   'starterPack:create': {
     setName: boolean
     setDescription: boolean
@@ -630,11 +840,19 @@ export type Events = {
   'trendingTopics:hide': {
     context: 'settings' | 'sidebar' | 'interstitial' | 'explore:trending'
   }
+  'trendingTopic:seen': {
+    context: 'sidebar' | 'interstitial' | 'explore'
+    feedUri?: string
+    recId?: string
+    rank: number
+    feedSliceIndex?: number
+  }
   'trendingTopic:click': {
     context: 'sidebar' | 'interstitial' | 'explore'
-  }
-  'recommendedTopic:click': {
-    context: 'explore'
+    feedUri?: string
+    recId?: string
+    rank: number
+    feedSliceIndex?: number
   }
   'trendingVideos:show': {
     context: 'settings'
@@ -664,16 +882,17 @@ export type Events = {
 
   'search:query': {
     source: 'typed' | 'history' | 'autocomplete'
+    filterCount: number
   }
 
   'search:results:loaded': {
-    tab: 'top' | 'latest' | 'people' | 'feeds'
+    tab: 'top' | 'latest' | 'people' | 'feeds' | 'starterPacks'
     initialCount: number
   }
 
   'search:result:press': {
-    tab?: 'top' | 'latest' | 'people' | 'feeds'
-    resultType: 'post' | 'profile' | 'feed'
+    tab?: 'top' | 'latest' | 'people' | 'feeds' | 'starterPacks'
+    resultType: 'post' | 'profile' | 'feed' | 'starterPack'
     position: number
     uri: string
   }
@@ -686,6 +905,18 @@ export type Events = {
   'search:autocomplete:press': {
     profileDid: string
     position: number
+  }
+
+  'search:advanced:press': {
+    filterCount: number
+  }
+
+  'search:shareLink:press': {
+    filterCount: number
+  }
+
+  'search:addFilter:press': {
+    filterCount: number
   }
 
   'progressGuide:hide': {}
@@ -712,6 +943,7 @@ export type Events = {
     reason: string
     labeler: string
     details: boolean
+    videoTimestamp: boolean
   }
   'reportDialog:failure': {}
 
@@ -795,6 +1027,100 @@ export type Events = {
      */
     resultSourceLanguage: string
   }
+  'composer:language:suggestLanguage': {
+    os: Platform['OS']
+    /**
+     * The language we detected and suggested to the user as an override for the
+     * expected target language.
+     */
+    suggestedLanguage: string | undefined
+    /**
+     * This is the user's current composer languages, which are always defined.
+     */
+    currentTargetLanguages: string[]
+    /**
+     * The length of the text being translated. We assume shorter texts are
+     * more likely to have inaccurate translations.
+     */
+    textLength: number
+  }
+  'composer:language:acceptSuggestion': {
+    os: Platform['OS']
+    /**
+     * The language we detected and suggested to the user as an override for the
+     * expected target language.
+     */
+    suggestedLanguage: string | undefined
+    /**
+     * This is the user's current composer languages, which are always defined.
+     */
+    currentTargetLanguages: string[]
+    /**
+     * The length of the text being translated. We assume shorter texts are
+     * more likely to have inaccurate translations.
+     */
+    textLength: number
+  }
+  'composer:language:declineSuggestion': {
+    os: Platform['OS']
+    /**
+     * The language we detected and suggested to the user as an override for the
+     * expected target language.
+     */
+    suggestedLanguage: string | undefined
+    /**
+     * This is the user's current composer languages, which are always defined.
+     */
+    currentTargetLanguages: string[]
+    /**
+     * The length of the text being translated. We assume shorter texts are
+     * more likely to have inaccurate translations.
+     */
+    textLength: number
+  }
+  'composer:language:replyNudgeAccept': {
+    /**
+     * The language of the post the user is replying to.
+     */
+    replyToLanguage: string
+    /**
+     * This is the user's current composer languages, which are always defined.
+     */
+    currentTargetLanguages: string[]
+  }
+  'composer:language:replyNudgeDecline': {
+    /**
+     * The language of the post the user is replying to.
+     */
+    replyToLanguage: string
+    /**
+     * This is the user's current composer languages, which are always defined.
+     */
+    currentTargetLanguages: string[]
+  }
+  'composer:language:nudgeUser': {
+    os: Platform['OS']
+    /**
+     * The language we detected and suggested to the user as an override for the
+     * expected target language.
+     */
+    suggestedLanguage: string | undefined
+    /**
+     * This is the user's current composer languages, which are always defined.
+     */
+    currentTargetLanguages: string[]
+    /**
+     * The length of the text being translated. We assume shorter texts are
+     * more likely to have inaccurate translations.
+     */
+    textLength: number
+  }
+  'composer:language:langSelectorPressed': {
+    /**
+     * If the user was nudged by our language detection to update their language
+     */
+    wasNudged: boolean
+  }
 
   'postMenu:openMuteWordsDialog': {
     uri: string
@@ -843,6 +1169,8 @@ export type Events = {
   'bot:label:toggle': {state: 'add' | 'remove'}
   'bot:badge:click': {}
 
+  'contentVisibility:algorithmicRecommendations:change': {hide: boolean}
+
   'live:create': {duration: number}
   'live:edit': {}
   'live:remove': {}
@@ -867,14 +1195,25 @@ export type Events = {
   'share:press:recentDm': {}
   'share:press:embed': {}
 
+  'embed:standardSite:view': {url: string}
+  'embed:standardSite:article:press': {url: string}
+  'embed:standardSite:article:longPress': {url: string}
+  'embed:standardSite:publication:press': {url: string}
+  'embed:standardSite:publication:longPress': {url: string}
+  'embed:standardSite:publicationCta:press': {url: string}
+  'embed:standardSite:publicationCta:longPress': {url: string}
+  'embed:standardSite:subscribe:press': {url: string}
+  'embed:standardSite:subscribe:longPress': {url: string}
+  'embed:standardSite:authorHandle:press': {handle: string}
+
   'thread:click:showOtherReplies': {}
   'thread:click:hideReplyForMe': {}
   'thread:click:hideReplyForEveryone': {}
   'thread:preferences:load': {
-    [key: string]: any
+    [key: string]: unknown
   }
   'thread:preferences:update': {
-    [key: string]: any
+    [key: string]: unknown
   }
   'thread:click:headerMenuOpen': {}
   'thread:click:editOwnThreadgate': {}
@@ -886,7 +1225,7 @@ export type Events = {
   'activityPreference:changeChannels': {
     name: string
     push: boolean
-    list: boolean
+    list?: boolean
   }
   'activityPreference:changeFilter': {
     name: string
@@ -1043,4 +1382,268 @@ export type Events = {
   'profile:associated:germ:click-self-info': {}
   'profile:associated:germ:self-disconnect': {}
   'profile:associated:germ:self-reconnect': {}
+
+  // Post photo embed events
+  'post:photoEmbed:impression': {
+    layout: 'single' | 'grid' | 'carousel'
+    totalImages: number
+    postUri: string
+    postAuthorDid: string
+    feedDescriptor?: string
+  }
+  'post:photoEmbed:open': {
+    layout: 'single' | 'grid' | 'carousel'
+    fromImage: number
+    totalImages: number
+    postUri: string
+    postAuthorDid: string
+    feedDescriptor?: string
+  }
+  'post:photoEmbed:carouselSwipe': {
+    fromImage: number
+    toImage: number
+    totalImages: number
+    postUri: string
+    postAuthorDid: string
+    feedDescriptor?: string
+  }
+  'post:photoEmbed:lightboxSwipe': {
+    layout: 'single' | 'grid' | 'carousel'
+    fromImage: number
+    toImage: number
+    totalImages: number
+    postUri: string
+    postAuthorDid: string
+    feedDescriptor?: string
+  }
+
+  /*
+   * Invite friends (profile QR share sheet)
+   */
+
+  // NUX announcement dialog was shown to the user
+  'invite:nux:presented': {}
+  // user pressed "Try it" on the NUX announcement
+  'invite:nux:tryItPressed': {}
+  // invite friends dialog opened, with the surface that triggered it
+  'invite:dialog:open': {
+    logContext:
+      'ProfileHeader' | 'Drawer' | 'FindContactsSettings' | 'NuxAnnouncement'
+  }
+  // user copied the invite link to clipboard
+  'invite:action:copy': {}
+  // user invoked the native share sheet with the invite link
+  'invite:action:share': {}
+  // user saved the QR code image to their camera roll (success only)
+  'invite:action:download': {}
+  // user pressed the scan button to open the QR scanner
+  'invite:action:scan': {}
+  // user changed the QR card color theme
+  'invite:theme:change': {
+    themeKey: 'dawn' | 'sunlight' | 'day' | 'dusk' | 'twilight' | 'night'
+  }
+  // QR scanner decoded a code; result indicates whether it resolved to a profile
+  'invite:scanner:scanned': {
+    result: 'profileFound' | 'invalidQr'
+  }
+  // empty-followers banner promoting invite/find friends was shown
+  'invite:followersPromo:seen': {}
+  // user pressed the empty-followers promo banner
+  'invite:followersPromo:press': {}
+  // user dismissed the empty-followers promo banner
+  'invite:followersPromo:dismiss': {}
+
+  /**
+   * Fired when a video fails terminally during playback: unreachable (404),
+   * undecodable, or the client lacks the required codecs. Complements the
+   * Sentry-only video.playback spans with a countable, unsampled event.
+   */
+  'video:playback:failed': {
+    surface: 'feed' | 'immersiveFeed'
+    presentation: 'video' | 'gif'
+    /**
+     * Coarse failure bucket: VideoNotFoundError, HLSUnsupportedError, an
+     * hls.js error details code (e.g. bufferAppendError), or PlayerError on
+     * native.
+     */
+    errorClass: string
+    /** Truncated to 256 chars */
+    errorMessage: string
+    /** HLS playlist URL, identifies the exact video for server-side lookup */
+    playlist: string
+  }
+
+  /**
+   * The playable video was meaningfully visible. This is an exposure event,
+   * not proof that playback started. Fires once per mounted video item.
+   */
+  'video:impression': {
+    postUri?: string
+    postAuthorDid?: string
+    context: 'embed' | 'immersiveFeed'
+    presentation: 'video' | 'gif'
+  }
+  /**
+   * Playback advanced far enough to render the first frame. Preloading and
+   * merely becoming active do not count. Fires once per mounted video item;
+   * automatic loops do not produce another event.
+   */
+  'video:playback:start': {
+    postUri?: string
+    postAuthorDid?: string
+    context: 'embed' | 'immersiveFeed'
+    presentation: 'video' | 'gif'
+    autoplay: boolean
+  }
+  /**
+   * The user activated a third-party media player. Cross-origin players do
+   * not expose confirmed playback consistently, so this must not be treated
+   * as equivalent to video:playback:start without an explicit methodology.
+   */
+  'externalEmbed:playerActivated': {
+    postUri?: string
+    postAuthorDid?: string
+    source: string
+    playerType: string
+    mediaType: 'video' | 'audio' | 'gif' | 'other'
+  }
+
+  // === Video upload funnel (Frontend Spec section D) ===
+  // Every event carries uploadId (client-generated UUID, ties one upload
+  // session end-to-end) + engine (compression engine id, e.g.
+  // native:@bsky.app/video-compressor@0.2.0). jobId is added once the server
+  // returns it. Sizes / codecs / dimensions / timings only - never content.
+  'video:upload:picked': {
+    uploadId: string
+    engine: string
+    sourceMimeType?: string
+    sourceBytes?: number
+    sourceDurationMs?: number
+    sourceWidth?: number
+    sourceHeight?: number
+  }
+  'video:upload:compressStarted': {
+    uploadId: string
+    engine: string
+    sourceBytes?: number
+  }
+  // Native-only. Raw container metadata returned by the new module's probe()
+  // (bitrate, codec, HDR, frame rate, rotation, etc.). Fires once per upload
+  // between compressStarted and the compressSkipped/compressCompleted decision.
+  // The web mediabunny engine also emits this from its own probe.
+  'video:upload:probed': {
+    uploadId: string
+    engine: string
+    mimeType: string
+    codec: string
+    width: number
+    height: number
+    duration: number
+    bitrate: number
+    fileSize: number
+    hasAudio: boolean
+    frameRate: number
+    rotation: number
+    isHDR: boolean
+  }
+  'video:upload:compressCompleted': {
+    uploadId: string
+    engine: string
+    bytesIn?: number
+    bytesOut: number
+    outputMimeType: string
+    elapsedMs: number
+  }
+  'video:upload:compressSkipped': {
+    uploadId: string
+    engine: string
+    skipReason: VideoCompressSkipReason
+    bytes: number
+    mimeType: string
+    elapsedMs: number
+  }
+  'video:upload:compressFailed': {
+    uploadId: string
+    engine: string
+    errorClass: string
+    /** Truncated to 256 chars */
+    errorMessage: string
+    elapsedMs: number
+  }
+  'video:upload:uploadStarted': {
+    uploadId: string
+    engine: string
+    bytes: number
+  }
+  'video:upload:uploadCompleted': {
+    uploadId: string
+    engine: string
+    jobId: string
+    bytes: number
+    elapsedMs: number
+    throughputBytesPerSec: number
+  }
+  'video:upload:uploadFailed': {
+    uploadId: string
+    engine: string
+    bytes: number
+    errorClass: string
+    elapsedMs: number
+  }
+  'video:upload:processingStarted': {
+    uploadId: string
+    engine: string
+    jobId: string
+  }
+  'video:upload:processingCompleted': {
+    uploadId: string
+    engine: string
+    jobId: string
+    elapsedMs: number
+  }
+  'video:upload:processingFailed': {
+    uploadId: string
+    engine: string
+    jobId: string
+    errorClass: string
+    elapsedMs: number
+  }
+  'video:upload:published': {
+    uploadId: string
+    engine: string
+    jobId: string
+    // wall-clock from picked to published
+    totalElapsedMs: number
+  }
+  // The event that measures the actual problem: users giving up mid-wait.
+  'video:upload:abandoned': {
+    uploadId: string
+    engine: string
+    phase: 'compress' | 'upload' | 'processing'
+    jobId?: string
+    elapsedInPhaseMs: number
+  }
+
+  'post:likedBy:click': {}
+
+  /*
+   * Beta features settings screen
+   */
+
+  // user toggled "Enable beta features"; fired only after the preference
+  // write succeeds
+  'betaFeatures:toggle': {
+    enabled: boolean
+    /** Gate keys of beta features active for this user at toggle time */
+    betaFeatureKeys: string[]
+  }
+  // user pressed the "Share feedback" button, opening the dialog
+  'betaFeatures:feedback:open': {
+    betaFeatureKeys: string[]
+  }
+  // user submitted feedback and it was sent successfully
+  'betaFeatures:feedback:submit': {
+    betaFeatureKeys: string[]
+    feedbackLength: number
+  }
 }

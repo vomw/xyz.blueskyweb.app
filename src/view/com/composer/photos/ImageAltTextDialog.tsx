@@ -131,8 +131,8 @@ const ImageAltTextInner = ({
                 }}
                 defaultValue={altText}
                 multiline
-                numberOfLines={3}
                 autoFocus
+                scrollEnabled={false}
               />
             </TextField.Root>
           </View>

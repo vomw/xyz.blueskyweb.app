@@ -1,6 +1,6 @@
 import {memo, useEffect, useMemo, useState} from 'react'
 import {View} from 'react-native'
-import {type AppBskyActorDefs, type AppBskyFeedPost, AtUri} from '@atproto/api'
+import {AtUri} from '@atproto/syntax'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -8,7 +8,7 @@ import {Trans} from '@lingui/react/macro'
 import {EMBED_SCRIPT} from '#/lib/constants'
 import {niceDate} from '#/lib/strings/time'
 import {toShareUrl} from '#/lib/strings/url-helpers'
-import {atoms as a, useTheme} from '#/alf'
+import {atoms as a, useTheme, web} from '#/alf'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
 import * as Dialog from '#/components/Dialog'
 import * as SegmentedControl from '#/components/forms/SegmentedControl'
@@ -20,15 +20,16 @@ import {
 } from '#/components/icons/Chevron'
 import {CodeBrackets_Stroke2_Corner0_Rounded as CodeBracketsIcon} from '#/components/icons/CodeBrackets'
 import {Text} from '#/components/Typography'
+import {type app} from '#/lexicons'
 
 export type ColorModeValues = 'system' | 'light' | 'dark'
 
 type EmbedDialogProps = {
   control: Dialog.DialogControlProps
-  postAuthor: AppBskyActorDefs.ProfileViewBasic
+  postAuthor: app.bsky.actor.defs.ProfileViewBasic
   postCid: string
   postUri: string
-  record: AppBskyFeedPost.Record
+  record: app.bsky.feed.post.Main
   timestamp: string
 }
 
@@ -102,14 +103,14 @@ function EmbedDialogInner({
   }, [i18n, postUri, postCid, record, timestamp, postAuthor, colorMode])
 
   return (
-    <Dialog.Inner label={_(msg`Embed post`)} style={[{maxWidth: 500}]}>
+    <Dialog.Inner label={_(msg`Embed post`)} style={[web({maxWidth: 500})]}>
       <View style={[a.gap_lg]}>
         <View style={[a.gap_sm]}>
           <Text style={[a.text_2xl, a.font_bold]}>
             <Trans>Embed post</Trans>
           </Text>
           <Text
-            style={[a.text_md, t.atoms.text_contrast_medium, a.leading_normal]}>
+            style={[a.text_md, t.atoms.text_contrast_medium, a.leading_snug]}>
             <Trans>
               Embed this post in your website. Simply copy the following snippet
               and paste it into the HTML code of your website.
@@ -117,12 +118,7 @@ function EmbedDialogInner({
           </Text>
         </View>
         <View
-          style={[
-            a.border,
-            t.atoms.border_contrast_low,
-            a.rounded_sm,
-            a.overflow_hidden,
-          ]}>
+          style={[a.border, t.atoms.border_contrast_low, {borderRadius: 18}]}>
           <Button
             label={
               showCustomisation
@@ -190,10 +186,9 @@ function EmbedDialogInner({
           <Button
             label={_(msg`Copy code`)}
             color="primary"
-            variant="solid"
             size="large"
             onPress={() => {
-              navigator.clipboard.writeText(snippet)
+              void navigator.clipboard.writeText(snippet)
               setCopied(true)
             }}>
             {copied ? (

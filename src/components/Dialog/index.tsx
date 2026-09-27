@@ -8,7 +8,7 @@ import {
 } from 'react'
 import {
   Keyboard,
-  type KeyboardEventListener,
+  type KeyboardEvent,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -21,11 +21,11 @@ import {
 } from 'react-native'
 import {useReanimatedKeyboardAnimation} from 'react-native-keyboard-controller'
 import Animated, {
-  runOnJS,
   type ScrollEvent,
   useAnimatedStyle,
 } from 'react-native-reanimated'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {scheduleOnRN} from 'react-native-worklets'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 
@@ -62,6 +62,7 @@ export const Input = createInput(TextInput)
 export function Outer({
   children,
   control,
+  onOpen,
   onClose,
   nativeOptions,
   testID,
@@ -97,9 +98,10 @@ export function Outer({
   const open = useCallback<DialogControlProps['open']>(() => {
     // Run any leftover callbacks that might have been queued up before calling `.open()`
     callQueuedCallbacks()
+    onOpen?.()
     setDialogIsOpen(control.id, true)
     ref.current?.present()
-  }, [setDialogIsOpen, control.id, callQueuedCallbacks])
+  }, [setDialogIsOpen, control.id, callQueuedCallbacks, onOpen])
 
   // This is the function that we call when we want to dismiss the dialog.
   const close = useCallback<DialogControlProps['close']>(cb => {
@@ -157,6 +159,9 @@ export function Outer({
     [open, close],
   )
 
+  const isHeightConstrained =
+    nativeOptions?.maxHeight != null || nativeOptions?.fullHeight === true
+
   const context = useMemo(
     () => ({
       close,
@@ -165,8 +170,9 @@ export function Outer({
       disableDrag,
       setDisableDrag,
       isWithinDialog: true,
+      isHeightConstrained,
     }),
-    [close, snapPoint, disableDrag, setDisableDrag],
+    [close, snapPoint, disableDrag, setDisableDrag, isHeightConstrained],
   )
 
   return (
@@ -180,7 +186,9 @@ export function Outer({
       onStateChange={onStateChange}
       disableDrag={disableDrag}>
       <Context.Provider value={context}>
-        <View testID={testID} style={[a.relative]}>
+        <View
+          testID={testID}
+          style={[a.relative, isHeightConstrained && a.flex_1]}>
           {children}
         </View>
       </Context.Provider>
@@ -191,58 +199,51 @@ export function Outer({
 /**
  * @deprecated use `Dialog.ScrollableInner` instead
  */
-export function Inner({children, style, header}: DialogInnerProps) {
-  const insets = useSafeAreaInsets()
-  return (
-    <>
-      {header}
-      <View
-        style={[
-          a.pt_2xl,
-          a.px_xl,
-          IS_LIQUID_GLASS
-            ? a.pb_2xl
-            : {paddingBottom: insets.bottom + insets.top},
-          style,
-        ]}>
-        {children}
-      </View>
-    </>
-  )
+export function Inner(props: DialogInnerProps) {
+  return <ScrollableInner {...props} />
 }
 
-export const ScrollableInner = forwardRef<ScrollView, DialogInnerProps>(
-  function ScrollableInner(
-    {children, contentContainerStyle, header, ...props},
-    ref,
-  ) {
-    const {nativeSnapPoint, disableDrag, setDisableDrag} = useDialogContext()
-    const isAtMaxSnapPoint = nativeSnapPoint === BottomSheetSnapPoint.Full
-    const insets = useSafeAreaInsets()
-    const [keyboardHeight, setKeyboardHeight] = useState(() =>
-      IS_ANDROID ? (Keyboard.metrics()?.height ?? 0) : 0,
-    )
+export function ScrollableInner({
+  ref,
+  children,
+  contentContainerStyle,
+  header,
+  footer,
+  style,
+  ...props
+}: DialogInnerProps & {
+  ref?: React.Ref<React.ComponentRef<typeof ScrollView>>
+}) {
+  const {nativeSnapPoint, disableDrag, setDisableDrag, isHeightConstrained} =
+    useDialogContext()
+  const isAtMaxSnapPoint = nativeSnapPoint === BottomSheetSnapPoint.Full
+  const insets = useSafeAreaInsets()
+  const [keyboardHeight, setKeyboardHeight] = useState(() =>
+    IS_ANDROID ? (Keyboard.metrics()?.height ?? 0) : 0,
+  )
 
-    const keyboardEventHandler = useCallback<KeyboardEventListener>(e => {
-      setKeyboardHeight(e.endCoordinates.height)
-    }, [])
-    useOnKeyboard('keyboardDidShow', keyboardEventHandler)
-    useOnKeyboard('keyboardDidHide', keyboardEventHandler)
+  const keyboardEventHandler = useCallback((e: KeyboardEvent) => {
+    setKeyboardHeight(e.endCoordinates.height)
+  }, [])
+  useOnKeyboard('keyboardDidShow', keyboardEventHandler)
+  useOnKeyboard('keyboardDidHide', keyboardEventHandler)
 
-    const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (!IS_ANDROID) {
-        return
-      }
-      const {contentOffset} = e.nativeEvent
-      if (contentOffset.y > 0 && !disableDrag) {
-        setDisableDrag(true)
-      } else if (contentOffset.y <= 1 && disableDrag) {
-        setDisableDrag(false)
-      }
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (!IS_ANDROID) {
+      return
     }
+    const {contentOffset} = e.nativeEvent
+    if (contentOffset.y > 0 && !disableDrag) {
+      setDisableDrag(true)
+    } else if (contentOffset.y <= 1 && disableDrag) {
+      setDisableDrag(false)
+    }
+  }
 
-    return (
+  return (
+    <>
       <ScrollView
+        style={[isHeightConstrained && a.flex_1, style]}
         contentContainerStyle={[
           a.pt_2xl,
           IS_LIQUID_GLASS ? a.px_2xl : a.px_xl,
@@ -277,9 +278,10 @@ export const ScrollableInner = forwardRef<ScrollView, DialogInnerProps>(
         {header}
         {children}
       </ScrollView>
-    )
-  },
-)
+      {footer}
+    </>
+  )
+}
 
 export const InnerFlatList = forwardRef<
   ListMethods,
@@ -304,9 +306,9 @@ export const InnerFlatList = forwardRef<
     }
     const {contentOffset} = e
     if (contentOffset.y > 0 && !disableDrag) {
-      runOnJS(setDisableDrag)(true)
+      scheduleOnRN(setDisableDrag, true)
     } else if (contentOffset.y <= 1 && disableDrag) {
-      runOnJS(setDisableDrag)(false)
+      scheduleOnRN(setDisableDrag, false)
     }
   }
 
@@ -343,9 +345,11 @@ export const InnerFlatList = forwardRef<
 export function FlatListFooter({
   children,
   onLayout,
+  border = true,
 }: {
   children: React.ReactNode
   onLayout?: (event: LayoutChangeEvent) => void
+  border?: boolean
 }) {
   const t = useTheme()
   const {bottom} = useSafeAreaInsets()
@@ -366,7 +370,7 @@ export function FlatListFooter({
         a.bottom_0,
         a.w_full,
         a.z_10,
-        a.border_t,
+        border && a.border_t,
         t.atoms.bg,
         t.atoms.border_contrast_low,
         a.px_lg,

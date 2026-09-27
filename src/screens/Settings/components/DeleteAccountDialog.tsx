@@ -4,12 +4,16 @@ import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
 
-import {DM_SERVICE_HEADERS} from '#/lib/constants'
 import {useCleanError} from '#/lib/hooks/useCleanError'
 import {sanitizeHandle} from '#/lib/strings/handles'
 import {logger} from '#/logger'
-import {useAgent, useSession, useSessionApi} from '#/state/session'
-import {atoms as a, useTheme, web} from '#/alf'
+import {
+  useChatClient,
+  usePdsClient,
+  useSession,
+  useSessionApi,
+} from '#/state/session'
+import {atoms as a, useTheme} from '#/alf'
 import {Admonition} from '#/components/Admonition'
 import {type DialogOuterProps} from '#/components/Dialog'
 import {
@@ -19,11 +23,12 @@ import {
 import * as TextField from '#/components/forms/TextField'
 import {Envelope_Stroke2_Corner0_Rounded as Envelope} from '#/components/icons/Envelope'
 import {Lock_Stroke2_Corner0_Rounded as Lock} from '#/components/icons/Lock'
-import {createStaticClick, InlineLinkText} from '#/components/Link'
+import {createStaticClick, SimpleInlineLinkText} from '#/components/Link'
 import {Loader} from '#/components/Loader'
 import * as Prompt from '#/components/Prompt'
 import * as toast from '#/components/Toast'
 import {Span, Text} from '#/components/Typography'
+import {chat, com} from '#/lexicons'
 import {resetToTab} from '#/Navigation'
 
 const WHITESPACE_RE = /\s/gu
@@ -68,11 +73,12 @@ function DeleteAccountDialogInner({
   control: DialogOuterProps['control']
   deactivateDialogControl: DialogOuterProps['control']
 }) {
-  const passwordRef = useRef<TextInput | null>(null)
+  const passwordRef = useRef<React.ComponentRef<typeof TextInput> | null>(null)
   const t = useTheme()
   const {_} = useLingui()
   const cleanError = useCleanError()
-  const agent = useAgent()
+  const client = usePdsClient()
+  const chatClient = useChatClient()
   const {currentAccount} = useSession()
   const {removeAccount} = useSessionApi()
 
@@ -89,7 +95,7 @@ function DeleteAccountDialogInner({
     }
     try {
       setEmailState(EmailState.PENDING)
-      await agent.com.atproto.server.requestAccountDelete()
+      await client.call(com.atproto.server.requestAccountDelete)
       setError('')
       setEmailSentCount(prevCount => prevCount + 1)
       setStep(Step.VERIFY_CODE)
@@ -103,7 +109,7 @@ function DeleteAccountDialogInner({
     } finally {
       setEmailState(EmailState.DEFAULT)
     }
-  }, [agent, cleanError, emailState, setEmailState])
+  }, [client, cleanError, emailState, setEmailState])
 
   const confirmDeletion = useCallback(async () => {
     try {
@@ -112,17 +118,13 @@ function DeleteAccountDialogInner({
         throw new Error('Invalid did')
       }
       const token = confirmCode.replace(WHITESPACE_RE, '')
-      // Inform chat service of intent to delete account.
-      const {success} = await agent.api.chat.bsky.actor.deleteAccount(
-        undefined,
-        {
-          headers: DM_SERVICE_HEADERS,
-        },
-      )
-      if (!success) {
-        throw new Error('Failed to inform chat service of account deletion')
-      }
-      await agent.com.atproto.server.deleteAccount({
+      /*
+       * Inform chat service of intent to delete account. A non-2xx response
+       * throws, so reaching the next line means the chat service accepted it -
+       * the agent's `success` flag has no client-side equivalent.
+       */
+      await chatClient.call(chat.bsky.actor.deleteAccount)
+      await client.call(com.atproto.server.deleteAccount, {
         did: currentAccount.did,
         password,
         token,
@@ -145,8 +147,9 @@ function DeleteAccountDialogInner({
     }
   }, [
     _,
-    agent,
+    chatClient,
     cleanError,
+    client,
     confirmCode,
     control,
     currentAccount,
@@ -213,11 +216,11 @@ function DeleteAccountDialogInner({
           <Admonition style={[a.mt_lg]} type="tip">
             <Trans>
               You can also{' '}
-              <Span
-                style={[{color: t.palette.primary_500}, web(a.underline)]}
-                onPress={handleDeactivate}>
+              <SimpleInlineLinkText
+                label={_(msg`Temporarily deactivate your account`)}
+                {...createStaticClick(handleDeactivate)}>
                 temporarily deactivate
-              </Span>{' '}
+              </SimpleInlineLinkText>{' '}
               your account instead. Your profile, posts, feeds, and lists will
               no longer be visible to other Bluesky users. You can reactivate
               your account at any time by logging in.
@@ -262,24 +265,20 @@ function DeleteAccountDialogInner({
             {emailSentCount > 1 ? (
               <Trans>
                 Email sent!{' '}
-                <InlineLinkText
-                  label={_(msg`Resend`)}
-                  {...createStaticClick(() => {
-                    void handleSendEmail()
-                  })}>
+                <SimpleInlineLinkText
+                  label={_(msg`Click here to resend the email`)}
+                  {...createStaticClick(handleSendEmail)}>
                   Click here to resend.
-                </InlineLinkText>
+                </SimpleInlineLinkText>
               </Trans>
             ) : (
               <Trans>
                 Don’t see a code?{' '}
-                <InlineLinkText
-                  label={_(msg`Resend`)}
-                  {...createStaticClick(() => {
-                    void handleSendEmail()
-                  })}>
+                <SimpleInlineLinkText
+                  label={_(msg`Click here to resend the email`)}
+                  {...createStaticClick(handleSendEmail)}>
                   Click here to resend.
-                </InlineLinkText>
+                </SimpleInlineLinkText>
               </Trans>
             )}{' '}
             <Span style={{top: 1}}>
@@ -340,12 +339,11 @@ function DeleteAccountDialogInner({
                   {currentHandle}
                 </Span>{' '}
                 and all associated data. Note that this will affect any other{' '}
-                <InlineLinkText
-                  label={_(msg`Learn more about the AT Protocol.`)}
-                  style={[a.text_md]}
-                  to="https://bsky.social/about/faq">
+                <SimpleInlineLinkText
+                  to="https://bsky.social/about/faq"
+                  label={_(msg`AT Protocol FAQ`)}>
                   AT Protocol
-                </InlineLinkText>{' '}
+                </SimpleInlineLinkText>{' '}
                 services you use with this account.
               </Trans>
             </Prompt.DescriptionText>

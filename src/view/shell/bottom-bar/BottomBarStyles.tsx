@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native'
 
-import {atoms as a} from '#/alf'
+import {atoms as a, tokens} from '#/alf'
 
 export const styles = StyleSheet.create({
   bottomBar: {
@@ -10,8 +10,8 @@ export const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     borderTopWidth: StyleSheet.hairlineWidth,
-    paddingLeft: 5,
-    paddingRight: 10,
+    paddingLeft: tokens.space.sm,
+    paddingRight: tokens.space.sm,
   },
   bottomBarWeb: a.fixed,
   ctrl: {
@@ -67,9 +67,18 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
   },
+  profileIconSquare: {
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
   messagesIcon: {},
   onProfile: {
     borderWidth: 1,
     borderRadius: 100,
+  },
+  onProfileSquare: {
+    borderWidth: 1,
+    borderRadius: 3,
   },
 })

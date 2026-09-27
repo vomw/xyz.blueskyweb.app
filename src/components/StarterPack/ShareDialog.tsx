@@ -1,6 +1,5 @@
 import {View} from 'react-native'
 import {Image} from 'expo-image'
-import {type AppBskyGraphDefs} from '@atproto/api'
 import {msg} from '@lingui/core/macro'
 import {useLingui} from '@lingui/react'
 import {Trans} from '@lingui/react/macro'
@@ -10,8 +9,8 @@ import {shareUrl} from '#/lib/sharing'
 import {getStarterPackOgCard} from '#/lib/strings/starter-pack'
 import {atoms as a, useBreakpoints, useTheme} from '#/alf'
 import {Button, ButtonIcon, ButtonText} from '#/components/Button'
-import {type DialogControlProps} from '#/components/Dialog'
 import * as Dialog from '#/components/Dialog'
+import {type DialogControlProps} from '#/components/Dialog'
 import {ChainLink_Stroke2_Corner0_Rounded as ChainLinkIcon} from '#/components/icons/ChainLink'
 import {Download_Stroke2_Corner0_Rounded as DownloadIcon} from '#/components/icons/Download'
 import {QrCode_Stroke2_Corner0_Rounded as QrCodeIcon} from '#/components/icons/QrCode'
@@ -19,9 +18,10 @@ import {Loader} from '#/components/Loader'
 import {Text} from '#/components/Typography'
 import {useAnalytics} from '#/analytics'
 import {IS_NATIVE, IS_WEB} from '#/env'
+import {type app} from '#/lexicons'
 
 interface Props {
-  starterPack: AppBskyGraphDefs.StarterPackView
+  starterPack: app.bsky.graph.defs.StarterPackView
   link?: string
   imageLoaded?: boolean
   qrDialogControl: DialogControlProps
@@ -53,14 +53,15 @@ function ShareDialogInner({
 
   const imageUrl = getStarterPackOgCard(starterPack)
 
-  const onShareLink = async () => {
+  const onShareLink = () => {
     if (!link) return
-    shareUrl(link)
     ax.metric('starterPack:share', {
       starterPack: starterPack.uri,
       shareType: 'link',
     })
-    control.close()
+    control.close(() => {
+      void shareUrl(link)
+    })
   }
 
   const saveImageToAlbum = useSaveImageToMediaLibrary()
@@ -80,11 +81,11 @@ function ShareDialogInner({
           <View style={[!gtMobile && a.gap_lg]}>
             <View style={[a.gap_sm, gtMobile && a.pb_lg]}>
               <Text style={[a.font_semi_bold, a.text_2xl]}>
-                <Trans>Invite people to this starter pack!</Trans>
+                <Trans>Invite people to this Starter Pack!</Trans>
               </Text>
               <Text style={[a.text_md, t.atoms.text_contrast_medium]}>
                 <Trans>
-                  Share this starter pack and help people join your community on
+                  Share this Starter Pack and help people join your community on
                   Bluesky.
                 </Trans>
               </Text>

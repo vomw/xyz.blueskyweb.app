@@ -1,6 +1,6 @@
 import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react'
-import {TextInput, View, type ViewToken} from 'react-native'
-import {type ModerationOpts} from '@atproto/api'
+import {type ListViewToken as ViewToken, TextInput, View} from 'react-native'
+import {type ModerationOpts} from '@bsky/sdk/moderation'
 import {Trans, useLingui} from '@lingui/react/macro'
 
 import {useNonReactiveCallback} from '#/lib/hooks/useNonReactiveCallback'
@@ -109,26 +109,37 @@ export function FollowDialogWithoutGuide({
 let lastSelectedInterest = ''
 let lastSearchText = ''
 
+const FOR_YOU_TAB = 'all'
+
 function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
   const {t: l} = useLingui()
   const ax = useAnalytics()
-  const interestsDisplayNames = useInterestsDisplayNames()
+  const rawInterestsDisplayNames = useInterestsDisplayNames()
   const {data: preferences} = usePreferencesQuery()
   const personalizedInterests = preferences?.interests?.tags
-  const interests = Object.keys(interestsDisplayNames)
-    .sort(boostInterests(popularInterests))
-    .sort(boostInterests(personalizedInterests))
+  const interests = useMemo(
+    () => [
+      FOR_YOU_TAB,
+      ...Object.keys(rawInterestsDisplayNames)
+        .sort(boostInterests(popularInterests))
+        .sort(boostInterests(personalizedInterests)),
+    ],
+    [rawInterestsDisplayNames, personalizedInterests],
+  )
+  const interestsDisplayNames = useMemo(
+    () => ({
+      [FOR_YOU_TAB]: l`For You`,
+      ...rawInterestsDisplayNames,
+    }),
+    [l, rawInterestsDisplayNames],
+  )
   const [selectedInterest, setSelectedInterest] = useState(
-    () =>
-      lastSelectedInterest ||
-      (personalizedInterests && interests.includes(personalizedInterests[0])
-        ? personalizedInterests[0]
-        : interests[0]),
+    () => lastSelectedInterest || FOR_YOU_TAB,
   )
   const [searchText, setSearchText] = useState(lastSearchText)
   const moderationOpts = useModerationOpts()
   const listRef = useRef<ListMethods>(null)
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null)
   const [headerHeight, setHeaderHeight] = useState(0)
   const {currentAccount} = useSession()
 
@@ -137,14 +148,15 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
     lastSelectedInterest = selectedInterest
   }, [searchText, selectedInterest])
 
-  const {
-    data: suggestions,
-    isFetching: isFetchingSuggestions,
-    error: suggestionsError,
-  } = useGetSuggestedUsersForSeeMoreQuery({
-    category: selectedInterest,
+  const isForYou = selectedInterest === FOR_YOU_TAB
+
+  const seeMoreQuery = useGetSuggestedUsersForSeeMoreQuery({
+    category: isForYou ? undefined : selectedInterest,
     limit: 50,
   })
+  const suggestions = seeMoreQuery.data
+  const isFetchingSuggestions = seeMoreQuery.isFetching
+  const suggestionsError = seeMoreQuery.error
   const {
     data: searchResults,
     isFetching: isFetchingSearchResults,
@@ -237,6 +249,7 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
               moderationOpts={moderationOpts!}
               noBorder={index === 0}
               position={index}
+              recSource={hasSearchText ? 'Search' : undefined}
               recId={recIdForLogging}
               isGuide={isGuide}
             />
@@ -252,15 +265,11 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
           return null
       }
     },
-    [moderationOpts, recIdForLogging, isGuide],
+    [moderationOpts, hasSearchText, recIdForLogging, isGuide],
   )
 
   // Track seen profiles
   const seenProfilesRef = useRef<Set<string>>(new Set())
-  const itemsRef = useRef(items)
-  itemsRef.current = items
-  const selectedInterestRef = useRef(selectedInterest)
-  selectedInterestRef.current = selectedInterest
 
   const onViewableItemsChanged = useNonReactiveCallback(
     ({viewableItems}: {viewableItems: ViewToken[]}) => {
@@ -269,15 +278,17 @@ function DialogInner({guide}: {guide?: Follow10ProgressGuide}) {
         if (item.type === 'profile') {
           if (!seenProfilesRef.current.has(item.profile.did)) {
             seenProfilesRef.current.add(item.profile.did)
-            const position = itemsRef.current.findIndex(
+            const position = items.findIndex(
               i => i.type === 'profile' && i.profile.did === item.profile.did,
             )
             ax.metric('suggestedUser:seen', {
               logContext: isGuide ? 'ProgressGuide' : 'SeeMoreSuggestedUsers',
+              recSource: hasSearchText ? 'Search' : undefined,
               recId: recIdForLogging,
               position: position !== -1 ? position : 0,
               suggestedDid: item.profile.did,
-              category: selectedInterestRef.current,
+              category:
+                selectedInterest === FOR_YOU_TAB ? null : selectedInterest,
             })
           }
         }
@@ -357,7 +368,7 @@ let Header = ({
   interestsDisplayNames,
 }: {
   guide?: Follow10ProgressGuide
-  inputRef: React.RefObject<TextInput | null>
+  inputRef: React.RefObject<React.ComponentRef<typeof TextInput> | null>
   listRef: React.RefObject<ListMethods | null>
   onSelectTab: (v: string) => void
   searchText: string
@@ -533,6 +544,7 @@ let FollowProfileCard = ({
   moderationOpts,
   noBorder,
   position,
+  recSource,
   recId,
   isGuide,
 }: {
@@ -540,6 +552,7 @@ let FollowProfileCard = ({
   moderationOpts: ModerationOpts
   noBorder?: boolean
   position: number
+  recSource?: 'Search'
   recId?: string
   isGuide: boolean
 }): React.ReactNode => {
@@ -549,6 +562,7 @@ let FollowProfileCard = ({
       moderationOpts={moderationOpts}
       noBorder={noBorder}
       position={position}
+      recSource={recSource}
       recId={recId}
       isGuide={isGuide}
     />
@@ -562,6 +576,7 @@ function FollowProfileCardInner({
   onFollow,
   noBorder,
   position,
+  recSource,
   recId,
   isGuide,
 }: {
@@ -570,6 +585,7 @@ function FollowProfileCardInner({
   onFollow?: () => void
   noBorder?: boolean
   position: number
+  recSource?: 'Search'
   recId?: string
   isGuide: boolean
 }) {
@@ -610,6 +626,7 @@ function FollowProfileCardInner({
                       ? 'ProgressGuide'
                       : 'SeeMoreSuggestedUsers',
                     location: 'Card',
+                    recSource,
                     recId,
                     position,
                     suggestedDid: profile.did,
@@ -656,7 +673,7 @@ function SearchInput({
 }: {
   onChangeText: (text: string) => void
   onEscape: () => void
-  inputRef: React.RefObject<TextInput | null>
+  inputRef: React.RefObject<React.ComponentRef<typeof TextInput> | null>
   defaultValue: string
 }) {
   const t = useTheme()

@@ -16,6 +16,7 @@ export enum LogContext {
   PolicyUpdate = 'policy-update',
   Geolocation = 'geolocation',
   Drafts = 'drafts',
+  Growthbook = 'growthbook',
 
   /**
    * METRIC IS FOR INTERNAL USE ONLY, don't create any other loggers using this
@@ -80,6 +81,12 @@ export type Metadata = {
   tags?: {
     [key: string]: number | string | boolean | null | undefined
   }
+
+  /**
+   * Passed through to Sentry as a custom fingerprint. Include
+   * `{{ default }}` to preserve Sentry's default grouping and add dimensions.
+   */
+  fingerprint?: string[]
 
   /**
    * Any additional data, passed through to Sentry as `extra` param on

@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import {useSift, type UseSiftReturn} from '@bsky.app/sift'
 import {
   facets,
@@ -40,6 +39,9 @@ import {
 import {Span, Text} from '#/components/Typography'
 import {IS_IOS, IS_WEB, IS_WEB_TOUCH_DEVICE} from '#/env'
 
+type TextInputInstance = React.ComponentRef<typeof TextInput>
+type ViewInstance = React.ComponentRef<typeof View>
+
 export type SubmitRequest =
   | {
       platform: 'web'
@@ -61,7 +63,7 @@ export type ComposerInternalApi = {
   input?: ReturnType<typeof useTapper>['input']
   clear: () => void
   insert(text: string): void
-  setAutocompleteAnchor: (node: View | null) => void
+  setAutocompleteAnchor: (node: ViewInstance | null) => void
 }
 
 export function useComposerInternalApiRef() {
@@ -83,7 +85,7 @@ export type ComposerProps = Omit<
   | 'onSubmitEditing'
 > & {
   label: string
-  ref?: React.RefObject<TextInput>
+  ref?: React.RefObject<TextInputInstance>
   internalApiRef?: React.Ref<ComposerInternalApi>
   outerStyle?: ViewStyleProp['style']
   contentTextStyle?: TextStyleProp['style']
@@ -121,7 +123,6 @@ export function Composer({
   ...rest
 }: ComposerProps) {
   const {theme: t, fonts} = useAlf()
-  const insets = useSafeAreaInsets()
 
   /*
    * Meat and potatoes
@@ -140,8 +141,12 @@ export function Composer({
     offset: a.p_sm.padding,
     placement: autocompletePlacement,
     dynamicWidth: IS_WEB,
-    insets,
   })
+  const inputRef = mergeRefs<TextInputInstance>([
+    ref,
+    tapper.inputProps.ref as React.Ref<TextInputInstance>,
+    sift.targetProps.ref as React.Ref<TextInputInstance>,
+  ])
 
   /*
    * Active facet state for controlling the visibility of the Autocomplete.
@@ -289,7 +294,7 @@ export function Composer({
                 ref={IS_WEB ? sift.refs.setAnchor : undefined}
                 style={
                   node.type === 'facet' && {
-                    color: t.palette.primary_500,
+                    color: t.atoms.text_link.color,
                   }
                 }>
                 {node.raw}
@@ -306,7 +311,13 @@ export function Composer({
         {IS_WEB && (
           <View
             pointerEvents="none"
-            style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}>
+            style={[a.absolute, a.inset_0, a.z_10, {overflow: 'hidden'}]}
+            ref={node => {
+              if (IS_WEB && node) {
+                // @ts-expect-error web only a11y
+                node.setAttribute('inert', '')
+              }
+            }}>
             <Animated.View
               style={[
                 contentPaddingStyle,
@@ -329,18 +340,21 @@ export function Composer({
             contentPaddingStyle,
             a.z_20,
             {
-              color: 'transparent',
               background: 'transparent',
             },
             web({
+              color: 'transparent',
               caretColor: textStyle.color ?? 'black',
               overscrollBehavior: 'none',
+              scrollbarWidth: 'thin',
+              scrollbarColor: `${t.palette.contrast_200} transparent`,
             }),
           ]}
           {...rest}
           {...tapper.inputProps}
           {...sift.targetProps}
-          ref={mergeRefs([ref, tapper.inputProps.ref, sift.targetProps.ref])}
+          ref={inputRef}
+          rawValue={tapper.state.text}
           onBlur={e => {
             rest.onBlur?.(e)
             setActiveFacet(null)
@@ -348,16 +362,15 @@ export function Composer({
           onKeyPress={IS_WEB ? onKeyPressWeb : undefined}
           onScroll={e => {
             if (IS_WEB) {
-              inputScrollSharedValue.value = (e.target as any).scrollTop
+              inputScrollSharedValue.set((e.target as any).scrollTop)
             } else {
-              inputScrollSharedValue.value = e.nativeEvent.contentOffset.y
+              inputScrollSharedValue.set(e.nativeEvent.contentOffset.y)
             }
           }}
-          // @ts-ignore web only
+          // @ts-expect-error web only
           onCompositionStart={() => {
             isComposing.current = true
           }}
-          // @ts-ignore web only
           onCompositionEnd={() => {
             isComposing.current = false
           }}
@@ -368,6 +381,7 @@ export function Composer({
 
       {activeFacet && activeFacet.type !== 'url' && (
         <AutocompleteInner
+          inverted={autocompletePlacement?.startsWith('top')}
           sift={sift}
           activeFacet={activeFacet}
           onDismiss={() => setActiveFacet(null)}
@@ -382,10 +396,12 @@ export function Composer({
  */
 
 function AutocompleteInner({
+  inverted,
   sift,
   activeFacet,
   onDismiss,
 }: {
+  inverted?: boolean
   sift: UseSiftReturn
   activeFacet: TapperActiveFacet
   onDismiss: () => void
@@ -410,7 +426,7 @@ function AutocompleteInner({
 
   return items && items.length ? (
     <AutocompleteBase
-      inverted={!IS_WEB}
+      inverted={inverted}
       sift={sift}
       data={items}
       render={props => {

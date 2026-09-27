@@ -1,15 +1,12 @@
 import {memo, useCallback, useEffect, useMemo} from 'react'
 import {Pressable, View} from 'react-native'
 import Animated, {
-  measure,
-  type MeasuredDimensions,
-  runOnJS,
-  runOnUI,
+  type AnimatedRef,
   useAnimatedRef,
 } from 'react-native-reanimated'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import {type AppBskyActorDefs, type ModerationDecision} from '@atproto/api'
 import {utils} from '@bsky.app/alf'
+import {type ModerationDecision} from '@bsky/sdk/moderation'
 import {useLingui} from '@lingui/react/macro'
 import {useNavigation} from '@react-navigation/native'
 
@@ -17,7 +14,6 @@ import {BACK_HITSLOP} from '#/lib/constants'
 import {useHaptics} from '#/lib/haptics'
 import {type NavigationProp} from '#/lib/routes/types'
 import {type Shadow} from '#/state/cache/types'
-import {useLightboxControls} from '#/state/lightbox'
 import {useSession} from '#/state/session'
 import {LoadingPlaceholder} from '#/view/com/util/LoadingPlaceholder'
 import {UserAvatar} from '#/view/com/util/UserAvatar'
@@ -26,6 +22,7 @@ import {atoms as a, platform, useTheme} from '#/alf'
 import {Button} from '#/components/Button'
 import {useDialogControl} from '#/components/Dialog'
 import {ArrowLeft_Stroke2_Corner0_Rounded as ArrowLeftIcon} from '#/components/icons/Arrow'
+import {useLightboxControls} from '#/components/Lightbox/state'
 import {LabelsOnMe} from '#/components/moderation/LabelsOnMe'
 import {ProfileHeaderAlerts} from '#/components/moderation/ProfileHeaderAlerts'
 import {useAnalytics} from '#/analytics'
@@ -34,12 +31,13 @@ import {useActorStatus} from '#/features/liveNow'
 import {EditLiveDialog} from '#/features/liveNow/components/EditLiveDialog'
 import {LiveIndicator} from '#/features/liveNow/components/LiveIndicator'
 import {LiveStatusDialog} from '#/features/liveNow/components/LiveStatusDialog'
+import {type app} from '#/lexicons'
 import {GrowableAvatar} from './GrowableAvatar'
 import {GrowableBanner} from './GrowableBanner'
 import {StatusBarShadow} from './StatusBarShadow'
 
 interface Props {
-  profile: Shadow<AppBskyActorDefs.ProfileViewDetailed>
+  profile: Shadow<app.bsky.actor.defs.ProfileViewDetailed>
   moderation: ModerationDecision
   hideBackButton?: boolean
   isPlaceholderProfile?: boolean
@@ -63,7 +61,7 @@ let ProfileHeaderShell = ({
   const liveStatusControl = useDialogControl()
 
   const aviRef = useAnimatedRef()
-  const bannerRef = useAnimatedRef<Animated.View>()
+  const bannerRef = useAnimatedRef()
 
   const onPressBack = useCallback(() => {
     if (navigation.canGoBack()) {
@@ -76,7 +74,7 @@ let ProfileHeaderShell = ({
   const _openLightbox = useCallback(
     (
       uri: string,
-      thumbRect: MeasuredDimensions | null,
+      thumbRef: AnimatedRef,
       type: 'circle-avi' | 'rect-avi' | 'image' = 'circle-avi',
     ) => {
       openLightbox({
@@ -84,7 +82,8 @@ let ProfileHeaderShell = ({
           {
             uri,
             thumbUri: uri,
-            thumbRect,
+            thumbRect: null,
+            thumbRef,
             dimensions:
               type === 'circle-avi' || type === 'rect-avi'
                 ? {
@@ -130,11 +129,7 @@ let ProfileHeaderShell = ({
       const avatar = profile.avatar
       const type = profile.associated?.labeler ? 'rect-avi' : 'circle-avi'
       if (avatar && !(modui.blur && modui.noOverride)) {
-        runOnUI(() => {
-          'worklet'
-          const rect = measure(aviRef)
-          runOnJS(_openLightbox)(avatar, rect, type)
-        })()
+        _openLightbox(avatar, aviRef, type)
       }
     }
   }, [
@@ -152,11 +147,7 @@ let ProfileHeaderShell = ({
     const modui = moderation.ui('banner')
     const banner = profile.banner
     if (banner && !(modui.blur && modui.noOverride)) {
-      runOnUI(() => {
-        'worklet'
-        const rect = measure(bannerRef)
-        runOnJS(_openLightbox)(banner, rect, 'image')
-      })()
+      _openLightbox(banner, bannerRef, 'image')
     }
   }, [profile.banner, moderation, _openLightbox, bannerRef])
 
@@ -238,7 +229,6 @@ let ProfileHeaderShell = ({
       {!isPlaceholderProfile &&
         (isMe ? (
           <LabelsOnMe
-            type="account"
             labels={profile.labels}
             style={[
               a.px_lg,
@@ -250,6 +240,7 @@ let ProfileHeaderShell = ({
         ) : (
           <ProfileHeaderAlerts
             moderation={moderation}
+            profile={profile}
             style={[
               a.px_lg,
               a.pt_xs,

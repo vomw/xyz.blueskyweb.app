@@ -1,4 +1,4 @@
-import * as React from 'react'
+import {useEffect, useRef} from 'react'
 import {View} from 'react-native'
 // Based on @react-navigation/native-stack/src/navigators/createNativeStackNavigator.ts
 // MIT License
@@ -46,9 +46,10 @@ import {DesktopRightNav} from './desktop/RightNav'
 // Older screens are unmounted to prevent memory growth during long sessions.
 const WEB_MAX_CACHED_SCREENS = 5
 
-type NativeStackNavigationOptionsWithAuth = NativeStackNavigationOptions & {
-  requireAuth?: boolean
-}
+export type NativeStackNavigationOptionsWithAuth =
+  NativeStackNavigationOptions & {
+    requireAuth?: boolean
+  }
 
 function NativeStackNavigator({
   id,
@@ -82,7 +83,7 @@ function NativeStackNavigator({
       UNSTABLE_router,
     })
 
-  React.useEffect(
+  useEffect(
     () =>
       // @ts-expect-error: there may not be a tab navigator in parent
       navigation?.addListener?.('tabPress', (e: any) => {
@@ -110,7 +111,7 @@ function NativeStackNavigator({
 
   // --- our custom logic starts here ---
   // Web LRU: tracks route keys in most-recently-focused order
-  const lruKeysRef = React.useRef<string[]>([])
+  const lruKeysRef = useRef<string[]>([])
   const {hasSession, currentAccount} = useSession()
   const activeRoute = state.routes[state.index]
   const activeDescriptor = descriptors[activeRoute.key]
@@ -170,7 +171,7 @@ function NativeStackNavigator({
     }
 
     // Evicted screens get a lightweight placeholder instead of their full tree
-    finalDescriptors = {} as typeof descriptors
+    finalDescriptors = {}
     for (const key in descriptors) {
       if (mountSet.has(key)) {
         finalDescriptors[key] = descriptors[key]
@@ -200,7 +201,11 @@ function NativeStackNavigator({
       </View>
       {IS_WEB && (
         <>
-          {showBottomBar ? <BottomBarWeb /> : <DesktopLeftNav />}
+          {showBottomBar ? (
+            <BottomBarWeb />
+          ) : (
+            <DesktopLeftNav routeName={activeRoute.name} />
+          )}
           {!isMobile && <DesktopRightNav routeName={activeRoute.name} />}
         </>
       )}

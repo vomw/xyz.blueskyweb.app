@@ -23,6 +23,7 @@ export const Context = createContext<DialogContextProps>({
   disableDrag: false,
   setDisableDrag: () => {},
   isWithinDialog: false,
+  isHeightConstrained: false,
 })
 Context.displayName = 'DialogContext'
 
@@ -41,7 +42,6 @@ export function useDialogControl(): DialogOuterProps['control'] {
   useEffect(() => {
     activeDialogs.current.set(id, control)
     return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       activeDialogs.current.delete(id)
     }
   }, [id, activeDialogs])

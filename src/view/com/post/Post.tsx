@@ -1,21 +1,14 @@
 import {useCallback, useMemo, useState} from 'react'
 import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native'
-import {
-  type AppBskyFeedDefs,
-  AppBskyFeedPost,
-  AtUri,
-  moderatePost,
-  type ModerationDecision,
-  RichText as RichTextAPI,
-} from '@atproto/api'
+import {AtUri} from '@atproto/syntax'
+import {moderatePost, type ModerationDecision} from '@bsky/sdk/moderation'
+import {RichText as RichTextAPI} from '@bsky/sdk/richtext'
 import {useQueryClient} from '@tanstack/react-query'
 
 import {MAX_POST_LINES} from '#/lib/constants'
 import {useOpenComposer} from '#/lib/hooks/useOpenComposer'
-import {usePalette} from '#/lib/hooks/usePalette'
 import {makeProfileLink} from '#/lib/routes/links'
 import {countLines} from '#/lib/strings/helpers'
-import {colors} from '#/lib/styles'
 import {
   POST_TOMBSTONE,
   type Shadow,
@@ -26,10 +19,14 @@ import {unstableCacheProfileView} from '#/state/queries/profile'
 import {Link} from '#/view/com/util/Link'
 import {PostMeta} from '#/view/com/util/PostMeta'
 import {PreviewableUserAvatar} from '#/view/com/util/UserAvatar'
-import {atoms as a} from '#/alf'
+import {atoms as a, select, useTheme} from '#/alf'
+import {
+  GalleryBleed,
+  maybeApplyGalleryOffsetStyles,
+} from '#/components/images/Gallery'
 import {ContentHider} from '#/components/moderation/ContentHider'
-import {LabelsOnMyPost} from '#/components/moderation/LabelsOnMe'
 import {PostAlerts} from '#/components/moderation/PostAlerts'
+import * as ReportDialogMetadataContext from '#/components/moderation/ReportDialog/ReportDialogMetadataContext'
 import {Embed, PostEmbedViewContext} from '#/components/Post/Embed'
 import {PostRepliedTo} from '#/components/Post/PostRepliedTo'
 import {ShowMoreTextButton} from '#/components/Post/ShowMoreTextButton'
@@ -37,6 +34,7 @@ import {TranslatedPost} from '#/components/Post/Translated'
 import {PostControls} from '#/components/PostControls'
 import {RichText} from '#/components/RichText'
 import {SubtleHover} from '#/components/SubtleHover'
+import {app} from '#/lexicons'
 import * as bsky from '#/types/bsky'
 
 export function Post({
@@ -46,18 +44,16 @@ export function Post({
   style,
   onBeforePress,
 }: {
-  post: AppBskyFeedDefs.PostView
+  post: app.bsky.feed.defs.PostView
   showReplyLine?: boolean
   hideTopBorder?: boolean
   style?: StyleProp<ViewStyle>
   onBeforePress?: () => void
 }) {
   const moderationOpts = useModerationOpts()
-  const record = useMemo<AppBskyFeedPost.Record | undefined>(
+  const record = useMemo<app.bsky.feed.post.Main | undefined>(
     () =>
-      bsky.validate(post.record, AppBskyFeedPost.validateRecord)
-        ? post.record
-        : undefined,
+      bsky.matches(app.bsky.feed.post, post.record) ? post.record : undefined,
     [post],
   )
   const postShadowed = usePostShadow(post)
@@ -80,16 +76,18 @@ export function Post({
   }
   if (record && richText && moderation) {
     return (
-      <PostInner
-        post={postShadowed}
-        record={record}
-        richText={richText}
-        moderation={moderation}
-        showReplyLine={showReplyLine}
-        hideTopBorder={hideTopBorder}
-        style={style}
-        onBeforePress={onBeforePress}
-      />
+      <ReportDialogMetadataContext.Provider key={postShadowed.uri}>
+        <PostInner
+          post={postShadowed}
+          record={record}
+          richText={richText}
+          moderation={moderation}
+          showReplyLine={showReplyLine}
+          hideTopBorder={hideTopBorder}
+          style={style}
+          onBeforePress={onBeforePress}
+        />
+      </ReportDialogMetadataContext.Provider>
     )
   }
   return null
@@ -105,8 +103,8 @@ function PostInner({
   style,
   onBeforePress: outerOnBeforePress,
 }: {
-  post: Shadow<AppBskyFeedDefs.PostView>
-  record: AppBskyFeedPost.Record
+  post: Shadow<app.bsky.feed.defs.PostView>
+  record: app.bsky.feed.post.Main
   richText: RichTextAPI
   moderation: ModerationDecision
   showReplyLine?: boolean
@@ -115,7 +113,7 @@ function PostInner({
   onBeforePress?: () => void
 }) {
   const queryClient = useQueryClient()
-  const pal = usePalette('default')
+  const t = useTheme()
   const {openComposer} = useOpenComposer()
   const [limitLines, setLimitLines] = useState(
     () => countLines(richText?.text) >= MAX_POST_LINES,
@@ -155,89 +153,120 @@ function PostInner({
   const [hover, setHover] = useState(false)
 
   return (
-    <Link
-      href={itemHref}
-      style={[
-        styles.outer,
-        pal.border,
-        !hideTopBorder && {borderTopWidth: StyleSheet.hairlineWidth},
-        style,
-      ]}
-      onBeforePress={onBeforePress}
-      onPointerEnter={() => {
-        setHover(true)
-      }}
-      onPointerLeave={() => {
-        setHover(false)
-      }}>
-      <SubtleHover hover={hover} />
-      {showReplyLine && <View style={styles.replyLine} />}
-      <View style={styles.layout}>
-        <View style={styles.layoutAvi}>
-          <PreviewableUserAvatar
-            size={42}
-            profile={post.author}
-            moderation={moderation.ui('avatar')}
-            type={post.author.associated?.labeler ? 'labeler' : 'user'}
+    <GalleryBleed>
+      <Link
+        href={itemHref}
+        style={[
+          styles.outer,
+          t.atoms.border_contrast_low,
+          !hideTopBorder && a.border_t,
+          style,
+        ]}
+        onBeforePress={onBeforePress}
+        onPointerEnter={() => {
+          setHover(true)
+        }}
+        onPointerLeave={() => {
+          setHover(false)
+        }}>
+        <SubtleHover hover={hover} />
+        {showReplyLine && (
+          <View
+            style={[
+              styles.replyLine,
+              {
+                backgroundColor: select(t.name, {
+                  light: t.palette.contrast_100,
+                  dim: t.palette.contrast_200,
+                  dark: t.palette.contrast_200,
+                }),
+              },
+            ]}
           />
-        </View>
-        <View style={styles.layoutContent}>
-          <PostMeta
-            author={post.author}
-            moderation={moderation}
-            timestamp={post.indexedAt}
-            postHref={itemHref}
-          />
-          {replyAuthorDid !== '' && (
-            <PostRepliedTo parentAuthor={replyAuthorDid} />
-          )}
-          <LabelsOnMyPost post={post} />
-          <ContentHider
-            modui={moderation.ui('contentView')}
-            style={styles.contentHider}
-            childContainerStyle={styles.contentHiderChild}>
-            <PostAlerts
-              modui={moderation.ui('contentView')}
-              style={[a.pb_xs]}
+        )}
+        <View style={styles.layout}>
+          <View style={styles.layoutAvi}>
+            <PreviewableUserAvatar
+              size={42}
+              profile={post.author}
+              moderation={moderation.ui('avatar')}
+              type={post.author.associated?.labeler ? 'labeler' : 'user'}
             />
-            {richText.text ? (
-              <View style={[a.mb_2xs]}>
-                <RichText
-                  enableTags
-                  testID="postText"
-                  value={richText}
-                  numberOfLines={limitLines ? MAX_POST_LINES : undefined}
-                  style={[a.flex_1, a.text_md]}
-                  authorHandle={post.author.handle}
-                  shouldProxyLinks={true}
-                />
-                {limitLines && (
-                  <ShowMoreTextButton
-                    style={[a.text_md]}
-                    onPress={onPressShowMore}
-                  />
-                )}
-              </View>
-            ) : undefined}
-            <TranslatedPost hideTranslateLink post={post} />
-            {post.embed ? (
-              <Embed
-                embed={post.embed}
-                moderation={moderation}
-                viewContext={PostEmbedViewContext.Feed}
+          </View>
+          <View
+            style={[
+              styles.layoutContent,
+              maybeApplyGalleryOffsetStyles('meta', {
+                post,
+                modui: moderation.ui('contentList'),
+                additionalCauses: [],
+              }),
+            ]}>
+            <PostMeta
+              author={post.author}
+              moderation={moderation}
+              timestamp={post.indexedAt}
+              postHref={itemHref}
+            />
+            {replyAuthorDid !== '' && (
+              <PostRepliedTo parentAuthor={replyAuthorDid} />
+            )}
+            <ContentHider
+              modui={moderation.ui('contentView')}
+              style={styles.contentHider}
+              childContainerStyle={styles.contentHiderChild}>
+              <PostAlerts
+                post={post}
+                modui={moderation.ui('contentView')}
+                style={[a.pb_xs]}
               />
-            ) : null}
-          </ContentHider>
-          <PostControls
-            post={post}
-            record={record}
-            richText={richText}
-            onPressReply={onPressReply}
-            logContext="Post"
-          />
+              {richText.text ? (
+                <View style={[a.mb_2xs]}>
+                  <RichText
+                    enableTags
+                    testID="postText"
+                    value={richText}
+                    numberOfLines={limitLines ? MAX_POST_LINES : undefined}
+                    style={[a.flex_1, a.text_md]}
+                    authorHandle={post.author.handle}
+                    shouldProxyLinks={true}
+                  />
+                  {limitLines && (
+                    <ShowMoreTextButton
+                      style={[a.text_md]}
+                      onPress={onPressShowMore}
+                    />
+                  )}
+                </View>
+              ) : undefined}
+              <TranslatedPost hideTranslateLink post={post} />
+              {post.embed ? (
+                <View
+                  style={maybeApplyGalleryOffsetStyles('embed', {
+                    post,
+                    modui: moderation.ui('contentList'),
+                    additionalCauses: [],
+                  })}>
+                  <Embed
+                    embed={post.embed}
+                    moderation={moderation}
+                    viewContext={PostEmbedViewContext.Feed}
+                    post={post}
+                  />
+                </View>
+              ) : null}
+            </ContentHider>
+            <PostControls
+              post={post}
+              record={record}
+              richText={richText}
+              onPressReply={onPressReply}
+              logContext="Post"
+            />
+          </View>
         </View>
-      </View>
-    </Link>
+      </Link>
+    </GalleryBleed>
   )
 }
 
@@ -247,7 +276,6 @@ const styles = StyleSheet.create({
     paddingRight: 15,
     paddingBottom: 5,
     paddingLeft: 10,
-    // @ts-ignore web only -prf
     cursor: 'pointer',
   },
   layout: {
@@ -269,7 +297,6 @@ const styles = StyleSheet.create({
     top: 70,
     bottom: 0,
     borderLeftWidth: 2,
-    borderLeftColor: colors.gray2,
   },
   contentHider: {
     marginBottom: 2,
