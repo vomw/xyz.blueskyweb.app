@@ -54,10 +54,9 @@ module.exports = function (_config) {
       },
       icon: './assets/app-icons/ios_icon_default_next.png',
       userInterfaceStyle: 'automatic',
-      primaryColor: '#1083fe',
+      primaryColor: '#006AFF',
       newArchEnabled: false,
       ios: {
-        buildNumber: process.env.BSKY_IOS_BUILD_NUMBER || '1',
         supportsTablet: false,
         bundleIdentifier: 'xyz.blueskyweb.app',
         config: {
@@ -65,6 +64,7 @@ module.exports = function (_config) {
         },
         icon: IOS_ICON_FILE,
         infoPlist: {
+          CADisableMinimumFrameDurationOnPhone: true,
           UIBackgroundModes: ['remote-notification'],
           NSCameraUsageDescription:
             'Used for profile pictures, posts, and other kinds of content.',
@@ -185,7 +185,6 @@ module.exports = function (_config) {
         barStyle: 'light-content',
       },
       android: {
-        versionCode: parseInt(process.env.BSKY_ANDROID_VERSION_CODE || '1', 10),
         icon: './assets/app-icons/android_icon_default_next.png',
         adaptiveIcon: {
           foregroundImage: './assets/icon-android-foreground.png',
@@ -298,7 +297,6 @@ module.exports = function (_config) {
         './plugins/withAndroidManifestFCMIconPlugin.js',
         './plugins/withAndroidManifestIntentQueriesPlugin.js',
         './plugins/withAndroidStylesAccentColorPlugin.js',
-        './plugins/withAndroidDayNightThemePlugin.js',
         './plugins/withAndroidNoJitpackPlugin.js',
         './plugins/shareExtension/withShareExtensions.js',
         './plugins/notificationsExtension/withNotificationsExtension.js',
